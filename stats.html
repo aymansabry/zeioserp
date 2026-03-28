@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📈 الإحصائيات - ZEIOS ERP</title>
+<style>
+:root {
+  --primary: #1a73e8; --primary-dark: #0d47a1; --primary-light: #e6f0ff;
+  --secondary: #34a853; --danger: #dc2626; --warning: #f59e0b;
+  --bg-light: #f8fafc; --bg-card: #ffffff; --text-primary: #1e293b;
+  --text-secondary: #64748b; --border: #e2e8f0; --shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg-light); color: var(--text-primary); padding: 20px;
+}
+.container { max-width: 1400px; margin: 0 auto; }
+.header {
+  background: linear-gradient(135deg, var(--secondary), #2d8e47);
+  color: white; padding: 24px; border-radius: 16px; margin-bottom: 24px;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+}
+.page-title { font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.btn {
+  padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer;
+  font-size: 14px; font-weight: 600; transition: all 0.3s; display: inline-flex;
+  align-items: center; gap: 6px;
+}
+.btn-light { background: rgba(255,255,255,0.2); color: white; }
+.btn-light:hover { background: rgba(255,255,255,0.3); }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.filters {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 20px; margin-bottom: 24px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center;
+}
+.filter-group { display: flex; flex-direction: column; gap: 6px; }
+.filter-group label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+.filter-group select, .filter-group input {
+  padding: 10px 14px; border: 2px solid var(--border); border-radius: 8px;
+  font-size: 14px; min-width: 150px;
+}
+.kpi-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px; margin-bottom: 30px;
+}
+.kpi-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 22px; transition: all 0.3s;
+}
+.kpi-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+.kpi-icon {
+  width: 52px; height: 52px; background: var(--primary-light); color: var(--primary);
+  border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  font-size: 26px; margin-bottom: 18px;
+}
+.kpi-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+.kpi-value { font-size: 32px; font-weight: 700; color: var(--text-primary); }
+.kpi-trend { font-size: 12px; margin-top: 8px; }
+.kpi-trend.up { color: var(--secondary); }
+.kpi-trend.down { color: var(--danger); }
+.chart-container {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 24px; margin-bottom: 24px; min-height: 300px;
+}
+.chart-placeholder {
+  display: flex; align-items: center; justify-content: center;
+  height: 250px; background: var(--bg-light); border-radius: 12px;
+  color: var(--text-secondary); font-size: 14px;
+}
+.actions { display: flex; gap: 10px; margin-top: 20px; }
+.loading {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3); display: none; align-items: center;
+  justify-content: center; z-index: 9999;
+}
+.loading.show { display: flex; }
+.spinner {
+  width: 40px; height: 40px; border: 3px solid var(--border);
+  border-top-color: var(--primary); border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="loading" id="globalLoading"><div class="spinner"></div></div>
+
+<div class="container">
+  <!-- الرأس -->
+  <div class="header">
+    <div class="page-title">📈 الإحصائيات والتقارير</div>
+    <div style="display: flex; gap: 10px;">
+      <button class="btn btn-light" onclick="window.open('dashboard.html', '_self')">🔙 عودة للداشبورد</button>
+      <button class="btn btn-light" onclick="exportToExcel()">📥 تصدير Excel</button>
+      <button class="btn btn-light" onclick="window.print()">🖨️ طباعة</button>
+    </div>
+  </div>
+
+  <!-- الفلاتر -->
+  <div class="filters">
+    <div class="filter-group">
+      <label>📅 السنة المالية</label>
+      <select id="yearFilter" onchange="loadStats()"></select>
+    </div>
+    <div class="filter-group">
+      <label>📊 نوع التقرير</label>
+      <select id="reportType" onchange="loadStats()">
+        <option value="summary">ملخص شامل</option>
+        <option value="sales">المبيعات</option>
+        <option value="purchases">المشتريات</option>
+        <option value="inventory">المخزون</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>🔄 تحديث</label>
+      <button class="btn btn-primary" onclick="loadStats()">🔄 تحديث</button>
+    </div>
+  </div>
+
+  <!-- مؤشرات الأداء -->
+  <div class="kpi-grid" id="kpiGrid">
+    <div class="kpi-card">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-label">إجمالي المبيعات</div>
+      <div class="kpi-value" id="totalSales">0</div>
+      <div class="kpi-trend up" id="salesTrend">↑ 0%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🛒</div>
+      <div class="kpi-label">إجمالي المشتريات</div>
+      <div class="kpi-value" id="totalPurchases">0</div>
+      <div class="kpi-trend down" id="purchasesTrend">↓ 0%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📦</div>
+      <div class="kpi-label">قيمة المخزون</div>
+      <div class="kpi-value" id="stockValue">0</div>
+      <div class="kpi-trend" id="stockTrend">0 صنف</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">💳</div>
+      <div class="kpi-label">صافي الربح</div>
+      <div class="kpi-value" id="netProfit">0</div>
+      <div class="kpi-trend up" id="profitTrend">↑ 0%</div>
+    </div>
+  </div>
+
+  <!-- الرسم البياني -->
+  <div class="chart-container">
+    <h3 style="margin-bottom: 15px; font-size: 18px;">📊 المبيعات الشهرية</h3>
+    <div class="chart-placeholder" id="chartPlaceholder">
+      📈 سيتم عرض الرسم البياني هنا (يتطلب مكتبة Charts)
+    </div>
+  </div>
+
+  <!-- جدول التفاصيل -->
+  <div class="chart-container">
+    <h3 style="margin-bottom: 15px; font-size: 18px;">📋 تفاصيل الإحصائيات</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="background: var(--bg-light);">
+          <th style="padding: 12px; text-align: right; border-bottom: 2px solid var(--border);">البند</th>
+          <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border);">القيمة</th>
+        </tr>
+      </thead>
+      <tbody id="statsTableBody">
+        <tr><td style="padding: 12px; border-bottom: 1px solid var(--border);">جاري التحميل...</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ========== المتغيرات العامة ==========
+let currentUser = null;
+let currentYear = null;
+let availableYears = [];
+
+// ========== عند التحميل ==========
+document.addEventListener('DOMContentLoaded', function() {
+  initStatsPage();
+});
+
+// ========== التهيئة ==========
+function initStatsPage() {
+  showLoading(true);
+  
+  // التحقق من المستخدم
+  currentUser = {
+    id: localStorage.getItem('zeios-user-id'),
+    role: localStorage.getItem('zeios-user-role')
+  };
+  
+  if (!currentUser.id) {
+    window.location.href = 'index.html';
+    return;
+  }
+  
+  // التحقق من الصلاحية
+  const permissions = JSON.parse(localStorage.getItem('zeios-user-permissions') || '{}');
+  const allowedPages = permissions.allowed_pages || [];
+  if (allowedPages.length > 0 && !allowedPages.includes('stats') && !allowedPages.includes('reports')) {
+    alert('❌ ليس لديك صلاحية لعرض الإحصائيات');
+    window.location.href = 'dashboard.html';
+    return;
+  }
+  
+  loadFiscalYears();
+  loadStats();
+  
+  showLoading(false);
+}
+
+// ========== تحميل السنوات ==========
+function loadFiscalYears() {
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (result && result.success && result.years) {
+        availableYears = result.years;
+        const select = document.getElementById('yearFilter');
+        select.innerHTML = '';
+        
+        availableYears.forEach(year => {
+          const opt = document.createElement('option');
+          opt.value = year;
+          opt.textContent = year;
+          select.appendChild(opt);
+        });
+        
+        currentYear = availableYears[0];
+        select.value = currentYear;
+      }
+    })
+    .getAvailableFiscalYears();
+}
+
+// ========== تحميل الإحصائيات ==========
+function loadStats() {
+  showLoading(true);
+  
+  const year = document.getElementById('yearFilter').value;
+  const reportType = document.getElementById('reportType').value;
+  currentYear = year;
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      showLoading(false);
+      
+      if (result && result.success && result.stats) {
+        displayStats(result.stats);
+      } else if (result && result.license_expired) {
+        alert('⚠️ ' + result.message);
+        window.location.href = 'index.html';
+      } else {
+        alert('❌ فشل تحميل الإحصائيات');
+      }
+    })
+    .withFailureHandler(function(error) {
+      showLoading(false);
+      alert('❌ خطأ: ' + error);
+    })
+    .getStatsPageData(year, currentUser.id);
+}
+
+// ========== عرض الإحصائيات ==========
+function displayStats(stats) {
+  document.getElementById('totalSales').textContent = formatNumber(stats.totalSales || 0);
+  document.getElementById('totalPurchases').textContent = formatNumber(stats.totalPurchases || 0);
+  document.getElementById('stockValue').textContent = formatNumber(stats.stockValue || 0);
+  
+  // حساب صافي الربح
+  const netProfit = (stats.totalSales || 0) - (stats.totalPurchases || 0);
+  document.getElementById('netProfit').textContent = formatNumber(netProfit);
+  
+  // تحديث الاتجاهات
+  document.getElementById('salesTrend').textContent = '↑ ' + (stats.salesTrend || 0) + '%';
+  document.getElementById('purchasesTrend').textContent = '↓ ' + (stats.purchasesTrend || 0) + '%';
+  document.getElementById('stockTrend').textContent = (stats.totalItems || 0) + ' صنف';
+  
+  // تحديث الجدول
+  const tbody = document.getElementById('statsTableBody');
+  tbody.innerHTML = `
+    <tr><td style="padding: 12px; border-bottom: 1px solid var(--border);">إجمالي المبيعات</td><td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: left;">${formatNumber(stats.totalSales || 0)}</td></tr>
+    <tr><td style="padding: 12px; border-bottom: 1px solid var(--border);">إجمالي المشتريات</td><td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: left;">${formatNumber(stats.totalPurchases || 0)}</td></tr>
+    <tr><td style="padding: 12px; border-bottom: 1px solid var(--border);">قيمة المخزون</td><td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: left;">${formatNumber(stats.stockValue || 0)}</td></tr>
+    <tr><td style="padding: 12px; border-bottom: 1px solid var(--border);">المستحقات</td><td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: left;">${formatNumber(stats.receivables || 0)}</td></tr>
+    <tr><td style="padding: 12px; border-bottom: 1px solid var(--border);">المدفوعات</td><td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: left;">${formatNumber(stats.payables || 0)}</td></tr>
+    <tr><td style="padding: 12px; border-bottom: 1px solid var(--border);">رصيد الخزينة</td><td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: left;">${formatNumber(stats.cashBalance || 0)}</td></tr>
+    <tr><td style="padding: 12px; border-bottom: 1px solid var(--border);">عدد العملاء</td><td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: left;">${stats.totalCustomers || 0}</td></tr>
+    <tr><td style="padding: 12px; border-bottom: 1px solid var(--border);">عدد الموردين</td><td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: left;">${stats.totalSuppliers || 0}</td></tr>
+  `;
+}
+
+// ========== تصدير Excel ==========
+function exportToExcel() {
+  alert('📥 سيتم تنزيل ملف Excel قريباً');
+  // يمكن إضافة كود التصدير الفعلي لاحقاً
+}
+
+// ========== تنسيق الأرقام ==========
+function formatNumber(value) {
+  const num = Number(value) || 0;
+  return num.toLocaleString('ar-SA', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+
+// ========== التحميل ==========
+function showLoading(show) {
+  const el = document.getElementById('globalLoading');
+  if (el) el.classList.toggle('show', show);
+}
+</script>
+</body>
+</html>
