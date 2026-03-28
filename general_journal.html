@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📒 قيود اليومية العامة - ZEIOS ERP</title>
+<style>
+:root {
+--bg: #f8f9fa; --card: #fff; --text: #202124; --text2: #5f6368;
+--border: #dadce0; --accent: #1a73e8; --shadow: 0 1px 3px rgba(0,0,0,0.1);
+--success: #34a853; --danger: #dc2626; --warning: #f59e0b;
+}
+[data-theme="dark"] {
+--bg: #121212; --card: #1e1e1e; --text: #e8eaed; --text2: #9aa0a6;
+--border: #3c4043; --shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Google Sans';
+background: var(--bg); color: var(--text); padding: 16px; direction: rtl;
+}
+.container { max-width: 1200px; margin: 0 auto; }
+.header {
+display: flex; justify-content: space-between; align-items: center;
+margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+}
+h1 { font-size: 22px; font-weight: 500; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+.btn {
+padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px;
+background: var(--card); color: var(--text); cursor: pointer;
+font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+}
+.btn:hover { background: var(--bg); border-color: var(--accent); }
+.btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+.btn-primary:hover { background: #0d5bb8; }
+.btn-success { background: var(--success); color: white; border: none; }
+.btn-success:hover { background: #2d8e49; }
+.btn-warning { background: var(--warning); color: white; border: none; }
+.btn-warning:hover { background: #d97706; }
+.btn-secondary { background: #6b7280; color: white; border: none; }
+.btn-outline { background: transparent; border-color: var(--accent); color: var(--accent); }
+.btn-outline:hover { background: rgba(26,115,232,0.1); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+/* أنماط السنة المالية */
+.fiscal-year-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+}
+.fiscal-year-badge {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    padding: 6px 14px;
+    background: #e8f4fd;
+    border-radius: 6px;
+}
+.fiscal-year-label {
+    font-size: 13px;
+    color: var(--text2);
+    font-weight: 500;
+}
+
+.card {
+background: var(--card); border: 1px solid var(--border);
+border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px;
+}
+.card-header {
+padding: 14px 18px; font-weight: 600; border-bottom: 1px solid var(--border);
+display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+}
+.card-body { padding: 20px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
+.form-group { margin-bottom: 16px; }
+label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; }
+label.required::after { content: " *"; color: var(--danger); }
+input, select, textarea {
+width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+border-radius: 8px; background: var(--card); color: var(--text);
+font-family: inherit; font-size: 14px; transition: border-color 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+outline: none; border-color: var(--accent);
+box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+}
+input[readonly] { background: #f9fafb; cursor: not-allowed; }
+.account-select-wrapper { position: relative; }
+.account-search {
+width: 100%; padding: 12px; border: 1px solid var(--border);
+border-radius: 8px; font-size: 14px;
+}
+.account-options {
+position: absolute; top: 100%; left: 0; right: 0; max-height: 250px; overflow-y: auto;
+background: white; border: 1px solid var(--border); border-radius: 8px;
+box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 1000; display: none;
+}
+.account-options.show { display: block; }
+.account-option {
+padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f0f0f0;
+transition: background 0.2s; font-size: 14px;
+}
+.account-option:hover { background: #eef2f6; }
+.account-option .account-name { font-weight: 500; display: block; }
+.account-option .account-no { font-size: 11px; color: var(--text2); display: block; margin-top: 4px; }
+.account-option .account-category {
+font-size: 11px; padding: 2px 8px; border-radius: 10px;
+background: #e0e7ff; color: #3730a3; margin-right: 8px;
+}
+.selected-account {
+padding: 12px; background: #f8fafd; border-radius: 8px; margin-top: 8px;
+display: flex; justify-content: space-between; align-items: center;
+border: 1px solid var(--border);
+}
+.selected-account .change-link {
+color: var(--accent); cursor: pointer; font-size: 12px; text-decoration: underline;
+}
+.balance-card {
+background: linear-gradient(145deg, var(--accent), #152a45);
+color: white; border-radius: 16px; padding: 20px; margin: 20px 0;
+display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;
+box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+.balance-item { text-align: center; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 12px; }
+.balance-label { font-size: 13px; opacity: 0.9; margin-bottom: 8px; }
+.balance-value { font-size: 24px; font-weight: 700; }
+.balance-value.positive { color: #86efac; }
+.balance-value.negative { color: #fca5a5; }
+.balance-note {
+grid-column: span 4; text-align: center; font-size: 12px; opacity: 0.7;
+margin-top: 8px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2);
+}
+.table-container { overflow-x: auto; width: 100%; }
+table { width: 100%; border-collapse: collapse; min-width: 900px; }
+th {
+background: var(--bg); text-align: right; padding: 14px 16px;
+font-weight: 600; font-size: 13px; color: var(--text2);
+border-bottom: 2px solid var(--border);
+}
+td {
+padding: 12px 16px; border-bottom: 1px solid var(--border);
+color: var(--text); text-align: right;
+}
+tr:hover { background: rgba(26,115,232,0.04); }
+.actions { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-sm-edit { background: var(--accent); color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+.btn-sm-delete { background: var(--danger); color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+.loading { text-align: center; padding: 40px; color: var(--text2); }
+.spinner {
+border: 3px solid var(--border); border-top-color: var(--accent);
+border-radius: 50%; width: 32px; height: 32px;
+animation: spin 1s linear infinite; margin: 0 auto 16px;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.search-box { display: flex; gap: 10px; margin-bottom: 16px; }
+.search-box input { flex: 1; }
+.badge {
+padding: 4px 10px; border-radius: 20px; font-size: 11px;
+font-weight: 500; display: inline-block; background: var(--accent); color: white;
+}
+.notification {
+position: fixed; top: 20px; left: 20px; padding: 14px 20px; border-radius: 10px;
+color: white; font-weight: 500; z-index: 9999; animation: slideIn 0.3s ease;
+max-width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none;
+}
+.notification.show { display: block; }
+.notification.success { background: var(--success); }
+.notification.error { background: var(--danger); }
+.notification.warning { background: var(--warning); color: #1e293b; }
+@keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.post-save-actions {
+display: none; margin-top: 20px; padding: 15px;
+background: #f0f9ff; border-radius: 12px; border: 1px solid #bae6fd; text-align: center;
+}
+.post-save-actions.show { display: block !important; }
+.post-save-actions h4 { margin: 0 0 12px 0; color: var(--accent); font-size: 16px; }
+.post-save-actions .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.whatsapp-btn { background: #25D366; color: white; border: none; }
+.whatsapp-btn:hover { background: #20bd5c; }
+.print-btn { background: #6366f1; color: white; border: none; }
+.print-btn:hover { background: #4f52d6; }
+.journal-line {
+background: #f9fafc; border-radius: 10px; padding: 12px; margin-bottom: 12px;
+border: 1px solid var(--border); display: grid; grid-template-columns: 2.5fr 1fr 1fr 40px; gap: 10px; align-items: center;
+}
+.journal-line.error { border: 2px solid var(--danger); background: #fef2f2; }
+.line-total { background: #eef2f6; font-weight: 600; color: var(--accent); text-align: left; padding: 10px; border-radius: 6px; }
+.remove-line { background: var(--danger); color: white; width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+.remove-line:hover { background: #b91c1c; }
+.totals-box {
+background: #f8fafd; border-radius: 12px; padding: 18px; border: 1px solid var(--border);
+}
+.totals-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); }
+.totals-row.total { font-weight: 700; font-size: 18px; color: var(--accent); padding-top: 12px; border-bottom: none; }
+.warning-text { color: var(--warning); font-weight: 600; }
+
+/* 🖨️ تصميم الطباعة المحسّن للطابعة الحرارية */
+@media print {
+    @page { 
+        size: 80mm 297mm; 
+        margin: 2mm; 
+    }
+    body * { 
+        visibility: hidden; 
+    }
+    #printArea, #printArea * { 
+        visibility: visible; 
+    }
+    #printArea {
+        position: absolute; 
+        left: 50%;
+        transform: translateX(-50%);
+        top: 0;
+        width: 76mm; 
+        padding: 3mm 4mm;
+        font-family: 'Courier New', monospace, 'Arial', sans-serif;
+        font-size: 10px; 
+        line-height: 1.3; 
+        color: #000;
+        text-align: right;
+        direction: rtl;
+        background: #fff;
+    }
+    .print-header { 
+        text-align: center; 
+        border-bottom: 2px solid #000; 
+        padding-bottom: 3mm; 
+        margin-bottom: 4mm; 
+    }
+    .print-header h3 { 
+        font-size: 14px; 
+        margin: 0 0 2mm 0; 
+        font-weight: 800;
+    }
+    .print-header p { 
+        font-size: 9px; 
+        margin: 1mm 0; 
+        font-weight: 600;
+    }
+    .print-row { 
+        display: flex; 
+        justify-content: space-between; 
+        margin-bottom: 2mm; 
+        font-size: 9px; 
+        font-weight: 500;
+    }
+    .print-divider {
+        border-top: 2px solid #000;
+        margin: 3mm 0;
+    }
+    .print-dotted {
+        border-top: 1px dotted #333;
+        margin: 2mm 0;
+    }
+    .print-table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        margin: 3mm 0; 
+        font-size: 9px;
+    }
+    .print-table th { 
+        padding: 1.5mm; 
+        text-align: center; 
+        font-weight: 700;
+        border-bottom: 2px solid #000;
+    }
+    .print-table td { 
+        padding: 1.5mm; 
+        text-align: center; 
+        border-bottom: 1px dotted #666;
+    }
+    .print-table td:first-child { text-align: right; }
+    .print-table td:last-child { text-align: left; }
+    .print-total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 1.5mm 0;
+        font-size: 9px;
+    }
+    .print-total-row.bold {
+        font-weight: 800;
+        font-size: 11px;
+        border-top: 2px solid #000;
+        padding-top: 2mm;
+        margin-top: 2mm;
+    }
+    .print-label {
+        font-weight: 600;
+        color: #333;
+    }
+    .print-value {
+        font-weight: 700;
+        color: #000;
+    }
+    .print-footer { 
+        border-top: 2px solid #000; 
+        padding-top: 3mm; 
+        margin-top: 4mm; 
+        text-align: center; 
+        font-size: 8px; 
+    }
+}
+
+/* ✅ زر الطباعة الثابت - يظهر دائمًا */
+.fixed-print-btn {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  z-index: 9999;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 14px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+}
+.fixed-print-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 25px rgba(0,0,0,0.4);
+  background: #0d5bb8;
+}
+.fixed-print-btn:active {
+  transform: translateY(-1px);
+}
+@media (max-width: 768px) {
+  .fixed-print-btn {
+    bottom: 15px;
+    right: 15px;
+    padding: 12px 20px;
+    font-size: 13px;
+  }
+}
+@media print {
+  .fixed-print-btn { display: none !important; }
+  .btn { display: none; }
+  body { padding: 10px; }
+}
+
+@media (max-width: 768px) {
+.balance-card { grid-template-columns: 1fr; }
+.balance-note { grid-column: span 1; }
+.form-grid { grid-template-columns: 1fr; }
+.header { flex-direction: column; align-items: stretch; }
+.journal-line { grid-template-columns: 1fr; }
+.fiscal-year-display { width: 100%; justify-content: space-between; }
+}
+</style>
+</head>
+<body>
+<!-- 🖨️ منطقة الطباعة المخفية -->
+<div id="printArea" style="display: none;"></div>
+
+<div class="container">
+<!-- الرأس -->
+<div class="header">
+<h1><span>📒</span> قيود اليومية العامة</h1>
+<div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+    <div class="fiscal-year-display">
+        <span class="fiscal-year-label">📅 السنة المالية:</span>
+        <span class="fiscal-year-badge" id="fiscalYearBadge">جاري التحميل...</span>
+    </div>
+    
+    <div style="display:flex;gap:10px;">
+        <button class="btn btn-success" onclick="backToDashboard()"><span>🏠</span> لوحة التحكم</button>
+        <button class="btn btn-primary" onclick="openNewForm()"><span>➕</span> قيد جديد</button>
+    </div>
+</div>
+</div>
+
+<!-- نموذج القيد -->
+<div id="formPanel" class="card" style="display: none;">
+<div class="card-header">
+<span>📝 تفاصيل قيد اليومية</span>
+</div>
+<div class="card-body">
+<form id="journalForm">
+<input type="hidden" id="journalId">
+<div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+<div class="form-group">
+<label>رقم القيد</label>
+<input type="text" id="journalNo" readonly placeholder="يولد تلقائياً">
+</div>
+<div class="form-group">
+<label class="required">التاريخ</label>
+<input type="date" id="journalDate" required>
+</div>
+</div>
+<div class="form-group">
+<label>الوصف</label>
+<textarea id="description" rows="2" placeholder="وصف القيد..."></textarea>
+</div>
+
+<!-- بنود القيد -->
+<h3 style="margin: 20px 0 15px; color: var(--accent);">📊 بنود القيد</h3>
+<div id="journalLines"></div>
+
+<div style="margin: 15px 0;">
+<button type="button" class="btn" style="border: 1px solid var(--accent); color: var(--accent);" onclick="addJournalLine()">➕ إضافة بند</button>
+</div>
+
+<!-- الإجماليات -->
+<div style="display: flex; gap: 20px; margin: 25px 0; flex-wrap: wrap;">
+<div class="totals-box" style="flex: 1;">
+<div class="totals-row"><span>إجمالي المدين:</span><span id="totalDebit" style="font-weight: 600; color: var(--accent);">0.00</span></div>
+<div class="totals-row"><span>إجمالي الدائن:</span><span id="totalCredit" style="font-weight: 600; color: var(--accent);">0.00</span></div>
+<div class="totals-row total"><span>الفرق:</span><span id="difference" style="color: var(--warning);">0.00</span></div>
+<div id="balanceWarning" class="warning-text" style="display: none; margin-top: 10px; text-align: center;">
+⚠️ القيد غير متوازن (المدين ≠ الدائن)
+</div>
+</div>
+</div>
+
+<!-- قسم الإجراءات بعد الحفظ -->
+<div id="postSaveActions" class="post-save-actions">
+<h4>✅ تم حفظ قيد اليومية بنجاح!</h4>
+<div class="btn-group">
+<button type="button" class="btn print-btn" onclick="printJournal()"><span>🖨️</span> طباعة</button>
+<button type="button" class="btn btn-secondary" onclick="closeForm()"><span>❌</span> إغلاق</button>
+<button type="button" class="btn btn-primary" onclick="openNewForm()"><span>➕</span> قيد جديد</button>
+</div>
+</div>
+
+<div style="display:flex;gap:12px;margin-top:24px;justify-content:flex-end;">
+<button type="button" class="btn btn-outline" onclick="closeForm()">إلغاء</button>
+<button type="submit" class="btn btn-primary" id="saveButton">💾 حفظ القيد</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- قائمة القيود -->
+<div class="card" id="listCard">
+<div class="card-header">
+<span>📋 قائمة قيود اليومية - <span id="fiscalYearTitle"></span></span>
+<span id="journalsCount" class="badge">0</span>
+</div>
+<div class="card-body">
+<div class="search-box">
+<input type="text" id="searchInput" placeholder="🔍 بحث في القيود..." oninput="filterJournals()">
+<button class="btn btn-primary" onclick="filterJournals()">بحث</button>
+</div>
+<div class="table-container">
+<div id="tableContainer">
+<div class="loading">
+<div class="spinner"></div>
+جاري تحميل القيود...
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ✅ زر الطباعة الثابت - يظهر دائمًا -->
+<button id="fixedPrintBtn" class="fixed-print-btn" onclick="printJournal()" title="طباعة القيد">
+<span>🖨️</span> طباعة القيد
+</button>
+
+<script>
+// ========== المتغيرات العامة ==========
+var isSaving = false;
+var dataLoaded = false;
+var isEditingMode = false;
+var isPostSaveMode = false;
+var isDirectEditMode = false;
+var accountsList = [];
+var lineCount = 0;
+var companyName = "";
+var companyPhone = "";
+var companyAddress = "";
+var selectedFiscalYear = null;
+
+// ========== التهيئة ==========
+window.onload = function() {
+    console.log('🔄 بدء تهيئة صفحة قيود اليومية...');
+    document.getElementById('journalDate').value = new Date().toISOString().split('T')[0];
+    
+    // التحقق من localStorage أولاً
+    checkLocalStorageForEdit();
+    
+    loadCompanySettings();
+    loadFiscalYearFromSession();
+    loadAccounts();
+    
+    // التحقق من طلب التعديل المباشر
+    setTimeout(checkDirectEditRequest, 500);
+};
+
+// ========== التحقق من localStorage ==========
+function checkLocalStorageForEdit() {
+    try {
+        var pendingEdit = localStorage.getItem('pendingEditRecord');
+        if (pendingEdit) {
+            var editData = JSON.parse(pendingEdit);
+            console.log('📝 تم العثور على طلب تعديل في localStorage:', editData);
+            
+            if (editData.page === 'general_journal') {
+                if (Date.now() - editData.timestamp < 60000) {
+                    console.log('✅ سيتم تطبيق التعديل من localStorage');
+                    
+                    var listCard = document.getElementById('listCard');
+                    if (listCard) listCard.style.display = 'none';
+                    
+                    var formPanel = document.getElementById('formPanel');
+                    if (formPanel) {
+                        formPanel.style.display = 'block';
+                        document.getElementById('saveButton').textContent = '💾 تحديث القيد';
+                    }
+                    
+                    isDirectEditMode = true;
+                    
+                    loadJournalForDirectEdit(editData.id, editData.fiscalYear);
+                    
+                    localStorage.removeItem('pendingEditRecord');
+                } else {
+                    console.log('⚠️ انتهت صلاحية طلب التعديل');
+                    localStorage.removeItem('pendingEditRecord');
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('❌ خطأ في قراءة localStorage:', e);
+        localStorage.removeItem('pendingEditRecord');
+    }
+}
+
+// ========== دوال السنة المالية ==========
+function loadFiscalYearFromSession() {
+    google.script.run
+        .withSuccessHandler(function(year) {
+            console.log('✅ السنة المالية من الجلسة:', year);
+            if (year && String(year).trim() !== '') {
+                selectedFiscalYear = String(year).trim();
+                var badge = document.getElementById('fiscalYearBadge');
+                var title = document.getElementById('fiscalYearTitle');
+                if (badge) badge.textContent = 'سنة ' + selectedFiscalYear;
+                if (title) title.textContent = 'سنة ' + selectedFiscalYear;
+                
+                if (!isDirectEditMode) {
+                    loadJournalsList(selectedFiscalYear);
+                }
+            } else {
+                var badge = document.getElementById('fiscalYearBadge');
+                if (badge) badge.textContent = 'غير محددة';
+                document.getElementById('tableContainer').innerHTML =
+                    '<div class="loading" style="color:var(--warning)">⚠️ لم يتم تحديد سنة مالية. يرجى اختيار السنة من لوحة التحكم أولاً.</div>';
+            }
+        })
+        .withFailureHandler(function(error) {
+            console.error('❌ خطأ في تحميل السنة المالية:', error);
+            var badge = document.getElementById('fiscalYearBadge');
+            if (badge) badge.textContent = 'خطأ';
+            document.getElementById('tableContainer').innerHTML =
+                '<div class="loading" style="color:var(--danger)">❌ فشل تحميل السنة المالية: ' + error + '</div>';
+        })
+        .getCurrentUserFiscalYear();
+}
+
+// ========== دوال التعديل المباشر ==========
+function checkDirectEditRequest() {
+    console.log('🔍 التحقق من طلب التعديل المباشر...');
+    
+    google.script.run
+        .withSuccessHandler(function(params) {
+            console.log('📦 استجابة getEditRequest:', params);
+            
+            if (params && params.editMode && params.recordId) {
+                console.log('🎯 وضع التعديل المباشر:', params);
+                
+                if (params.pageName !== 'general_journal') {
+                    console.log('⚠️ طلب تعديل لصفحة أخرى:', params.pageName);
+                    return;
+                }
+                
+                var listCard = document.getElementById('listCard');
+                if (listCard) {
+                    console.log('🔄 إخفاء قائمة القيود');
+                    listCard.style.display = 'none';
+                }
+                
+                var formPanel = document.getElementById('formPanel');
+                if (formPanel) {
+                    console.log('🔄 إظهار نموذج القيد');
+                    formPanel.style.display = 'block';
+                    document.getElementById('saveButton').textContent = '💾 تحديث القيد';
+                }
+                
+                isDirectEditMode = true;
+                
+                loadJournalForDirectEdit(params.recordId, params.fiscalYear);
+            } else {
+                console.log('ℹ️ لا يوجد طلب تعديل مباشر');
+            }
+        })
+        .withFailureHandler(function(error) {
+            console.log('❌ خطأ في checkDirectEditRequest:', error);
+        })
+        .getEditRequest('general_journal');
+}
+
+function loadJournalForDirectEdit(journalNo, fiscalYear) {
+    console.log('📥 تحميل القيد للتعديل المباشر:', journalNo, fiscalYear);
+    
+    showTableLoading(true);
+    
+    google.script.run
+        .withSuccessHandler(function(journal) {
+            showTableLoading(false);
+            
+            console.log('✅ بيانات القيد المستلمة:', journal);
+            
+            if (!journal || !journal.success) {
+                alert('❌ لم يتم العثور على القيد');
+                closeForm();
+                return;
+            }
+            
+            var data = journal.data;
+            
+            var formPanel = document.getElementById('formPanel');
+            if (formPanel) formPanel.style.display = 'block';
+            
+            document.getElementById('journalId').value = data.journal_no || '';
+            document.getElementById('journalNo').value = data.journal_no || '';
+            document.getElementById('journalDate').value = data.date || '';
+            document.getElementById('description').value = data.description || '';
+            
+            document.getElementById('journalLines').innerHTML = '';
+            lineCount = 0;
+            
+            if (data.lines && data.lines.length > 0) {
+                data.lines.forEach(function(line) {
+                    addJournalLine();
+                    var lastLine = document.querySelectorAll('.journal-line')[document.querySelectorAll('.journal-line').length-1];
+                    var accountSelect = lastLine.querySelector('.line-account');
+                    if (accountSelect) {
+                        accountSelect.value = line.account_id || '';
+                    }
+                    var debitInput = lastLine.querySelector('.line-debit');
+                    if (debitInput) {
+                        debitInput.value = line.debit || 0;
+                    }
+                    var creditInput = lastLine.querySelector('.line-credit');
+                    if (creditInput) {
+                        creditInput.value = line.credit || 0;
+                    }
+                    validateLine(accountSelect);
+                });
+            } else {
+                addJournalLine();
+            }
+            
+            calculateTotals();
+            console.log('✅ تم تحميل القيد للتعديل:', journalNo);
+        })
+        .withFailureHandler(function(error) {
+            showTableLoading(false);
+            console.error('❌ فشل تحميل القيد:', error);
+            alert('❌ فشل تحميل القيد: ' + error);
+            closeForm();
+        })
+        .getJournalEntryForDirectEdit(journalNo, fiscalYear);
+}
+
+function showTableLoading(show) {
+    var container = document.getElementById('tableContainer');
+    if (show) {
+        container.innerHTML = '<div class="loading"><div class="spinner"></div> جاري تحميل القيد...</div>';
+    }
+}
+
+function loadCompanySettings() {
+google.script.run
+.withSuccessHandler(function(data) {
+companyName = data?.name || "";
+companyPhone = data?.phone || "";
+companyAddress = data?.address || "";
+console.log("🏢 معلومات الشركة:", {name: companyName, phone: companyPhone, address: companyAddress});
+})
+.withFailureHandler(function() {
+console.warn("⚠️ فشل تحميل معلومات الشركة");
+})
+.getCompanySettings();
+}
+
+function backToDashboard() {
+try { google.script.host.close(); } catch(e) {}
+google.script.run.showDashboard?.();
+}
+
+// ========== تحميل الحسابات ==========
+function loadAccounts() {
+google.script.run
+.withSuccessHandler(function(accounts) {
+accountsList = accounts || [];
+console.log("✅ تم تحميل الحسابات:", accountsList.length);
+dataLoaded = true;
+})
+.withFailureHandler(function(err) {
+console.error('❌ فشل تحميل الحسابات:', err);
+showMessage('⚠️ فشل تحميل الحسابات', 'warning');
+})
+.getAllAccountsForJournal();
+}
+
+// ========== دوال بنود القيد ==========
+function addJournalLine() {
+lineCount++;
+var div = document.createElement('div');
+div.className = 'journal-line';
+div.id = 'journal-line-' + lineCount;
+var accountOptions = '<option value="">-- اختر الحساب --</option>';
+for (var i = 0; i < accountsList.length; i++) {
+accountOptions += '<option value="' + accountsList[i].id + '">' +
+accountsList[i].account_no + ' - ' + accountsList[i].account_name +
+'</option>';
+}
+div.innerHTML = `
+<div>
+<select class="line-account" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:6px;" onchange="validateLine(this)">
+${accountOptions}
+</select>
+</div>
+<div>
+<input type="number" class="line-debit" value="0" min="0" step="0.01" placeholder="مدين" oninput="updateLineTotal(this)">
+</div>
+<div>
+<input type="number" class="line-credit" value="0" min="0" step="0.01" placeholder="دائن" oninput="updateLineTotal(this)">
+</div>
+<div>
+<button type="button" class="remove-line" onclick="removeJournalLine(this)">−</button>
+</div>
+`;
+document.getElementById('journalLines').appendChild(div);
+}
+
+function removeJournalLine(btn) {
+if (document.querySelectorAll('.journal-line').length > 1) {
+btn.closest('.journal-line').remove();
+calculateTotals();
+} else {
+showMessage('⚠️ يجب وجود بند واحد على الأقل', 'warning');
+}
+}
+
+function validateLine(element) {
+var line = element.closest('.journal-line');
+var account = line.querySelector('.line-account').value;
+var debit = parseFloat(line.querySelector('.line-debit').value) || 0;
+var credit = parseFloat(line.querySelector('.line-credit').value) || 0;
+if (!account) {
+line.classList.add('error');
+} else if (debit === 0 && credit === 0) {
+line.classList.add('error');
+} else if (debit > 0 && credit > 0) {
+line.classList.add('error');
+showMessage('⚠️ لا يمكن أن يكون المدين والدائن معاً في نفس البند', 'warning');
+} else {
+line.classList.remove('error');
+}
+calculateTotals();
+}
+
+function updateLineTotal(input) {
+var line = input.closest('.journal-line');
+validateLine(line);
+}
+
+function calculateTotals() {
+var totalDebit = 0;
+var totalCredit = 0;
+document.querySelectorAll('.journal-line').forEach(function(line) {
+var debit = parseFloat(line.querySelector('.line-debit').value) || 0;
+var credit = parseFloat(line.querySelector('.line-credit').value) || 0;
+totalDebit += debit;
+totalCredit += credit;
+});
+var difference = Math.abs(totalDebit - totalCredit).toFixed(2);
+var balanceWarning = document.getElementById('balanceWarning');
+var saveButton = document.getElementById('saveButton');
+document.getElementById('totalDebit').textContent = totalDebit.toFixed(2);
+document.getElementById('totalCredit').textContent = totalCredit.toFixed(2);
+document.getElementById('difference').textContent = difference;
+if (Math.abs(totalDebit - totalCredit) > 0.01) {
+balanceWarning.style.display = 'block';
+if (saveButton) saveButton.disabled = true;
+} else {
+balanceWarning.style.display = 'none';
+if (saveButton) saveButton.disabled = false;
+}
+}
+
+// ========== فتح/إغلاق النموذج ==========
+function openNewForm() {
+    if (!selectedFiscalYear) {
+        alert('⚠️ لم يتم تحديد سنة مالية. يرجى اختيار السنة من لوحة التحكم أولاً.');
+        return;
+    }
+    
+isEditingMode = false;
+isPostSaveMode = false;
+isDirectEditMode = false;
+
+document.getElementById('formPanel').style.display = 'block';
+document.getElementById('journalForm').reset();
+document.getElementById('journalId').value = '';
+document.getElementById('journalNo').value = '';
+document.getElementById('journalDate').value = new Date().toISOString().split('T')[0];
+document.getElementById('description').value = '';
+document.getElementById('journalLines').innerHTML = '';
+document.getElementById('postSaveActions').classList.remove('show');
+document.getElementById('saveButton').style.display = 'inline-flex';
+document.getElementById('saveButton').disabled = false;
+lineCount = 0;
+addJournalLine();
+enableAllFields();
+setTimeout(function() {
+document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth' });
+}, 100);
+}
+
+function closeForm() {
+document.getElementById('formPanel').style.display = 'none';
+isEditingMode = false;
+isPostSaveMode = false;
+isDirectEditMode = false;
+
+var listCard = document.getElementById('listCard');
+if (listCard) listCard.style.display = 'block';
+
+if (selectedFiscalYear) {
+    loadJournalsList(selectedFiscalYear);
+}
+}
+
+function enableAllFields() {
+document.querySelectorAll('#journalForm input, #journalForm textarea, #journalForm select').forEach(function(el) {
+el.readOnly = false;
+el.disabled = false;
+el.style.background = 'var(--card)';
+});
+}
+
+// ========== قائمة القيود ==========
+function loadJournalsList(fiscalYear) {
+    var year = fiscalYear || selectedFiscalYear;
+    var container = document.getElementById('tableContainer');
+    
+    if (!year) {
+        container.innerHTML = '<div class="loading">⚠️ يرجى اختيار سنة مالية من لوحة التحكم أولاً</div>';
+        return;
+    }
+    
+    if (isDirectEditMode) {
+        console.log('📝 في وضع التعديل المباشر - لا يتم عرض قائمة القيود');
+        return;
+    }
+    
+container.innerHTML = '<div class="loading"><div class="spinner"></div> جاري التحميل...</div>';
+google.script.run
+.withSuccessHandler(function(journals) {
+if (!journals || journals.length === 0) {
+container.innerHTML = '<div class="loading">📭 لا توجد قيود لسنة ' + year + '</div>';
+document.getElementById('journalsCount').textContent = '0';
+return;
+}
+document.getElementById('journalsCount').textContent = journals.length;
+var html = '<table><thead><tr><th>رقم القيد</th><th>التاريخ</th><th>عدد البنود</th><th>إجمالي المدين</th><th>إجمالي الدائن</th><th>الإجراءات</th></tr></thead><tbody>';
+for (var i = 0; i < journals.length; i++) {
+var j = journals[i];
+html += '<tr>' +
+'<td><strong>' + escapeHtml(j.journal_no || '') + '</strong></td>' +
+'<td>' + escapeHtml(j.date || '') + '</td>' +
+'<td>' + (j.lines_count || 0) + '</td>' +
+'<td style="color:var(--accent); font-weight:600;">' + parseFloat(j.total_debit || 0).toFixed(2) + '</td>' +
+'<td style="color:var(--accent); font-weight:600;">' + parseFloat(j.total_credit || 0).toFixed(2) + '</td>' +
+'<td class="actions">' +
+'<button class="btn-sm btn-sm-edit" onclick="editJournal(\'' + escapeHtml(j.journal_no || '') + '\')">✏️</button>' +
+'<button class="btn-sm btn-sm-delete" onclick="deleteJournal(\'' + escapeHtml(j.journal_no || '') + '\')">🗑️</button>' +
+'</td></tr>';
+}
+html += '</tbody></table>';
+container.innerHTML = html;
+})
+.withFailureHandler(function() {
+container.innerHTML = '<div class="loading" style="color:var(--danger)">❌ فشل التحميل</div>';
+})
+.getJournalEntries(year);
+}
+
+function filterJournals() {
+var searchText = (document.getElementById('searchInput')?.value || '').toLowerCase();
+var rows = document.querySelectorAll('#tableContainer table tbody tr');
+var visibleCount = 0;
+for (var i = 0; i < rows.length; i++) {
+var match = false;
+var cells = rows[i].querySelectorAll('td');
+for (var j = 0; j < cells.length - 1; j++) {
+if (cells[j].textContent.toLowerCase().indexOf(searchText) > -1) {
+match = true;
+break;
+}
+}
+rows[i].style.display = match ? '' : 'none';
+if (match) visibleCount++;
+}
+document.getElementById('journalsCount').textContent = '(' + visibleCount + '/' + rows.length + ')';
+}
+
+// ========== حفظ القيد ==========
+document.getElementById('journalForm')?.addEventListener('submit', function(e) {
+e.preventDefault();
+if (isSaving) {
+showMessage('⏳ جاري الحفظ...', 'info');
+return;
+}
+if (!dataLoaded) {
+showMessage('⏳ جاري تحميل البيانات...', 'warning');
+return;
+}
+if (!selectedFiscalYear) {
+    showMessage('⚠️ لم يتم تحديد سنة مالية. يرجى اختيار السنة من لوحة التحكم أولاً.', 'warning');
+    return;
+}
+var date = document.getElementById('journalDate').value;
+if (!date) { showMessage('⚠️ التاريخ مطلوب', 'warning'); return; }
+var lines = [];
+var hasError = false;
+document.querySelectorAll('.journal-line').forEach(function(line) {
+line.classList.remove('error');
+var account = line.querySelector('.line-account').value;
+var debit = parseFloat(line.querySelector('.line-debit').value) || 0;
+var credit = parseFloat(line.querySelector('.line-credit').value) || 0;
+if (!account) {
+line.classList.add('error');
+hasError = true;
+return;
+}
+if (debit === 0 && credit === 0) {
+line.classList.add('error');
+hasError = true;
+return;
+}
+if (debit > 0 && credit > 0) {
+line.classList.add('error');
+hasError = true;
+return;
+}
+lines.push({
+account_id: account,
+debit: debit,
+credit: credit
+});
+});
+if (hasError || lines.length === 0) {
+showMessage('⚠️ يوجد أخطاء في بنود القيد', 'warning');
+return;
+}
+var totalDebit = lines.reduce((sum, line) => sum + line.debit, 0);
+var totalCredit = lines.reduce((sum, line) => sum + line.credit, 0);
+if (Math.abs(totalDebit - totalCredit) > 0.01) {
+showMessage('⚠️ القيد غير متوازن (المدين ≠ الدائن)', 'warning');
+return;
+}
+var formData = {
+id: document.getElementById('journalId')?.value || null,
+journal_no: document.getElementById('journalNo')?.value || null,
+date: date,
+description: document.getElementById('description')?.value.trim() || '',
+lines: lines
+};
+console.log("📝 بدء حفظ القيد:", formData);
+isSaving = true;
+var saveButton = document.getElementById('saveButton');
+var originalText = saveButton.textContent;
+saveButton.textContent = '⏳ جاري الحفظ...';
+saveButton.disabled = true;
+google.script.run
+.withSuccessHandler(function(response) {
+isSaving = false;
+saveButton.textContent = originalText;
+saveButton.disabled = false;
+console.log("📥 استجابة الحفظ:", response);
+if (response?.success) {
+showMessage('✅ ' + (response.message || 'تم الحفظ'), 'success');
+if (response.journal_no && !document.getElementById('journalId').value) {
+document.getElementById('journalNo').value = response.journal_no;
+}
+var postSave = document.getElementById('postSaveActions');
+if (postSave) {
+postSave.classList.add('show');
+}
+document.getElementById('saveButton').style.display = 'none';
+document.querySelectorAll('#journalForm input, #journalForm textarea, #journalForm select').forEach(function(el) {
+el.readOnly = true;
+el.disabled = true;
+el.style.background = '#f9fafb';
+});
+isPostSaveMode = true;
+} else {
+showMessage('❌ ' + (response?.message || 'فشل الحفظ'), 'error');
+}
+})
+.withFailureHandler(function(error) {
+isSaving = false;
+saveButton.textContent = originalText;
+saveButton.disabled = false;
+console.error("❌ خطأ في الحفظ:", error);
+showMessage('❌ خطأ: ' + error, 'error');
+})
+.saveJournalEntry(formData, selectedFiscalYear);
+});
+
+// ========== تعديل قيد (من القائمة) ==========
+function editJournal(journalNo) {
+if (!dataLoaded) {
+showMessage('⏳ جاري تحميل البيانات...', 'warning');
+return;
+}
+if (!selectedFiscalYear) {
+    showMessage('⚠️ لم يتم تحديد سنة مالية', 'warning');
+    return;
+}
+isEditingMode = true;
+isDirectEditMode = true;
+
+google.script.run
+.withSuccessHandler(function(journal) {
+if (!journal) {
+showMessage('❌ لم يتم العثور على القيد', 'error');
+isEditingMode = false;
+isDirectEditMode = false;
+return;
+}
+console.log("📝 تحميل بيانات القيد:", journal);
+document.getElementById('formPanel').style.display = 'block';
+document.getElementById('journalId').value = journal.journal_no || '';
+document.getElementById('journalNo').value = journal.journal_no || '';
+document.getElementById('journalDate').value = journal.date || '';
+document.getElementById('description').value = journal.description || '';
+document.getElementById('journalLines').innerHTML = '';
+lineCount = 0;
+if (journal.lines && journal.lines.length > 0) {
+journal.lines.forEach(function(line) {
+addJournalLine();
+var lastLine = document.querySelectorAll('.journal-line')[document.querySelectorAll('.journal-line').length-1];
+var accountSelect = lastLine.querySelector('.line-account');
+if (accountSelect) {
+accountSelect.value = line.account_id || '';
+}
+var debitInput = lastLine.querySelector('.line-debit');
+if (debitInput) {
+debitInput.value = line.debit || 0;
+}
+var creditInput = lastLine.querySelector('.line-credit');
+if (creditInput) {
+creditInput.value = line.credit || 0;
+}
+validateLine(accountSelect);
+});
+} else {
+addJournalLine();
+}
+var postSave = document.getElementById('postSaveActions');
+if (postSave) postSave.classList.remove('show');
+document.getElementById('saveButton').style.display = 'inline-flex';
+document.getElementById('saveButton').disabled = false;
+enableAllFields();
+calculateTotals();
+setTimeout(function() {
+document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth' });
+}, 300);
+})
+.withFailureHandler(function(error) {
+console.error("❌ فشل تحميل القيد:", error);
+showMessage('❌ فشل التحميل: ' + error, 'error');
+isEditingMode = false;
+isDirectEditMode = false;
+})
+.getJournalEntryById(journalNo, selectedFiscalYear);
+}
+
+// ========== حذف قيد ==========
+function deleteJournal(journalNo) {
+if (!confirm('⚠️ تأكيد حذف هذا القيد؟\nسيتم حذف جميع البنود المرتبطة به.')) return;
+if (!selectedFiscalYear) {
+    showMessage('⚠️ لم يتم تحديد سنة مالية', 'warning');
+    return;
+}
+google.script.run
+.withSuccessHandler(function(response) {
+if (response?.success) {
+showMessage('✅ ' + response.message, 'success');
+loadJournalsList(selectedFiscalYear);
+} else {
+showMessage('❌ ' + (response?.message || 'فشل الحذف'), 'error');
+}
+})
+.withFailureHandler(function(error) {
+console.error("❌ فشل الحذف:", error);
+showMessage('❌ خطأ: ' + error, 'error');
+})
+.deleteJournalEntry(journalNo, selectedFiscalYear);
+}
+
+// ========== طباعة القيد ==========
+function printJournal() {
+console.log("🖨️ بدء طباعة القيد");
+var journalNo = document.getElementById('journalNo')?.value || 'غير محدد';
+var date = document.getElementById('journalDate')?.value || '';
+var description = document.getElementById('description')?.value || '';
+var totalDebit = document.getElementById('totalDebit')?.textContent || '0.00';
+var totalCredit = document.getElementById('totalCredit')?.textContent || '0.00';
+
+var linesHtml = '';
+document.querySelectorAll('.journal-line').forEach(function(line, index) {
+var accountSelect = line.querySelector('.line-account');
+var accountName = accountSelect && accountSelect.selectedIndex > 0 ?
+accountSelect.options[accountSelect.selectedIndex].text : 'غير محدد';
+var debit = line.querySelector('.line-debit')?.value || '0';
+var credit = line.querySelector('.line-credit')?.value || '0';
+linesHtml += `
+<tr>
+<td>${index + 1}</td>
+<td style="text-align:right">${accountName}</td>
+<td style="text-align:left">${parseFloat(debit).toFixed(2)}</td>
+<td style="text-align:left">${parseFloat(credit).toFixed(2)}</td>
+</tr>
+`;
+});
+
+var printHtml = '<div class="print-header">';
+printHtml += '<h3 style="font-size:14px; font-weight:800;">ZEIOS ERP</h3>';
+printHtml += '<p style="font-size:10px; font-weight:600;">قيد يومية</p>';
+printHtml += '</div>';
+
+printHtml += '<div class="print-row"><span class="print-label">رقم القيد:</span><span class="print-value">' + journalNo + '</span></div>';
+printHtml += '<div class="print-row"><span class="print-label">التاريخ:</span><span class="print-value">' + date + '</span></div>';
+if (description) {
+printHtml += '<div class="print-row"><span class="print-label">الوصف:</span><span class="print-value">' + description + '</span></div>';
+}
+
+printHtml += '<div class="print-dotted"></div>';
+
+printHtml += '<table class="print-table">';
+printHtml += '<thead><tr><th>#</th><th>الحساب</th><th>مدين</th><th>دائن</th></tr></thead>';
+printHtml += '<tbody>' + linesHtml + '</tbody>';
+printHtml += '</table>';
+
+printHtml += '<div class="print-dotted"></div>';
+
+printHtml += '<div class="print-total-row"><span class="print-label">إجمالي المدين:</span><span class="print-value">' + totalDebit + '</span></div>';
+printHtml += '<div class="print-total-row"><span class="print-label">إجمالي الدائن:</span><span class="print-value">' + totalCredit + '</span></div>';
+printHtml += '<div class="print-total-row bold"><span class="print-label">الفرق:</span><span class="print-value">0.00</span></div>';
+
+printHtml += '<div class="print-footer">';
+printHtml += '<p style="font-weight:600;">شكراً لتعاملكم</p>';
+printHtml += '<p>ZEIOS ERP</p>';
+printHtml += '<p>' + new Date().toLocaleDateString('ar-EG') + ' ' + new Date().toLocaleTimeString('ar-EG') + '</p>';
+printHtml += '</div>';
+
+var printArea = document.getElementById('printArea');
+printArea.innerHTML = printHtml;
+printArea.style.display = 'block';
+window.print();
+setTimeout(function() { printArea.style.display = 'none'; }, 1000);
+}
+
+// ========== دوال مساعدة ==========
+function showMessage(msg, type) {
+var alert = document.createElement('div');
+alert.className = 'notification ' + type;
+alert.textContent = msg;
+document.body.appendChild(alert);
+setTimeout(function() {
+alert.classList.add('show');
+}, 10);
+setTimeout(function() {
+alert.classList.remove('show');
+setTimeout(function() {
+alert.remove();
+}, 300);
+}, 4000);
+}
+
+function escapeHtml(text) {
+if (!text) return '';
+return String(text)
+.replace(/&/g, '&amp;')
+.replace(/</g, '&lt;')
+.replace(/>/g, '&gt;')
+.replace(/"/g, '&quot;')
+.replace(/'/g, '&#039;');
+}
+
+function showLoading(show) {
+    var container = document.getElementById('tableContainer');
+    if (show) {
+        container.innerHTML = '<div class="loading"><div class="spinner"></div> جاري التحميل...</div>';
+    }
+}
+</script>
+</body>
+</html>
