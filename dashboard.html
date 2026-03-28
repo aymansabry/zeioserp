@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏢 ZEIOS ERP - نظام إدارة الأعمال</title>
+<style>
+:root {
+  --primary: #1a73e8; --primary-dark: #0d47a1; --primary-light: #e6f0ff;
+  --secondary: #34a853; --danger: #dc2626; --warning: #f59e0b;
+  --bg-light: #f8fafc; --bg-card: #ffffff; --text-primary: #1e293b;
+  --text-secondary: #64748b; --border: #e2e8f0; --shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg-light); color: var(--text-primary);
+  min-height: 100vh; direction: rtl;
+}
+
+/* ========== شاشة الدخول ========== */
+#loginSection {
+  display: none; min-height: 100vh;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  align-items: center; justify-content: center; padding: 20px;
+}
+#loginSection.show { display: flex; }
+.login-container {
+  background: var(--bg-card); border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  width: 100%; max-width: 450px; padding: 40px; animation: slideUp 0.4s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.login-header { text-align: center; margin-bottom: 30px; }
+.login-logo { font-size: 64px; margin-bottom: 15px; }
+.login-title { font-size: 24px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+.login-subtitle { font-size: 14px; color: var(--text-secondary); }
+.form-group { margin-bottom: 20px; }
+.form-group label {
+  display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-primary); font-size: 14px;
+}
+.form-group input {
+  width: 100%; padding: 14px 16px; border: 2px solid var(--border); border-radius: 10px;
+  font-size: 15px; transition: all 0.3s; background: var(--bg-light);
+}
+.form-group input:focus {
+  outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
+  background: var(--bg-card);
+}
+.password-wrapper { position: relative; }
+.password-toggle {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text-secondary);
+}
+.login-btn {
+  width: 100%; padding: 16px; background: var(--primary); color: white; border: none;
+  border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;
+  transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.login-btn:hover:not(:disabled) {
+  background: var(--primary-dark); transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(26,115,232,0.3);
+}
+.login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.error-message {
+  background: #fee2e2; color: #991b1b; padding: 14px 18px; border-radius: 10px;
+  margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 14px;
+}
+.error-message.show { display: flex; }
+.license-banner {
+  background: linear-gradient(135deg, #f8d7da, #f5c6cb); color: #721c24;
+  padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center;
+  border: 2px solid #f5c6cb; animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  50% { box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+}
+.license-banner h3 { margin-bottom: 10px; font-size: 18px; }
+.license-btn {
+  display: inline-block; padding: 12px 24px; background: #dc3545; color: white;
+  text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s;
+}
+.remember-me { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+.remember-me input { width: 18px; height: 18px; cursor: pointer; }
+.remember-me label { cursor: pointer; font-size: 14px; color: var(--text-secondary); }
+.login-footer {
+  text-align: center; margin-top: 30px; padding-top: 20px;
+  border-top: 1px solid var(--border); font-size: 12px; color: var(--text-secondary);
+}
+
+/* ========== الداشبورد ========== */
+#dashboardSection { display: none; padding: 20px; }
+#dashboardSection.show { display: block; }
+.container { max-width: 1400px; margin: 0 auto; }
+.header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white; padding: 24px; border-radius: 16px; margin-bottom: 24px;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+}
+.company-name { font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.user-info { display: flex; align-items: center; gap: 15px; }
+.user-badge {
+  background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px;
+  font-size: 13px; display: flex; align-items: center; gap: 8px;
+}
+.btn {
+  padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer;
+  font-size: 14px; font-weight: 600; transition: all 0.3s; display: inline-flex;
+  align-items: center; gap: 6px;
+}
+.btn-light { background: rgba(255,255,255,0.2); color: white; }
+.btn-light:hover { background: rgba(255,255,255,0.3); }
+.btn-danger { background: var(--danger); color: white; }
+.btn-danger:hover { background: #b91c1c; }
+.modules-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 16px; margin-bottom: 30px;
+}
+.module-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 22px 16px; text-align: center; cursor: pointer; transition: all 0.3s;
+}
+.module-card:hover:not(.disabled) {
+  transform: translateY(-3px); border-color: var(--primary);
+  box-shadow: 0 8px 20px rgba(26,115,232,0.15);
+}
+.module-card.disabled {
+  opacity: 0.5; cursor: not-allowed; background: var(--bg-light);
+  filter: grayscale(0.5); pointer-events: none;
+}
+.module-icon { font-size: 36px; margin-bottom: 14px; }
+.module-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.module-desc { font-size: 11px; color: var(--text-secondary); }
+.section-title {
+  font-size: 20px; font-weight: 600; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px; padding-right: 8px;
+  border-right: 4px solid var(--primary);
+}
+.loading {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3); display: none; align-items: center;
+  justify-content: center; z-index: 9999;
+}
+.loading.show { display: flex; }
+.spinner {
+  width: 40px; height: 40px; border: 3px solid var(--border);
+  border-top-color: var(--primary); border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.fiscal-year-selector {
+  display: flex; align-items: center; gap: 12px; margin-top: 15px; flex-wrap: wrap;
+}
+.year-select {
+  padding: 8px 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 8px;
+  background: rgba(255,255,255,0.95); color: var(--text-primary); cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<!-- ========== مؤشر التحميل العالمي ========== -->
+<div class="loading" id="globalLoading"><div class="spinner"></div></div>
+
+<!-- ========== قسم تسجيل الدخول ========== -->
+<div id="loginSection">
+  <div class="login-container">
+    <div class="login-header">
+      <div class="login-logo">🏢</div>
+      <h1 class="login-title">ZEIOS ERP</h1>
+      <p class="login-subtitle">نظام إدارة الأعمال المتكامل</p>
+    </div>
+
+    <!-- ⚠️ رسالة الترخيص منتهي -->
+    <div id="licenseBanner" class="license-banner" style="display: none;">
+      <h3>⚠️ الترخيص منتهي</h3>
+      <p id="licenseMessage">عذراً، ترخيصك الحالي منتهي الصلاحية</p>
+      <a href="#" class="license-btn" id="renewBtn" onclick="openRenewPage()">🔄 تجديد الترخيص الآن</a>
+    </div>
+
+    <!-- ❌ رسالة الخطأ -->
+    <div id="errorMessage" class="error-message">
+      <span>❌</span>
+      <span id="errorText"></span>
+    </div>
+
+    <!-- نموذج الدخول -->
+    <form id="loginForm" onsubmit="handleLogin(event)" style="display: none;">
+      <div class="form-group">
+        <label for="username">👤 اسم المستخدم</label>
+        <input type="text" id="username" placeholder="أدخل اسم المستخدم" required autocomplete="username">
+      </div>
+
+      <div class="form-group">
+        <label for="password">🔑 كلمة المرور</label>
+        <div class="password-wrapper">
+          <input type="password" id="password" placeholder="أدخل كلمة المرور" required autocomplete="current-password">
+          <button type="button" class="password-toggle" onclick="togglePassword()">👁️</button>
+        </div>
+      </div>
+
+      <div class="remember-me">
+        <input type="checkbox" id="rememberMe">
+        <label for="rememberMe">تذكرني</label>
+      </div>
+
+      <button type="submit" class="login-btn" id="loginBtn">
+        <span>🔐</span>
+        <span id="btnText">تسجيل الدخول</span>
+      </button>
+
+      <div style="text-align: center; margin-top: 15px;">
+        <a href="#" onclick="showMessage('تواصل مع الدعم لإعادة تعيين كلمة المرور', 'info')" 
+           style="color: var(--primary); text-decoration: none; font-size: 13px;">نسيت كلمة المرور؟</a>
+      </div>
+    </form>
+
+    <div class="login-footer">
+      <p>© 2026 ZEIOS ERP - جميع الحقوق محفوظة</p>
+      <p style="margin-top: 8px;">📞 الدعم: 00201205951462 | 📧 zeioszeios0@gmail.com</p>
+    </div>
+  </div>
+</div>
+
+<!-- ========== قسم الداشبورد ========== -->
+<div id="dashboardSection">
+  <div class="container">
+    <!-- الرأس -->
+    <div class="header">
+      <div>
+        <div class="company-name">🏢 <span id="companyName">ZEIOS ERP</span></div>
+        <div class="fiscal-year-selector">
+          <span>📅 السنة:</span>
+          <select class="year-select" id="fiscalYearSelect" onchange="changeFiscalYear()"></select>
+        </div>
+      </div>
+      <div class="user-info">
+        <div class="user-badge">
+          <span>👤</span>
+          <span id="userName">مستخدم</span>
+        </div>
+        <button class="btn btn-light" onclick="openStatsPage()">📈 الإحصائيات</button>
+        <button class="btn btn-light" onclick="openPOSPage()">🛒 نقطة البيع</button>
+        <button class="btn btn-danger" onclick="logout()">🚪 خروج</button>
+      </div>
+    </div>
+
+    <!-- ✅ تم إزالة بلوك مؤشرات الأداء (KPI) حسب الطلب -->
+
+    <!-- قاعدة البيانات -->
+    <div class="section-title">🗄️ قاعدة البيانات</div>
+    <div class="modules-grid">
+      <div class="module-card" onclick="openPage('items')"><div class="module-icon">📦</div><div class="module-title">الأصناف</div><div class="module-desc">إدارة المنتجات</div></div>
+      <div class="module-card" onclick="openPage('categories')"><div class="module-icon">🏷️</div><div class="module-title">التصنيفات</div><div class="module-desc">تصنيف الأصناف</div></div>
+      <div class="module-card" onclick="openPage('warehouses')"><div class="module-icon">🏢</div><div class="module-title">المستودعات</div><div class="module-desc">إدارة المخازن</div></div>
+      <div class="module-card" onclick="openPage('accounts')"><div class="module-icon">📊</div><div class="module-title">شجرة الحسابات</div><div class="module-desc">دليل الحسابات</div></div>
+      <div class="module-card" onclick="openPage('colors')"><div class="module-icon">🎨</div><div class="module-title">الألوان</div><div class="module-desc">ألوان المنتجات</div></div>
+    </div>
+
+    <!-- المعاملات -->
+    <div class="section-title">🔄 المعاملات</div>
+    <div class="modules-grid" id="transactionsGrid">
+      <div class="module-card" data-page="purchases" onclick="openPage('purchases')"><div class="module-icon">🛒</div><div class="module-title">المشتريات</div><div class="module-desc">فواتير الشراء</div></div>
+      <div class="module-card" data-page="sales" onclick="openPage('sales')"><div class="module-icon">💰</div><div class="module-title">المبيعات</div><div class="module-desc">فواتير البيع</div></div>
+      <div class="module-card" data-page="customer_orders" onclick="openPage('customer_orders')"><div class="module-icon">📋</div><div class="module-title">طلبات العملاء</div><div class="module-desc">إدارة الطلبات</div></div>
+      <div class="module-card" data-page="payments" onclick="openPage('payments')"><div class="module-icon">💳</div><div class="module-title">المدفوعات</div><div class="module-desc">دفعات للموردين</div></div>
+      <div class="module-card" data-page="receipts" onclick="openPage('receipts')"><div class="module-icon">📥</div><div class="module-title">المقبوضات</div><div class="module-desc">مدفوعات العملاء</div></div>
+    </div>
+
+    <!-- التقارير -->
+    <div class="section-title">📈 التقارير</div>
+    <div class="modules-grid">
+      <div class="module-card" onclick="openReport('stock_movements')"><div class="module-icon">📦</div><div class="module-title">حركة المخزون</div><div class="module-desc">تفاصيل الحركات</div></div>
+      <div class="module-card" onclick="openReport('account_statement')"><div class="module-icon">📄</div><div class="module-title">كشف حساب</div><div class="module-desc">حركات العملاء</div></div>
+      <div class="module-card" onclick="openReport('trial_balance')"><div class="module-icon">⚖️</div><div class="module-title">ميزان المراجعة</div><div class="module-desc">أرصدة الحسابات</div></div>
+      <div class="module-card" onclick="openReport('profit_loss')"><div class="module-icon">📊</div><div class="module-title">قائمة الدخل</div><div class="module-desc">الأرباح والخسائر</div></div>
+    </div>
+
+    <!-- الإعدادات -->
+    <div class="section-title">⚙️ الإعدادات</div>
+    <div class="modules-grid">
+      <div class="module-card" onclick="openSettings()"><div class="module-icon">🔧</div><div class="module-title">إعدادات النظام</div><div class="module-desc">تهيئة النظام</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== كود الجافاسكربت ========== -->
+<script>
+// ========== المتغيرات العامة ==========
+let currentUser = null;
+let currentYear = null;
+let availableYears = [];
+let isLoading = false;
+let licenseStatus = null;
+
+// ========== عند تحميل الصفحة ==========
+document.addEventListener('DOMContentLoaded', function() {
+  initApp();
+});
+
+// ========== التهيئة الرئيسية ==========
+function initApp() {
+  showLoading(true, 'جاري التحميل...');
+  
+  // التحقق من الترخيص أولاً (عند فتح التطبيق فقط)
+  google.script.run
+    .withSuccessHandler(function(licenseResult) {
+      licenseStatus = licenseResult;
+      
+      if (!licenseResult || licenseResult.valid !== true) {
+        showLoading(false);
+        showLicenseExpired(licenseResult);
+        return;
+      }
+      checkUserSession();
+    })
+    .withFailureHandler(function(error) {
+      showLoading(false);
+      checkUserSession();
+    })
+    .validateLicenseForDashboardLibrary();
+}
+
+// ========== التحقق من جلسة المستخدم ==========
+function checkUserSession() {
+  const userId = localStorage.getItem('zeios-user-id');
+  const username = localStorage.getItem('zeios-username');
+  const userRole = localStorage.getItem('zeios-user-role');
+  const userPermissions = localStorage.getItem('zeios-user-permissions');
+  
+  if (userId && username) {
+    currentUser = {
+      id: userId,
+      username: username,
+      role: userRole || 'viewer',
+      permissions: JSON.parse(userPermissions || '{}')
+    };
+    showDashboard();
+  } else {
+    showLoading(false);
+    showLoginScreen();
+  }
+}
+
+// ========== عرض شاشة الدخول ==========
+function showLoginScreen() {
+  document.getElementById('loginSection').classList.add('show');
+  document.getElementById('loginForm').style.display = 'block';
+  document.getElementById('username').focus();
+  
+  const savedUser = localStorage.getItem('zeios-remember-user');
+  if (savedUser) {
+    document.getElementById('username').value = savedUser;
+    document.getElementById('rememberMe').checked = true;
+  }
+}
+
+// ========== عرض شاشة الترخيص منتهي ==========
+function showLicenseExpired(result) {
+  document.getElementById('loginSection').classList.add('show');
+  document.getElementById('licenseBanner').style.display = 'block';
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('licenseMessage').textContent = result?.message || 'عذراً، ترخيصك الحالي منتهي الصلاحية';
+}
+
+// ========== عرض الداشبورد ==========
+function showDashboard() {
+  document.getElementById('loginSection').classList.remove('show');
+  document.getElementById('dashboardSection').classList.add('show');
+  
+  document.getElementById('userName').textContent = currentUser.username || 'مستخدم';
+  
+  loadCompanyInfo();
+  loadFiscalYears();
+  showLoading(false);
+}
+
+// ========== معالجة تسجيل الدخول ==========
+function handleLogin(event) {
+  event.preventDefault();
+  if (isLoading) return;
+  
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  
+  if (!username || !password) {
+    showError('يرجى إدخال اسم المستخدم وكلمة المرور');
+    return;
+  }
+  
+  showLoading(true, 'جاري تسجيل الدخول...');
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      showLoading(false);
+      if (result && result.success) {
+        handleSuccessfulLogin(result);
+      } else {
+        showError(result?.message || 'فشل تسجيل الدخول');
+      }
+    })
+    .withFailureHandler(function(error) {
+      showLoading(false);
+      showError('خطأ في الاتصال: ' + error);
+    })
+    .loginUser(username, password);
+}
+
+// ========== معالجة تسجيل الدخول الناجح ==========
+function handleSuccessfulLogin(result) {
+  const user = result.user || result.data;
+  
+  localStorage.setItem('zeios-user-id', user.id);
+  localStorage.setItem('zeios-username', user.username);
+  localStorage.setItem('zeios-user-role', user.role || 'viewer');
+  localStorage.setItem('zeios-user-permissions', JSON.stringify(user.permissions || {}));
+  
+  if (document.getElementById('rememberMe').checked) {
+    localStorage.setItem('zeios-remember-user', document.getElementById('username').value);
+  } else {
+    localStorage.removeItem('zeios-remember-user');
+  }
+  
+  currentUser = {
+    id: user.id,
+    username: user.username,
+    role: user.role || 'viewer',
+    permissions: user.permissions || {}
+  };
+  
+  showMessage('✅ تم تسجيل الدخول بنجاح', 'success');
+  setTimeout(function() { showDashboard(); }, 1000);
+}
+
+// ========== تسجيل الخروج ==========
+function logout() {
+  if (!confirm('هل أنت متأكد من تسجيل الخروج؟')) return;
+  
+  showLoading(true, 'جاري تسجيل الخروج...');
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      showLoading(false);
+      
+      localStorage.removeItem('zeios-user-id');
+      localStorage.removeItem('zeios-username');
+      localStorage.removeItem('zeios-user-role');
+      localStorage.removeItem('zeios-user-permissions');
+      localStorage.removeItem('zeios-remember-user');
+      
+      currentUser = null;
+      document.getElementById('dashboardSection').classList.remove('show');
+      document.getElementById('loginSection').classList.add('show');
+      document.getElementById('loginForm').style.display = 'block';
+      document.getElementById('licenseBanner').style.display = 'none';
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+      document.getElementById('rememberMe').checked = false;
+      
+      showMessage('✅ تم تسجيل الخروج بنجاح', 'success');
+    })
+    .logoutUser(currentUser?.id);
+}
+
+// ========== تحميل معلومات الشركة ==========
+function loadCompanyInfo() {
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (result && result.success && result.company) {
+        document.getElementById('companyName').textContent = result.company.name || 'ZEIOS ERP';
+      }
+    })
+    .getCompanyInfo();
+}
+
+// ========== تحميل السنوات المالية ==========
+function loadFiscalYears() {
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (result && result.success && result.years) {
+        availableYears = result.years;
+        const select = document.getElementById('fiscalYearSelect');
+        select.innerHTML = '';
+        
+        availableYears.forEach(year => {
+          const opt = document.createElement('option');
+          opt.value = year;
+          opt.textContent = year;
+          select.appendChild(opt);
+        });
+        
+        currentYear = availableYears[0];
+        select.value = currentYear;
+      }
+    })
+    .getAvailableFiscalYears();
+}
+
+// ========== تغيير السنة المالية ==========
+function changeFiscalYear() {
+  const select = document.getElementById('fiscalYearSelect');
+  currentYear = select.value;
+}
+
+// ========== 🌐 فتح صفحة (يتعامل مع كلا السياقين: جدول + ويب أب) ==========
+function openPage(pageName) {
+  showLoading(true);
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      showLoading(false);
+      
+      if (result && result.success) {
+        // ✅ حالة 1: داخل الجدول - المودال فُتح تلقائياً من السيرفر
+        if (result.mode === 'spreadsheet') {
+          // لا حاجة لفعل شيء ← المودال ظهر بالفعل
+          // يمكن إضافة تأكيد اختياري
+          // showMessage('✅ تم فتح الصفحة', 'success');
+        }
+        // ✅ حالة 2: ويب أب - افتح الرابط في نافذة جديدة
+        else if (result.mode === 'webapp' && result.url) {
+          window.open(result.url, '_blank');
+        }
+      } else {
+        alert('❌ ' + (result?.message || 'فشل فتح الصفحة'));
+      }
+    })
+    .withFailureHandler(function(error) {
+      showLoading(false);
+      alert('❌ خطأ: ' + error);
+    })
+    .openPageWithResult(pageName);  // ✅ استخدم هذه الدالة من Dashboard.gs
+}
+
+// ========== فتح الإحصائيات ==========
+function openStatsPage() {
+  openPage('stats');
+}
+
+// ========== 🛒 فتح نقطة البيع (نفس نمط openPage) ==========
+function openPOSPage() {
+  showLoading(true);
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      showLoading(false);
+      
+      if (result && result.success) {
+        if (result.mode === 'spreadsheet') {
+          // المودال فُتح تلقائياً
+        } else if (result.mode === 'webapp' && result.url) {
+          window.open(result.url, '_blank');
+        }
+      } else {
+        alert('❌ ' + (result?.message || 'فشل فتح نقطة البيع'));
+      }
+    })
+    .withFailureHandler(function(error) {
+      showLoading(false);
+      alert('❌ خطأ: ' + error);
+    })
+    .openPageWithResult('pos');  // ✅ استخدم openPageWithResult
+}
+
+// ========== فتح التقارير ==========
+function openReport(reportName) {
+  openPage(reportName);
+}
+
+// ========== فتح الإعدادات ==========
+function openSettings() {
+  openPage('setting');
+}
+
+// ========== 🔗 فتح صفحة التجديد ==========
+function openRenewPage() {
+  showLoading(true, 'جاري فتح صفحة التجديد...');
+  
+  google.script.run
+    .withSuccessHandler(function(result) {
+      showLoading(false);
+      if (result && result.success) {
+        if (result.mode === 'spreadsheet') {
+          // المودال فُتح تلقائياً
+        } else if (result.url) {
+          window.open(result.url, '_blank');
+        }
+      } else {
+        showMessage('❌ فشل فتح صفحة التجديد', 'error');
+      }
+    })
+    .withFailureHandler(function(error) {
+      showLoading(false);
+      showMessage('❌ خطأ: ' + error, 'error');
+    })
+    .openPageWithResult('renew');  // ✅ استخدم openPageWithResult
+}
+
+// ========== دوال مساعدة ==========
+function togglePassword() {
+  const input = document.getElementById('password');
+  const btn = document.querySelector('.password-toggle');
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁️';
+  }
+}
+
+function showError(message) {
+  const errorDiv = document.getElementById('errorMessage');
+  const errorText = document.getElementById('errorText');
+  errorText.textContent = message;
+  errorDiv.classList.add('show');
+  setTimeout(() => errorDiv.classList.remove('show'), 5000);
+}
+
+function showMessage(message, type) {
+  alert(message); // يمكن استبدالها بـ toast مخصص لاحقاً
+}
+
+function showLoading(show, text) {
+  isLoading = show;
+  const el = document.getElementById('globalLoading');
+  const btn = document.getElementById('loginBtn');
+  const btnText = document.getElementById('btnText');
+  
+  if (el) el.classList.toggle('show', show);
+  
+  if (btn && btnText) {
+    if (show) {
+      btn.disabled = true;
+      btnText.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;"></div> ' + (text || 'جاري التحميل...');
+    } else {
+      btn.disabled = false;
+      btnText.innerHTML = '<span>🔐</span> تسجيل الدخول';
+    }
+  }
+}
+</script>
+</body>
+</html>
