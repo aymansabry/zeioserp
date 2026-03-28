@@ -552,3 +552,365 @@ function s_getLicenseKeyFromSheet() {
 }
 
 
+
+/**
+ * client_core_client.gs – ZEIOS ERP CLIENT CORE (SHEET VERSION)
+ * دوال بنفس أسماء المكتبة عشان الكود يشتغل من غير تعديل
+ * 
+ * ⚠️ قبل التشغيل: أضف المكتبة من Extensions → Libraries
+ */
+
+// ========== 🔗 ربط المكتبة ==========
+var ZEIOS = ZEIOS; // غيّر للاسم اللي أنت سميته
+
+
+// ========== 🔐 التحقق من الترخيص ==========
+function validateLicense() { try { return ZEIOS.validateLicense(); } catch (e) { return {valid:false,message:'❌ '+e.toString(),requiresActivation:true}; } }
+function getClientSecret() { try { return ZEIOS.getClientSecret(); } catch (e) { return null; } }
+function validateWithServer(licenseKey, clientSecret) { try { return ZEIOS.validateWithServer(licenseKey, clientSecret); } catch (e) { return {valid:false,message:'❌ '+e.toString()}; } }
+function getCachedLicense() { try { return ZEIOS.getCachedLicense(); } catch (e) { return null; } }
+function saveLicenseCache(data) { try { return ZEIOS.saveLicenseCache(data); } catch (e) { return false; } }
+function clearLicenseCache() { try { return ZEIOS.clearLicenseCache(); } catch (e) { return false; } }
+function activateLicense(licenseKey) { try { return ZEIOS.activateLicense(licenseKey); } catch (e) { return {success:false,message:'❌ '+e.toString()}; } }
+function callServerOperation(operationName, params) { try { return ZEIOS.callServerOperation(operationName, params); } catch (e) { return {success:false,message:'❌ '+e.toString()}; } }
+
+// ========== 🔐 دوال مساعدة للترخيص ==========
+function getLicenseStatus() { try { return ZEIOS.getLicenseStatus(); } catch (e) { return {valid:false,message:e.toString()}; } }
+function isLicenseValid() { try { return ZEIOS.isLicenseValid(); } catch (e) { return false; } }
+function getLicenseDaysRemaining() { try { return ZEIOS.getLicenseDaysRemaining(); } catch (e) { return 0; } }
+function getServerUrl() { try { return ZEIOS.getServerUrl(); } catch (e) { return ZEIOS.DEFAULT_SERVER_URL || ''; } }
+function setServerUrl(url) { try { return ZEIOS.setServerUrl(url); } catch (e) { return {success:false,message:'❌ '+e.toString()}; } }
+
+// ========== 📋 التطوير ==========
+function showStoredDataInLog() { try { return ZEIOS.showStoredDataInLog(); } catch (e) { return {success:false,error:e.toString()}; } }
+function getLibraryVersion() { try { return ZEIOS.getLibraryVersion(); } catch (e) { return 'غير متصل'; } }
+function testConnection() { try { return ZEIOS.testConnection(); } catch (e) { return {success:false,message:e.toString()}; } }
+
+// ========== 🎨 دوال عرض الواجهات (تستخدم في الشيت فقط - مش في المكتبة) ==========
+
+/**
+ * فتح نافذة تفعيل الترخيص
+ */
+function showActivationDialog() {
+  try {
+    var html = HtmlService.createHtmlOutput(`
+      <!DOCTYPE html>
+      <html dir="rtl">
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 25px; background: #f8f9fa; direction: rtl; }
+          .container { max-width: 450px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; }
+          h3 { color: #1a73e8; margin: 0 0 15px; font-size: 20px; }
+          p { color: #666; margin-bottom: 20px; font-size: 14px; }
+          input[type="text"] { width: 100%; padding: 12px 15px; margin: 10px 0; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: border-color 0.2s; }
+          input[type="text"]:focus { outline: none; border-color: #1a73e8; }
+          button { padding: 12px 40px; background: #27ae60; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
+          button:hover { background: #219a52; }
+          button:disabled { background: #ccc; cursor: not-allowed; }
+          #result { margin-top: 15px; font-size: 14px; min-height: 20px; }
+          .success { color: #27ae60; }
+          .error { color: #e74c3c; }
+          .loading { color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h3>🔐 تفعيل الترخيص</h3>
+          <p>الرجاء إدخال مفتاح الترخيص الذي استلمته على بريدك الإلكتروني</p>
+          <input type="text" id="licenseKey" placeholder="أدخل مفتاح الترخيص" autocomplete="off">
+          <button id="activateBtn" onclick="doActivate()">تفعيل</button>
+          <div id="result"></div>
+        </div>
+        <script>
+          function doActivate() {
+            var key = document.getElementById('licenseKey').value.trim();
+            var btn = document.getElementById('activateBtn');
+            var result = document.getElementById('result');
+            
+            if (!key) {
+              result.innerHTML = '<span class="error">❌ الرجاء إدخال مفتاح الترخيص</span>';
+              return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = 'جاري التفعيل...';
+            result.innerHTML = '<span class="loading">جاري الاتصال بالسيرفر...</span>';
+            
+            google.script.run
+              .withSuccessHandler(function(response) {
+                if (response.success) {
+                  result.innerHTML = '<span class="success">✅ ' + response.message + '</span>';
+                  setTimeout(function() { google.script.host.close(); }, 2000);
+                } else {
+                  result.innerHTML = '<span class="error">❌ ' + response.message + '</span>';
+                  btn.disabled = false;
+                  btn.textContent = 'تفعيل';
+                }
+              })
+              .withFailureHandler(function(error) {
+                result.innerHTML = '<span class="error">❌ خطأ: ' + error.message + '</span>';
+                btn.disabled = false;
+                btn.textContent = 'تفعيل';
+              })
+              .activateLicense(key);
+          }
+          
+          // تفعيل الزر عند الضغط على Enter
+          document.getElementById('licenseKey').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') { doActivate(); }
+          });
+        </script>
+      </body>
+      </html>
+    `).setWidth(450).setHeight(350);
+    
+    SpreadsheetApp.getUi().showModalDialog(html, '🔐 تفعيل الترخيص');
+  } catch (e) {
+    console.error('showActivationDialog error:', e.toString());
+    SpreadsheetApp.getUi().alert('❌ خطأ في فتح نافذة التفعيل: ' + e.toString());
+  }
+}
+
+/**
+ * عرض حالة الترخيص
+ */
+function showLicenseStatusDialog() {
+  try {
+    var license = getLicenseStatus();
+    var statusIcon = license.valid ? '✅' : '❌';
+    var statusText = license.valid ? 'نشط' : 'غير نشط';
+    var expiryText = license.expiresAt ? new Date(license.expiresAt).toLocaleDateString('ar-EG') : 'غير محدد';
+    
+    var html = HtmlService.createHtmlOutput(`
+      <!DOCTYPE html>
+      <html dir="rtl">
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 25px; background: #f8f9fa; direction: rtl; }
+          .container { max-width: 400px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; }
+          .status-icon { font-size: 48px; margin-bottom: 15px; }
+          h3 { color: #333; margin: 0 0 20px; font-size: 20px; }
+          .info-card { background: #f8f9fa; padding: 20px; border-radius: 12px; margin: 10px 0; text-align: right; }
+          .info-row { margin: 8px 0; font-size: 14px; }
+          .info-label { color: #666; }
+          .info-value { font-weight: 600; color: #333; }
+          .warning { color: #e74c3c; font-weight: 600; }
+          .success { color: #27ae60; font-weight: 600; }
+          button { padding: 10px 30px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; margin-top: 20px; }
+          button:hover { background: #5a6268; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="status-icon">${statusIcon}</div>
+          <h3>حالة الترخيص</h3>
+          <div class="info-card">
+            <div class="info-row"><span class="info-label">الحالة:</span> <span class="info-value ${license.valid ? 'success' : 'warning'}">${statusText}</span></div>
+            <div class="info-row"><span class="info-label">تاريخ الانتهاء:</span> <span class="info-value">${expiryText}</span></div>
+            <div class="info-row"><span class="info-label">الأيام المتبقية:</span> <span class="info-value">${license.daysRemaining || 0} يوم</span></div>
+            <div class="info-row"><span class="info-label">الرسالة:</span> <span class="info-value">${license.message}</span></div>
+            ${license.requiresActivation ? '<div class="info-row"><span class="warning">⚠️ يتطلب التفعيل</span></div>' : ''}
+          </div>
+          <button onclick="google.script.host.close()">✕ إغلاق</button>
+        </div>
+      </body>
+      </html>
+    `).setWidth(420).setHeight(400);
+    
+    SpreadsheetApp.getUi().showModalDialog(html, '📋 حالة الترخيص');
+  } catch (e) {
+    console.error('showLicenseStatusDialog error:', e.toString());
+    SpreadsheetApp.getUi().alert('❌ خطأ: ' + e.toString());
+  }
+}
+
+/**
+ * اختبار الاتصال بالسيرفر
+ */
+function testServerConnection() {
+  try {
+    var result = ZEIOS.testConnection ? ZEIOS.testConnection() : { success: false, message: 'الدالة غير متوفرة' };
+    SpreadsheetApp.getUi().alert('نتيجة الاختبار:\n\n' + JSON.stringify(result, null, 2));
+    return result;
+  } catch (e) {
+    SpreadsheetApp.getUi().alert('❌ خطأ في الاختبار: ' + e.toString());
+    return { success: false, message: e.toString() };
+  }
+}
+
+/**
+ * إعادة تعيين إعدادات الترخيص
+ */
+function resetLicenseSettings() {
+  try {
+    var ui = SpreadsheetApp.getUi();
+    var response = ui.alert(
+      '⚠️ تأكيد الإعادة',
+      'هل أنت متأكد من إعادة تعيين إعدادات الترخيص؟\n\nسيتم حذف مفتاح الترخيص والكاش المحلي.',
+      ui.ButtonSet.YES_NO
+    );
+    
+    if (response === ui.Button.YES) {
+      PropertiesService.getUserProperties().deleteProperty('ZEIOS_LICENSE_KEY');
+      clearLicenseCache();
+      ui.alert('✅ تم إعادة تعيين إعدادات الترخيص بنجاح');
+      return { success: true, message: 'تمت الإعادة بنجاح' };
+    }
+    return { success: false, message: 'تم إلغاء العملية' };
+  } catch (e) {
+    console.error('resetLicenseSettings error:', e.toString());
+    return { success: false, message: e.toString() };
+  }
+}
+/**
+ * ✅ اختبار دالة التحقق من الترخيص من الشيت
+ */
+function testValidateLicenseFromSheet() {
+  console.log('\n🔐 === اختبار التحقق من الترخيص من ورقة "الترخيص" ===\n');
+  
+  // 1. اختبار جلب البيانات من الشيت
+  console.log('1️⃣ اختبار الدوال المساعدة:');
+  var clientSecret = s_getClientSecretFromSheet();
+  var licenseKey = s_getLicenseKeyFromSheet();
+  console.log('   clientSecret:', clientSecret ? '✅ موجود (' + clientSecret.substring(0, 10) + '...)' : '❌ غير موجود');
+  console.log('   licenseKey:', licenseKey ? '✅ موجود (' + licenseKey.substring(0, 10) + '...)' : '❌ غير موجود');
+  
+  // 2. اختبار التحقق من السيرفر
+  console.log('\n2️⃣ اختبار validateLicenseFromServer:');
+  var startTime = new Date();
+  var result = validateLicenseFromServer();
+  var endTime = new Date();
+  
+  console.log('   ⏱️ وقت الاستجابة:', (endTime - startTime), 'مللي ثانية');
+  console.log('   valid:', result.valid);
+  console.log('   message:', result.message);
+  console.log('   expiresAt:', result.expiresAt);
+  console.log('   daysRemaining:', result.daysRemaining);
+  console.log('   source:', result.source);
+  
+  console.log('\n🎯 الحالة:', result.valid ? '✅ الترخيص ساري' : '❌ الترخيص غير ساري');
+  console.log('\n=== انتهى الاختبار ===\n');
+  
+  return result;
+}
+/**
+ * ✅ دالة واجهة لاستدعاء التحقق من الترخيص من السيرفر
+ * ⚠️ يجب أن تكون في مشروع الجدول (ليس في المكتبة)
+ * ⚠️ مطلوبة من الـ HTML عبر google.script.run
+ */
+/**
+ * ✅ دالة واجهة لاستدعاء التحقق من الترخيص من السيرفر
+ * ⚠️ يجب أن تكون في مشروع الجدول (ليس في المكتبة)
+ * ⚠️ مطلوبة من الـ HTML عبر google.script.run
+ */
+function validateLicenseFromServer() {
+  try {
+    // ✅ استدعاء الدالة من المكتبة إذا كانت متاحة
+    if (typeof ZEIOS !== 'undefined' && typeof ZEIOS.validateLicenseFromServer === 'function') {
+      return ZEIOS.validateLicenseFromServer();
+    }
+    
+    // ❌ تم إزالة الـ Fallback الذي يستدعي الدالة نفسها (يسبب تكرار لا نهائي)
+    
+    // ✅ إرجاع خطأ واضح إذا لم تكن الدالة متاحة
+    return { 
+      valid: false, 
+      message: 'دالة التحقق من الترخيص غير متاحة. تأكد من ربط المكتبة.',
+      expiresAt: '',
+      daysRemaining: 0,
+      requiresActivation: true,
+      checkedAt: new Date().toISOString(),
+      source: 'client'
+    };
+    
+  } catch (e) {
+    console.error('❌ validateLicenseFromServer (client) error:', e);
+    return {
+      valid: false,
+      message: 'خطأ: ' + e.toString(),
+      expiresAt: '',
+      daysRemaining: 0,
+      requiresActivation: true,
+      checkedAt: new Date().toISOString(),
+      source: 'client',
+      error: e.toString()
+    };
+  }
+}
+/**
+ * ✅ دالة واجهة لجلب العميل سكريت من ورقة "الترخيص" في الشيت
+ * ⚠️ في مشروع الجدول (ليس في المكتبة)
+ * ⚠️ تستدعي الدالة الداخلية من المكتبة
+ * @returns {string} clientSecret أو null
+ */
+function s_getClientSecretFromSheet() {
+  try {
+    // ✅ استدعاء الدالة من المكتبة إذا كانت متاحة
+    if (typeof ZEIOS !== 'undefined' && typeof ZEIOS.s_getClientSecretFromSheet === 'function') {
+      return ZEIOS.s_getClientSecretFromSheet();
+    }
+    
+    // ✅ Fallback محلي: قراءة مباشرة من الشيت (نفس منطق المكتبة)
+    try {
+      var ss = SpreadsheetApp.getActiveSpreadsheet();
+      var sheet = ss.getSheetByName('الترخيص');
+      if (!sheet) return null;
+      var data = sheet.getDataRange().getValues();
+      for (var i = 0; i < data.length; i++) {
+        var key = String(data[i][0] || '').trim().toLowerCase();
+        if (key === 'client_secret') {
+          return String(data[i][1] || '').trim();
+        }
+      }
+      return null;
+    } catch (localErr) {
+      console.warn("⚠️ Local getClientSecretFromSheet error:", localErr);
+      return null;
+    }
+    
+  } catch (e) {
+    console.error('❌ getClientSecretFromSheet (client) error:', e);
+    return null;
+  }
+}
+
+/**
+ * ✅ دالة واجهة لجلب مفتاح الترخيص من ورقة "الترخيص" في الشيت
+ * ⚠️ في مشروع الجدول (ليس في المكتبة)
+ * ⚠️ تستدعي الدالة الداخلية من المكتبة
+ * @returns {string} licenseKey أو null
+ */
+function s_getLicenseKeyFromSheet() {
+  try {
+    // ✅ استدعاء الدالة من المكتبة إذا كانت متاحة
+    if (typeof ZEIOS !== 'undefined' && typeof ZEIOS.s_getLicenseKeyFromSheet === 'function') {
+      return ZEIOS.s_getLicenseKeyFromSheet();
+    }
+    
+    // ✅ Fallback محلي: قراءة مباشرة من الشيت (نفس منطق المكتبة)
+    try {
+      var ss = SpreadsheetApp.getActiveSpreadsheet();
+      var sheet = ss.getSheetByName('الترخيص');
+      if (!sheet) return null;
+      var data = sheet.getDataRange().getValues();
+      for (var i = 0; i < data.length; i++) {
+        var key = String(data[i][0] || '').trim().toLowerCase();
+        if (key === 'license_key' || key === 'licensekey' || key === 'مفتاح_الترخيص') {
+          return String(data[i][1] || '').trim();
+        }
+      }
+      return null;
+    } catch (localErr) {
+      console.warn("⚠️ Local getLicenseKeyFromSheet error:", localErr);
+      return null;
+    }
+    
+  } catch (e) {
+    console.error('❌ getLicenseKeyFromSheet (client) error:', e);
+    return null;
+  }
+}
+
