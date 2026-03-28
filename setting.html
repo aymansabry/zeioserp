@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚙️ إعدادات النظام - ZEIOS ERP</title>
+<style>
+:root {
+  --bg: #f8f9fa; --card: #fff; --text: #202124; --text2: #5f6368;
+  --border: #dadce0; --accent: #1a73e8; --shadow: 0 1px 3px rgba(0,0,0,0.1);
+  --success: #34a853; --warning: #fbbc04; --danger: #ea4335;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 16px;
+}
+.container { max-width: 1400px; margin: 0 auto; }
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+h1 {
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+button {
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  border: none;
+}
+.btn-primary:hover:not(:disabled) {
+  background: #0d5bb8;
+}
+.btn-dashboard {
+  background: var(--success);
+  color: white;
+  border: none;
+}
+.btn-dashboard:hover {
+  background: #2d8e49;
+}
+.section { 
+  margin-bottom: 30px; 
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.section-header {
+  padding: 16px 20px;
+  font-weight: 600;
+  font-size: 17px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.section-title {
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.section-body { padding: 24px; }
+.grid-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 10px;
+}
+.btn-module {
+  padding: 16px 12px;
+  text-align: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text);
+  font-weight: 500;
+  box-shadow: var(--shadow);
+}
+.btn-module:hover:not(:disabled) {
+  background: rgba(26, 115, 232, 0.08);
+  transform: translateY(-2px);
+}
+.btn-module.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.loading {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--text2);
+}
+.spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid var(--accent);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.notification {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 1000;
+  max-width: 400px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slideIn 0.3s ease;
+}
+@keyframes slideIn {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.notification-success {
+  background: #d4edda;
+  color: #155724;
+  border-left: 4px solid #28a745;
+}
+.notification-error {
+  background: #f8d7da;
+  color: #721c24;
+  border-left: 4px solid #dc3545;
+}
+#progressModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 10005;
+  align-items: center;
+  justify-content: center;
+}
+#progressModalContent {
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  padding: 30px;
+}
+#progressBarContainer {
+  background: #e9ecef;
+  border-radius: 10px;
+  height: 20px;
+  overflow: hidden;
+  margin: 20px 0;
+}
+#progressBar {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width 0.4s ease;
+  border-radius: 10px;
+}
+.year-selector {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 15px 0;
+  flex-wrap: wrap;
+  background: var(--bg);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.year-select {
+  padding: 12px 20px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 500;
+  min-width: 150px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.year-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+}
+.year-select.valid { border-color: var(--success); }
+.year-select.invalid { border-color: var(--danger); }
+.arrow-icon {
+  font-size: 28px;
+  color: var(--accent);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.7; }
+}
+.transfer-hint {
+  background: #e8f4fd;
+  border-right: 4px solid var(--accent);
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 15px 0;
+  font-size: 14px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.transfer-hint.warning { background: #fff3cd; border-right-color: #ffc107; }
+.transfer-hint.success { background: #d4edda; border-right-color: #28a745; }
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+.form-group { margin-bottom: 15px; }
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: var(--text2);
+  font-size: 13px;
+}
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--card);
+}
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+.table-responsive {
+  overflow-x: auto;
+  margin-top: 15px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th {
+  background: var(--bg);
+  padding: 12px;
+  text-align: right;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text2);
+  border-bottom: 2px solid var(--border);
+}
+td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+tr:hover td { background: rgba(26,115,232,0.02); }
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.status-active { background: #d4edda; color: #155724; }
+.status-inactive { background: #f8d7da; color: #721c24; }
+.backup-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.backup-item {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+.backup-item:hover { background: rgba(26,115,232,0.05); }
+.backup-item.selected {
+  background: rgba(26,115,232,0.1);
+  border-right: 3px solid var(--accent);
+}
+.btn-icon { padding: 6px 10px; font-size: 12px; }
+
+/* ========== 🎨 تنسيقات الصلاحيات الديناميكية ========== */
+.permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.permission-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.permission-item:hover {
+  border-color: var(--accent);
+  background: rgba(26,115,232,0.05);
+}
+.permission-item input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+.permission-item label {
+  margin: 0;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.permission-category {
+  font-size: 12px;
+  color: var(--text2);
+  background: var(--border);
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-right: auto;
+}
+.password-strength {
+  height: 4px;
+  background: #e9ecef;
+  border-radius: 2px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+.password-strength-bar {
+  height: 100%;
+  width: 0%;
+  transition: width 0.3s, background 0.3s;
+  border-radius: 2px;
+}
+.password-strength.weak .password-strength-bar { width: 33%; background: var(--danger); }
+.password-strength.medium .password-strength-bar { width: 66%; background: var(--warning); }
+.password-strength.strong .password-strength-bar { width: 100%; background: var(--success); }
+.password-hint {
+  font-size: 11px;
+  color: var(--text2);
+  margin-top: 4px;
+}
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 10020;
+  align-items: center;
+  justify-content: center;
+}
+.modal.active { display: flex; }
+.modal-content {
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  max-width: 650px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 25px;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text2);
+  padding: 5px;
+}
+.modal-close:hover { color: var(--danger); }
+.toggle-password {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 14px;
+}
+.form-group.relative { position: relative; }
+.permissions-section {
+  margin: 20px 0;
+  padding: 15px;
+  background: var(--bg);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.permissions-section h4 {
+  margin-bottom: 12px;
+  color: var(--accent);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>⚙️ إعدادات النظام - ZEIOS ERP</h1>
+    <button class="btn-dashboard" onclick="google.script.host.close()">
+      <span>🏠</span> إغلاق
+    </button>
+  </div>
+
+  <!-- ===== القسم 1: بيانات الشركة ===== -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">🏢 بيانات الشركة</div>
+      <button class="btn-primary" onclick="editCompanyInfo()" id="editCompanyBtn">
+        <span>✏️</span> تعديل
+      </button>
+    </div>
+    <div class="section-body" id="companyInfoDisplay">
+      <div class="loading"><div class="spinner"></div>جاري تحميل بيانات الشركة...</div>
+    </div>
+    <div class="section-body" id="companyInfoEdit" style="display: none;">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>اسم الشركة <span style="color: var(--danger);">*</span></label>
+          <input type="text" id="companyName" placeholder="مثال: مؤسسة ZEIOS التجارية">
+        </div>
+        <div class="form-group">
+          <label>العنوان</label>
+          <input type="text" id="companyAddress" placeholder="المدينة - الشارع - المبنى">
+        </div>
+        <div class="form-group">
+          <label>العنوان البريدي</label>
+          <input type="text" id="companyPostal" placeholder="ص.ب 12345">
+        </div>
+        <div class="form-group">
+          <label>رقم الهاتف</label>
+          <input type="tel" id="companyPhone" placeholder="+966 5X XXX XXXX">
+        </div>
+        <div class="form-group">
+          <label>البريد الإلكتروني</label>
+          <input type="email" id="companyEmail" placeholder="info@company.com">
+        </div>
+        <div class="form-group">
+          <label>الرقم الضريبي</label>
+          <input type="text" id="companyTaxNo" placeholder="1234567890">
+        </div>
+        <div class="form-group">
+          <label>نسبة الضريبة (%)</label>
+          <input type="number" id="companyTaxPercent" step="0.01" min="0" max="100" placeholder="15">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn-primary" onclick="saveCompanyInfo()">💾 حفظ التغييرات</button>
+        <button class="btn-module" onclick="cancelEditCompany()">❌ إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== القسم 2: إدارة السنوات المالية ===== -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">📅 إدارة السنوات المالية</div>
+    </div>
+    <div class="section-body">
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>السنة</th><th>تاريخ البداية</th><th>تاريخ النهاية</th><th>الحالة</th><th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="fiscalYearsTableBody">
+            <tr><td colspan="5" class="loading"><div class="spinner"></div>جاري تحميل السنوات...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="actions" style="justify-content: flex-start; margin-top: 15px;">
+        <button class="btn-module btn-icon" onclick="loadAvailableYears()">
+          <span>🔄</span> تحديث القائمة
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال تعديل السنة المالية -->
+  <div id="editYearModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title"><span>✏️</span> تعديل السنة المالية</h3>
+        <button class="modal-close" onclick="closeEditYearModal()">×</button>
+      </div>
+      <div class="form-group">
+        <label>السنة</label>
+        <input type="text" id="editYearCode" class="year-select" readonly style="background: var(--bg);">
+      </div>
+      <div class="form-group">
+        <label>تاريخ بداية السنة</label>
+        <input type="date" id="editYearFrom" class="year-select">
+      </div>
+      <div class="form-group">
+        <label>تاريخ نهاية السنة</label>
+        <input type="date" id="editYearTo" class="year-select">
+      </div>
+      <div class="form-group">
+        <label>الحالة</label>
+        <select id="editYearStatus" class="year-select">
+          <option value="active">نشطة</option>
+          <option value="inactive">غير نشطة</option>
+        </select>
+      </div>
+      <div class="actions" style="justify-content: space-between; margin-top: 25px;">
+        <button class="btn-module" onclick="closeEditYearModal()">❌ إلغاء</button>
+        <button class="btn-primary" onclick="saveYearChanges()">💾 حفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== القسم 3: النسخ الاحتياطي ===== -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">💾 النسخ الاحتياطي</div>
+      <button class="btn-primary" onclick="createBackup()">
+        <span>➕</span> إنشاء نسخة
+      </button>
+    </div>
+    <div class="section-body">
+      <div style="margin-bottom: 20px;">
+        <select id="backupYearSelect" class="year-select" style="width: 200px;" onchange="loadBackupsList()">
+          <option value="">اختر السنة</option>
+        </select>
+      </div>
+      <div class="backup-list" id="backupsListContainer">
+        <div class="loading" id="backupsLoading"><div class="spinner"></div>جاري التحميل...</div>
+        <div id="backupsList" style="display: none;"></div>
+      </div>
+      <div class="actions" style="margin-top: 15px;">
+        <button class="btn-module" onclick="deleteSelectedBackup()" id="deleteBackupBtn" disabled>🗑️ حذف</button>
+        <button class="btn-module" onclick="restoreSelectedBackup()" id="restoreBackupBtn" disabled>🔄 استعادة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== القسم 4: عمليات نهاية السنة ===== -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">🔄 عمليات نهاية السنة</div>
+    </div>
+    <div class="section-body">
+      <div class="year-selector">
+        <div style="flex: 1; text-align: center;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--accent);">من السنة القديمة</label>
+          <select class="year-select" id="oldYearSelect" onchange="validateTransferYears()">
+            <option value="">اختر السنة</option>
+          </select>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center;">
+          <span class="arrow-icon">←</span>
+        </div>
+        <div style="flex: 1; text-align: center;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--success);">إلى السنة الجديدة</label>
+          <select class="year-select" id="newYearSelect" onchange="validateTransferYears()">
+            <option value="">اختر السنة</option>
+          </select>
+        </div>
+      </div>
+      <div id="transferHint" class="transfer-hint">
+        <span>ℹ️</span>
+        <span>اختر السنة القديمة (المصدر) والسنة الجديدة (الهدف). يجب أن تكون السنة الجديدة أكبر من القديمة بسنة واحدة فقط.</span>
+      </div>
+      <div class="grid-buttons">
+        <button class="btn-module btn-primary" id="transferBtn" onclick="transferBalancesWithSelection()" disabled>🔄 ترحيل الأرصدة</button>
+        <div class="btn-module btn-primary" onclick="createNewYearStructure()">➕ إنشاء سنة جديدة</div>
+        <div class="btn-module btn-success" onclick="completeYearEndClosing()">✅ إقفال السنة</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== القسم 5: إدارة المستخدمين مع الصلاحيات الديناميكية ===== -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">👥 إدارة المستخدمين</div>
+      <button class="btn-primary" onclick="openUserModal()">
+        <span>➕</span> إضافة مستخدم
+      </button>
+    </div>
+    <div class="section-body">
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>اسم المستخدم</th><th>الدور</th><th>الصلاحيات</th><th>الحالة</th><th>آخر دخول</th><th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+            <tr><td colspan="6" class="loading"><div class="spinner"></div>جاري التحميل...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="actions" style="justify-content: flex-start; margin-top: 15px;">
+        <button class="btn-module btn-icon" onclick="loadUsersList()">
+          <span>🔄</span> تحديث
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال إضافة/تعديل المستخدم مع الصلاحيات الديناميكية -->
+  <div id="userModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="userModalTitle"><span>👤</span> إضافة مستخدم جديد</h3>
+        <button class="modal-close" onclick="closeUserModal()">×</button>
+      </div>
+      <input type="hidden" id="userId">
+      <div class="form-group">
+        <label>اسم المستخدم <span style="color: var(--danger);">*</span></label>
+        <input type="text" id="userName" placeholder="مثال: ahmed_admin">
+      </div>
+      <div class="form-group relative">
+        <label>كلمة المرور <span style="color: var(--danger);">*</span> <small id="passwordHint" style="color: var(--text2); font-weight: normal;">(اتركها فارغة للتعديل دون تغيير)</small></label>
+        <input type="password" id="userPassword" placeholder="أدخل كلمة المرور">
+        <button type="button" class="toggle-password" onclick="togglePassword('userPassword')">👁️</button>
+        <div class="password-strength" id="userPasswordStrength" style="display: none;">
+          <div class="password-strength-bar"></div>
+        </div>
+        <div class="password-hint">الحد الأدنى: 4 أحرف. يُفضل استخدام أحرف كبيرة وصغيرة وأرقام ورموز.</div>
+      </div>
+      <div class="form-group">
+        <label>الدور</label>
+        <select id="userRole" onchange="updatePermissionsByRole()">
+          <option value="admin">مدير النظام</option>
+          <option value="accountant">محاسب</option>
+          <option value="cashier">كاشير</option>
+          <option value="viewer">معرض فقط</option>
+          <option value="custom">مخصص</option>
+        </select>
+      </div>
+      
+      <!-- ✅ قسم الصلاحيات الديناميكية -->
+      <div class="permissions-section">
+        <h4>🔐 الصلاحيات (اختر الصفحات المسموحة)</h4>
+        <div id="permissionsContainer" class="permissions-grid">
+          <div class="loading"><div class="spinner"></div>جاري تحميل الصفحات...</div>
+        </div>
+        <div style="margin-top: 10px; font-size: 12px; color: var(--text2);">
+          ✅ يمكن اختيار أي عدد من الصفحات لهذا المستخدم
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>الحالة</label>
+        <select id="userStatus">
+          <option value="TRUE">نشط</option>
+          <option value="FALSE">غير نشط</option>
+        </select>
+      </div>
+      <div class="actions" style="justify-content: space-between; margin-top: 25px;">
+        <button class="btn-module" onclick="closeUserModal()">❌ إلغاء</button>
+        <button class="btn-primary" onclick="saveUser()">💾 حفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== القسم 6: إدارة الكاشير (POS) ===== -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">🛒 إدارة الكاشير (POS)</div>
+      <button class="btn-primary" onclick="openCashierModal()">
+        <span>➕</span> إضافة كاشير
+      </button>
+    </div>
+    <div class="section-body">
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>اسم الكاشير</th><th>الكود</th><th>اسم الدخول</th><th>الخزينة</th><th>الحالة</th><th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="cashiersTableBody">
+            <tr><td colspan="6" class="loading"><div class="spinner"></div>جاري التحميل...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="actions" style="justify-content: flex-start; margin-top: 15px;">
+        <button class="btn-module btn-icon" onclick="loadCashiersList()">
+          <span>🔄</span> تحديث
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال إضافة/تعديل الكاشير -->
+  <div id="cashierModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="cashierModalTitle"><span>🛒</span> إضافة كاشير جديد</h3>
+        <button class="modal-close" onclick="closeCashierModal()">×</button>
+      </div>
+      <input type="hidden" id="cashierId">
+      <div class="form-group">
+        <label>اسم الكاشير <span style="color: var(--danger);">*</span></label>
+        <input type="text" id="cashierName" placeholder="مثال: محمد أحمد">
+      </div>
+      <div class="form-group">
+        <label>كود الكاشير <span style="color: var(--danger);">*</span></label>
+        <input type="text" id="cashierCode" placeholder="مثال: CASH-001">
+      </div>
+      <div class="form-group relative">
+        <label>كلمة المرور <span style="color: var(--danger);">*</span> <small id="cashierPasswordHint" style="color: var(--text2); font-weight: normal;">(اتركها فارغة للتعديل دون تغيير)</small></label>
+        <input type="password" id="cashierPassword" placeholder="أدخل كلمة المرور">
+        <button type="button" class="toggle-password" onclick="togglePassword('cashierPassword')">👁️</button>
+        <div class="password-strength" id="cashierPasswordStrength" style="display: none;">
+          <div class="password-strength-bar"></div>
+        </div>
+        <div class="password-hint">الحد الأدنى: 4 أحرف. يُفضل استخدام أحرف كبيرة وصغيرة وأرقام ورموز.</div>
+      </div>
+      <div class="form-group">
+        <label>حساب الخزينة</label>
+        <select id="cashierAccountId">
+          <option value="">اختر الحساب...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>الخزينة الافتراضية</label>
+        <select id="cashierSafeId">
+          <option value="">اختر الخزينة...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>الحالة</label>
+        <select id="cashierStatus">
+          <option value="TRUE">نشط</option>
+          <option value="FALSE">غير نشط</option>
+        </select>
+      </div>
+      <div class="actions" style="justify-content: space-between; margin-top: 25px;">
+        <button class="btn-module" onclick="closeCashierModal()">❌ إلغاء</button>
+        <button class="btn-primary" onclick="saveCashier()">💾 حفظ</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="notificationContainer"></div>
+<div id="progressModal">
+  <div id="progressModalContent">
+    <h3 id="progressTitle" style="color: var(--accent); margin-bottom: 20px;">⏳ جاري المعالجة...</h3>
+    <p id="progressMessage" style="margin-bottom: 20px;"></p>
+    <div id="progressBarContainer">
+      <div id="progressBar"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== 📦 المتغيرات العامة ==========
+let yearsFullData = [], selectedBackupId = null, backupsList = [], currentEditingYear = null;
+let availableYearsList = [], currentEditingUser = null, currentEditingCashier = null;
+let safesList = [], accountsList = [], availablePagesList = [], userPermissions = [];
+
+// ========== 🔐 دوال كلمات المرور ==========
+function togglePassword(inputId) {
+  const input = document.getElementById(inputId);
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+function checkPasswordStrength(password, strengthElId) {
+  const strengthEl = document.getElementById(strengthElId);
+  if (!password) { strengthEl.style.display = 'none'; return; }
+  strengthEl.style.display = 'block';
+  let score = 0;
+  if (password.length >= 4) score++;
+  if (password.length >= 8) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[a-z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[!@#$%^&*]/.test(password)) score++;
+  strengthEl.className = 'password-strength';
+  if (score <= 2) strengthEl.classList.add('weak');
+  else if (score <= 4) strengthEl.classList.add('medium');
+  else strengthEl.classList.add('strong');
+}
+
+// ========== 🎨 الإشعارات والتقدم ==========
+function showNotification(message, type) {
+  const container = document.getElementById('notificationContainer');
+  const notification = document.createElement('div');
+  notification.className = 'notification notification-' + type;
+  notification.innerHTML = '<span>' + (type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️') + '</span><span>' + message + '</span>';
+  container.appendChild(notification);
+  setTimeout(() => notification.remove(), 5000);
+}
+function showProgressModal(title, message) {
+  document.getElementById('progressTitle').textContent = title;
+  document.getElementById('progressMessage').textContent = message;
+  document.getElementById('progressBar').style.width = "0%";
+  document.getElementById('progressModal').style.display = 'flex';
+}
+function updateProgress(percent, message) {
+  document.getElementById('progressBar').style.width = percent + '%';
+  if (message) document.getElementById('progressMessage').textContent = message;
+}
+function hideProgressModal() { document.getElementById('progressModal').style.display = 'none'; }
+
+// ========== 🏢 بيانات الشركة ==========
+function loadCompanyInfo() {
+  google.script.run.withSuccessHandler(function(result) {
+    var company = result?.company || result;
+    let html = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">';
+    html += '<div style="grid-column: span 2;"><strong>اسم الشركة:</strong> ' + (company.name || 'غير مسجل') + '</div>';
+    html += '<div style="grid-column: span 2;"><strong>العنوان:</strong> ' + (company.address || 'غير مسجل') + '</div>';
+    html += '<div><strong>العنوان البريدي:</strong> ' + (company.postal_address || '-') + '</div>';
+    html += '<div><strong>الهاتف:</strong> ' + (company.phone || 'غير مسجل') + '</div>';
+    html += '<div><strong>البريد:</strong> ' + (company.email || 'غير مسجل') + '</div>';
+    html += '<div><strong>الرقم الضريبي:</strong> ' + (company.tax_no || 'غير مسجل') + '</div>';
+    html += '<div><strong>نسبة الضريبة:</strong> ' + (company.tax_percentage || '0') + '%</div>';
+    html += '</div>';
+    document.getElementById('companyInfoDisplay').innerHTML = html;
+  }).getCompanyInfo();
+}
+function editCompanyInfo() {
+  document.getElementById('companyInfoDisplay').style.display = 'none';
+  document.getElementById('companyInfoEdit').style.display = 'block';
+  document.getElementById('editCompanyBtn').disabled = true;
+  google.script.run.withSuccessHandler(function(result) {
+    var company = result?.company || result;
+    document.getElementById('companyName').value = company.name || '';
+    document.getElementById('companyAddress').value = company.address || '';
+    document.getElementById('companyPostal').value = company.postal_address || '';
+    document.getElementById('companyPhone').value = company.phone || '';
+    document.getElementById('companyEmail').value = company.email || '';
+    document.getElementById('companyTaxNo').value = company.tax_no || '';
+    document.getElementById('companyTaxPercent').value = company.tax_percentage || '0';
+  }).getCompanyInfo();
+}
+function cancelEditCompany() {
+  document.getElementById('companyInfoDisplay').style.display = 'block';
+  document.getElementById('companyInfoEdit').style.display = 'none';
+  document.getElementById('editCompanyBtn').disabled = false;
+}
+function saveCompanyInfo() {
+  const data = {
+    companyName: document.getElementById('companyName').value.trim(),
+    address: document.getElementById('companyAddress').value.trim(),
+    postalAddress: document.getElementById('companyPostal').value.trim(),
+    phone: document.getElementById('companyPhone').value.trim(),
+    email: document.getElementById('companyEmail').value.trim(),
+    taxNo: document.getElementById('companyTaxNo').value.trim(),
+    taxPercentage: document.getElementById('companyTaxPercent').value
+  };
+  if (!data.companyName) { showNotification('اسم الشركة مطلوب', 'error'); return; }
+  showProgressModal('حفظ البيانات', 'جاري حفظ التغييرات...');
+  google.script.run.withSuccessHandler(function(result) {
+    hideProgressModal();
+    if (result?.success) { showNotification('تم حفظ البيانات بنجاح', 'success'); cancelEditCompany(); loadCompanyInfo(); }
+    else { showNotification(result?.message || 'فشل الحفظ', 'error'); }
+  }).withFailureHandler(function(error) { hideProgressModal(); showNotification('خطأ: ' + (error?.message || error), 'error'); })
+  .saveCompanySettings(data);
+}
+
+// ========== 📅 السنوات المالية ==========
+function loadAvailableYears() {
+  showProgressModal('تحميل البيانات', 'جاري تحميل السنوات المالية...');
+  google.script.run.withSuccessHandler(function(result) {
+    hideProgressModal();
+    var yearsData = result?.fullData || result?.years || [];
+    var yearsList = result?.years || [];
+    if (yearsData.length > 0) { yearsFullData = yearsData; availableYearsList = yearsList; displayYearsTable(yearsFullData); updateYearSelects(availableYearsList); }
+    else { document.getElementById('fiscalYearsTableBody').innerHTML = '<tr><td colspan="5" style="text-align:center;">لا توجد سنوات</td></tr>'; showNotification('لا توجد سنوات مالية', 'warning'); }
+  }).withFailureHandler(function(error) { hideProgressModal(); showNotification('خطأ في تحميل السنوات: ' + (error?.message || error), 'error'); })
+  .getAvailableFiscalYears();
+}
+function displayYearsTable(yearsData) {
+  let html = '';
+  yearsData.sort((a, b) => parseInt(b.year_code) - parseInt(a.year_code)).forEach(y => {
+    const fromDate = y.date_from && y.date_from !== '-' ? y.date_from : '-';
+    const toDate = y.date_to && y.date_to !== '-' ? y.date_to : '-';
+    const status = y.is_active ? 'نشطة' : 'غير نشطة';
+    const statusClass = y.is_active ? 'status-active' : 'status-inactive';
+    html += '<tr><td><strong>' + y.year_code + '</strong></td><td>' + fromDate + '</td><td>' + toDate + '</td><td><span class="status-badge ' + statusClass + '">' + status + '</span></td><td><button class="btn-icon btn-module" onclick="editFiscalYear(\'' + y.year_code + '\')">✏️ تعديل</button></td></tr>';
+  });
+  document.getElementById('fiscalYearsTableBody').innerHTML = html;
+}
+function updateYearSelects(years) {
+  ['oldYearSelect', 'newYearSelect', 'backupYearSelect'].forEach(id => {
+    const select = document.getElementById(id);
+    select.innerHTML = '<option value="">اختر السنة</option>';
+    [...years].sort((a, b) => parseInt(a) - parseInt(b)).forEach(year => {
+      select.innerHTML += '<option value="' + year + '">' + year + '</option>';
+    });
+  });
+}
+function validateTransferYears() {
+  const oldYear = document.getElementById('oldYearSelect').value;
+  const newYear = document.getElementById('newYearSelect').value;
+  const transferBtn = document.getElementById('transferBtn');
+  const hintDiv = document.getElementById('transferHint');
+  if (!oldYear || !newYear) { transferBtn.disabled = true; hintDiv.className = 'transfer-hint'; hintDiv.innerHTML = '<span>ℹ️</span><span>اختر السنة القديمة والسنة الجديدة للمتابعة.</span>'; return; }
+  const oldYearNum = parseInt(oldYear), newYearNum = parseInt(newYear);
+  if (newYearNum === oldYearNum + 1) { transferBtn.disabled = false; hintDiv.className = 'transfer-hint success'; hintDiv.innerHTML = '<span>✅</span><span>صحيح: يمكن ترحيل الأرصدة من ' + oldYear + ' إلى ' + newYear + '</span>'; }
+  else if (newYearNum <= oldYearNum) { transferBtn.disabled = true; hintDiv.className = 'transfer-hint warning'; hintDiv.innerHTML = '<span>⚠️</span><span>خطأ: السنة الجديدة يجب أن تكون أكبر من القديمة.</span>'; }
+  else { transferBtn.disabled = true; hintDiv.className = 'transfer-hint warning'; hintDiv.innerHTML = '<span>⚠️</span><span>خطأ: يمكن الترحيل لسنة واحدة فقط للأمام.</span>'; }
+}
+function editFiscalYear(year) {
+  currentEditingYear = year;
+  const yearData = yearsFullData.find(y => y.year_code === year) || {};
+  document.getElementById('editYearCode').value = year;
+  document.getElementById('editYearFrom').value = yearData.date_from || '';
+  document.getElementById('editYearTo').value = yearData.date_to || '';
+  document.getElementById('editYearStatus').value = yearData.is_active ? 'active' : 'inactive';
+  document.getElementById('editYearModal').classList.add('active');
+}
+function closeEditYearModal() { document.getElementById('editYearModal').classList.remove('active'); currentEditingYear = null; }
+function saveYearChanges() {
+  if (!currentEditingYear) return;
+  const data = { year_code: currentEditingYear, date_from: document.getElementById('editYearFrom').value, date_to: document.getElementById('editYearTo').value, is_active: document.getElementById('editYearStatus').value === 'active' };
+  showProgressModal('تحديث السنة', 'جاري حفظ التغييرات...');
+  google.script.run.withSuccessHandler(function(result) {
+    hideProgressModal();
+    if (result?.success) { showNotification('تم تحديث السنة بنجاح', 'success'); closeEditYearModal(); loadAvailableYears(); }
+    else { showNotification(result?.message || 'فشل التحديث', 'error'); }
+  }).withFailureHandler(function(error) { hideProgressModal(); showNotification('خطأ: ' + (error?.message || error), 'error'); })
+  .updateFiscalYear(data);
+}
+
+// ========== 💾 النسخ الاحتياطي ==========
+function loadBackupsList() {
+  const year = document.getElementById('backupYearSelect').value;
+  if (!year) return;
+  document.getElementById('backupsLoading').style.display = 'block';
+  document.getElementById('backupsList').style.display = 'none';
+  google.script.run.withSuccessHandler(function(result) {
+    document.getElementById('backupsLoading').style.display = 'none';
+    document.getElementById('backupsList').style.display = 'block';
+    backupsList = result?.backups || result || [];
+    let html = backupsList.length === 0 ? '<div style="padding: 20px; text-align: center;">لا توجد نسخ احتياطية</div>' : backupsList.map(backup => 
+      '<div class="backup-item" onclick="selectBackup(\'' + backup.id + '\')"><div class="backup-name">' + backup.name + '</div><div class="backup-date">' + new Date(backup.created).toLocaleDateString('ar-EG') + '</div></div>'
+    ).join('');
+    document.getElementById('backupsList').innerHTML = html;
+  }).withFailureHandler(function(error) { document.getElementById('backupsLoading').style.display = 'none'; showNotification('خطأ: ' + (error?.message || error), 'error'); })
+  .getAvailableBackups(year);
+}
+function selectBackup(id) {
+  selectedBackupId = id;
+  document.getElementById('deleteBackupBtn').disabled = false;
+  document.getElementById('restoreBackupBtn').disabled = false;
+  document.querySelectorAll('.backup-item').forEach(item => item.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+}
+function createBackup() {
+  const year = document.getElementById('backupYearSelect').value;
+  if (!year) { showNotification('اختر السنة أولاً', 'warning'); return; }
+  const notes = prompt('ملاحظات (اختياري):');
+  if (notes === null) return;
+  showProgressModal('إنشاء نسخة', 'جاري إنشاء النسخة الاحتياطية...');
+  google.script.run.withSuccessHandler(function(result) {
+    hideProgressModal();
+    if (result?.success) { showNotification('تم إنشاء النسخة بنجاح', 'success'); loadBackupsList(); }
+    else { showNotification(result?.message || 'فشل الإنشاء', 'error'); }
+  }).withFailureHandler(function(error) { hideProgressModal(); showNotification('خطأ: ' + (error?.message || error), 'error'); })
+  .createBackup(notes, year);
+}
+function restoreSelectedBackup() {
+  if (!selectedBackupId) return;
+  if (!confirm('⚠️ تحذير: استعادة النسخة ستفقد جميع التغييرات اللاحقة. هل أنت متأكد؟')) return;
+  showProgressModal('استعادة', 'جاري استعادة النسخة الاحتياطية...');
+  google.script.run.withSuccessHandler(function(result) {
+    hideProgressModal();
+    if (result?.success) { showNotification('تمت الاستعادة بنجاح', 'success'); }
+    else { showNotification(result?.message || 'فشلت الاستعادة', 'error'); }
+  }).withFailureHandler(function(error) { hideProgressModal(); showNotification('خطأ: ' + (error?.message || error), 'error'); })
+  .restoreFromBackup(selectedBackupId);
+}
+function deleteSelectedBackup() {
+  if (!selectedBackupId) return;
+  if (!confirm('هل أنت متأكد من حذف هذه النسخة؟')) return;
+  showProgressModal('حذف', 'جاري حذف النسخة...');
+  google.script.run.withSuccessHandler(function(result) {
+    hideProgressModal();
+    if (result?.success) { showNotification('تم الحذف بنجاح', 'success'); selectedBackupId = null; loadBackupsList(); }
+    else { showNotification(result?.message || 'فشل الحذف', 'error'); }
+  }).withFailureHandler(function(error) { hideProgressModal(); showNotification('خطأ: ' + (error?.message || error), 'error'); })
+  .deleteBackup(selectedBackupId);
+}
+
+// ========== 🔄 عمليات السنة ==========
+function createNewYearStructure() {
+  if (!confirm('إنشاء جداول سنة جديدة؟')) return;
+  showProgressModal('إنشاء سنة جديدة', 'جاري إنشاء الجداول...');
+  google.script.run.withSuccessHandler(function(result) {
+    hideProgressModal();
+    if (result?.success) { showNotification('تم إنشاء السنة الجديدة', 'success'); loadAvailableYears(); }
+    else { showNotification(result?.message || 'فشل الإنشاء', 'error'); }
+  }).withFailureHandler(function(error) { hideProgressModal(); showNotification('خطأ: ' + (error?.message || error), 'error'); })
+  .createNewYearStructure();
+}
+function transferBalancesWithSelection() {
+  const oldYear = document.getElementById('oldYearSelect').value;
+  const newYear = document.getElementById('newYearSelect').value;
+  if (!oldYear || !newYear) { showNotification('اختر السنتين القديمة والجديدة', 'warning'); return; }
+  const oldYearNum = parseInt(oldYear), newYearNum = parseInt(newYear);
+  if (newYearNum !== oldYearNum + 1) { showNotification('خطأ: يمكن الترحيل فقط من سنة إلى التي تليها مباشرة', 'error'); return; }
+  if (!confirm('ترحيل الأرصدة من ' + oldYear + ' إلى ' + newYear + '؟')) return;
+  showProgressModal('ترحيل', 'جاري ترحيل الأرصدة...');
+  google.script.run.withSuccessHandler(function(result) {
+    hideProgressModal();
+    if (result?.success) { showNotification('تم الترحيل بنجاح', 'success'); }
+    else { showNotification(result?.message || 'فشل الترحيل', 'error'); }
+  }).withFailureHandler(function(error) { hideProgressModal(); showNotification('خطأ: ' + (error?.message || error), 'error'); })
+  .transferYearBalances(oldYear, newYear);
+}
+function completeYearEndClosing() {
+  if (!confirm('إقفال السنة الكامل؟\nسيتم إنشاء سنة جديدة وترحيل الأرصدة.')) return;
+  showProgressModal('إقفال السنة', 'جاري إقفال السنة...');
+  google.script.run.withSuccessHandler(function(result) {
+    hideProgressModal();
+    if (result?.success) { showNotification('تم إقفال السنة بنجاح', 'success'); loadAvailableYears(); }
+    else { showNotification(result?.message || 'فشل الإقفال', 'error'); }
+  }).withFailureHandler(function(error) { hideProgressModal(); showNotification('خطأ: ' + (error?.message || error), 'error'); })
+  .showCompleteYearEnd();
+}
+
+// ========== 📋 دوال الصلاحيات الديناميكية ==========
+function loadAvailablePages() {
+  google.script.run.withSuccessHandler(function(result) {
+    var pages = result?.pages || result || [];
+    availablePagesList = pages;
+    renderPermissionsGrid(pages, userPermissions);
+  }).withFailureHandler(function(error) {
+    console.warn('⚠️ Failed to load pages:', error);
+    document.getElementById('permissionsContainer').innerHTML = '<div style="color:var(--danger);padding:10px;">فشل تحميل قائمة الصفحات</div>';
+  }).getAvailablePagesList();
+}
+
+function renderPermissionsGrid(pages, selectedPermissions) {
+  const container = document.getElementById('permissionsContainer');
+  if (!pages || pages.length === 0) {
+    container.innerHTML = '<div style="color:var(--text2);padding:10px;">لا توجد صفحات متاحة</div>';
+    return;
+  }
+  // تجميع الصفحات حسب الفئة
+  const categories = {};
+  pages.forEach(page => {
+    if (!categories[page.category]) categories[page.category] = [];
+    categories[page.category].push(page);
+  });
+  let html = '';
+  Object.keys(categories).sort().forEach(category => {
+    html += '<div style="margin-bottom:15px;"><strong style="font-size:13px;color:var(--accent);margin-bottom:8px;display:block;">' + getCategoryName(category) + '</strong>';
+    categories[category].forEach(page => {
+      const isChecked = selectedPermissions && selectedPermissions.allowed_pages && selectedPermissions.allowed_pages.includes(page.id) ? 'checked' : '';
+      html += '<div class="permission-item"><input type="checkbox" id="perm_' + page.id + '" value="' + page.id + '" ' + isChecked + '><label for="perm_' + page.id + '"><span>' + page.icon + '</span>' + page.name + '</label><span class="permission-category">' + category + '</span></div>';
+    });
+    html += '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function getCategoryName(category) {
+  const names = {
+    'main': '🏠 الرئيسية', 'reports': '📈 التقارير', 'sales': '💰 المبيعات',
+    'database': '🗄️ قاعدة البيانات', 'transactions': '🔄 المعاملات',
+    'finance': '💳 المالية', 'admin': '⚙️ الإدارة', 'custom': '📋 مخصص'
+  };
+  return names[category] || category;
+}
+
+function updatePermissionsByRole() {
+  const role = document.getElementById('userRole').value;
+  const checkboxes = document.querySelectorAll('#permissionsContainer input[type="checkbox"]');
+  
+  // صلاحيات افتراضية حسب الدور
+  const rolePermissions = {
+    'admin': AVAILABLE_PAGES.map(p => p.id),  // جميع الصفحات
+    'accountant': ['dashboard', 'stats', 'accounts', 'trial_balance', 'profit_loss', 'balance_sheet', 'account_statement', 'purchases', 'sales', 'payments', 'receipts'],
+    'cashier': ['pos', 'dashboard'],
+    'viewer': ['dashboard'],
+    'custom': []  // يختار المستخدم يدوياً
+  };
+  
+  const allowedPages = rolePermissions[role] || [];
+  checkboxes.forEach(cb => {
+    cb.checked = allowedPages.includes(cb.value);
+    cb.disabled = role !== 'custom';  // يمكن التعديل فقط في وضع "مخصص"
+  });
+}
+
+function getSelectedPermissions() {
+  const checkboxes = document.querySelectorAll('#permissionsContainer input[type="checkbox"]:checked');
+  const allowedPages = Array.from(checkboxes).map(cb => cb.value);
+  return {
+    allowed_pages: allowedPages,
+    role: document.getElementById('userRole').value,
+    read_only: false
+  };
+}
+
+// ========== 👥 إدارة المستخدمين ==========
+function loadUsersList() {
+  showProgressModal('تحميل البيانات', 'جاري تحميل قائمة المستخدمين...');
+  google.script.run.withSuccessHandler(function(result) {
+    hideProgressModal();
+    var users = result?.users || result || [];
+    let html = '';
+    if (!users || users.length === 0) {
+      html = '<tr><td colspan="6" style="text-align:center;">لا توجد مستخدمين</td></tr>';
+    } else {
+      users.forEach(user => {
+        const status = user.active === 'TRUE' || user.active === true ? 'نشط' : 'غير نشط';
+        const statusClass = user.active === 'TRUE' || user.active === true ? 'status-active' : 'status-inactive';
+        const lastLogin = user.last_login ? new Date(user.last_login).toLocaleDateString('ar-EG') : '-';
+        const permsCount = user.permissions?.allowed_pages?.length || 0;
+        html += '<tr>';
+        html += '<td><strong>' + (user.username || '-') + '</strong></td>';
+        html += '<td>' + (user.role || 'user') + '</td>';
+        html += '<td><span style="font-size:12px;color:var(--text2)">📋 ' + permsCount + ' صفحة</span></td>';
+        html += '<td><span class="status-badge ' + statusClass + '">' + status + '</span></td>';
+        html += '<td>' + lastLogin + '</td>';
+        html += '<td>';
+        html += '<button class="btn-icon btn-module" onclick="editUser(\'' + user.id + '\')">✏️</button> ';
+        html += '<button class="btn-icon btn-module" style="color:var(--danger)" onclick="resetUserPassword(\'' + user.id + '\')">🔑</button>';
+        html += '</td></tr>';
+      });
+    }
+    document.getElementById('usersTableBody').innerHTML = html;
+  }).withFailureHandler(function(error) {
+    hideProgressModal();
+    showNotification('خطأ في تحميل المستخدمين: ' + (error?.message || error), 'error');
+  }).getUsersList();
+}
+
+function openUserModal(userId) {
+  currentEditingUser = userId || null;
+  const modal = document.getElementById('userModal');
+  const title = document.getElementById('userModalTitle');
+  const passwordInput = document.getElementById('userPassword');
+  const passwordHint = document.getElementById('passwordHint');
+  
+  if (userId) {
+    title.innerHTML = '<span>✏️</span> تعديل المستخدم';
+    passwordHint.textContent = '(اتركها فارغة للإبقاء على كلمة المرور الحالية)';
+    passwordInput.value = '';
+    passwordInput.required = false;
+  } else {
+    title.innerHTML = '<span>➕</span> إضافة مستخدم جديد';
+    passwordHint.textContent = '(الحد الأدنى: 4 أحرف)';
+    passwordInput.value = '';
+    passwordInput.required = true;
+  }
+  
+  document.getElementById('userId').value = userId || '';
+  document.getElementById('userName').value = '';
+  document.getElementById('userRole').value = 'user';
+  document.getElementById('userStatus').value = 'TRUE';
+  document.getElementById('userPasswordStrength').style.display = 'none';
+  userPermissions = { allowed_pages: [], role: 'user', read_only: false };
+  
+  modal.classList.add('active');
+  
+  // تحميل قائمة الصفحات المتاحة
+  loadAvailablePages();
+  
+  if (userId) {
+    showProgressModal('تحميل البيانات', 'جاري تحميل بيانات المستخدم...');
+    google.script.run.withSuccessHandler(function(result) {
+      hideProgressModal();
+      var user = result?.user || result;
+      if (user) {
+        document.getElementById('userName').value = user.username || '';
+        document.getElementById('userRole').value = user.role || 'user';
+        document.getElementById('userStatus').value = user.active !== false ? 'TRUE' : 'FALSE';
+        userPermissions = user.permissions || { allowed_pages: [], role: user.role || 'user', read_only: false };
+        // إعادة رسم شبكة الصلاحيات مع التحديد الحالي
+        if (availablePagesList.length > 0) {
+          renderPermissionsGrid(availablePagesList, userPermissions);
+        }
+        // تحديث حالة مربعات الاختيار حسب الدور
+        updatePermissionsByRole();
+      }
+    }).getUserById(userId);
+  }
+}
+
+function closeUserModal() {
+  document.getElementById('userModal').classList.remove('active');
+  currentEditingUser = null;
+}
+
+function saveUser() {
+  const userId = document.getElementById('userId').value;
+  const username = document.getElementById('userName').value.trim();
+  const password = document.getElementById('userPassword').value;
+  const role = document.getElementById('userRole').value;
+  const active = document.getElementById('userStatus').value === 'TRUE';
+  
+  if (!username) { showNotification('اسم المستخدم مطلوب', 'error'); return; }
+  if (!userId && !password) { showNotification('كلمة المرور مطلوبة للمستخدم الجديد', 'error'); return; }
+  if (password) {
+    const strength = checkPasswordStrengthLocal(password);
+    if (!strength.valid) { showNotification(strength.message, 'error'); return; }
+  }
+  
+  // ✅ الحصول على الصلاحيات المختارة ديناميكياً
+  const permissions = getSelectedPermissions();
+  
+  const userData = {
+    id: userId || null,
+    username: username,
+    password: password || null,
+    role: role,
+    permissions: permissions,  // ✅ صلاحيات ديناميكية
+    active: active
+  };
+  
+  showProgressModal(userId ? 'تحديث المستخدم' : 'إضافة مستخدم', 'جاري الحفظ...');
+  
+  google.script.run.withSuccessHandler(function(result) {
+    hideProgressModal();
+    if (result?.success) {
+      showNotification(result.message, 'success');
+      closeUserModal();
+      loadUsersList();
+    } else {
+      showNotification(result?.message || 'فشل العملية', 'error');
+    }
+  }).withFailureHandler(function(error) {
+    hideProgressModal();
+    showNotification('خطأ: ' + (error?.message || error), 'error');
+  })[userId ? 'updateUser' : 'createUser'](userData);
+}
+
+function editUser(userId) { openUserModal(userId); }
+
+function resetUserPassword(userId) {
+  if (!confirm('هل تريد إعادة تعيين كلمة المرور لهذا المستخدم؟\nسيتم إنشاء كلمة مرور مؤقتة.')) return;
+  showProgressModal('إعادة التعيين', 'جاري إنشاء كلمة مرور جديدة...');
+  google.script.run.withSuccessHandler(function(result) {
+    hideProgressModal();
+    if (result?.success) {
+      alert('✅ تم إعادة تعيين كلمة المرور.\n\nكلمة المرور المؤقتة: ' + result.tempPassword + '\n\nيرجى إبلاغ المستخدم بتغييرها بعد تسجيل الدخول.');
+    } else { showNotification(result?.message || 'فشل إعادة التعيين', 'error'); }
+  }).resetUserPassword(userId);
+}
+
+function checkPasswordStrengthLocal(password) {
+  if (!password) return { valid: false, score: 0, message: 'كلمة المرور مطلوبة' };
+  if (password.length < 4) return { valid: false, score: 0, message: 'كلمة المرور قصيرة جداً (4 أحرف على الأقل)' };
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (password.length >= 12) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[a-z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[!@#$%^&*]/.test(password)) score++;
+  if (score <= 2) return { valid: false, score: score, message: '⚠️ كلمة المرور ضعيفة' };
+  return { valid: true, score: score, message: score <= 4 ? '✅ كلمة المرور مقبولة' : '✅✅ كلمة المرور قوية' };
+}
+
+// ========== 🛒 إدارة الكاشير ==========
+function loadCashiersList() {
+  showProgressModal('تحميل البيانات', 'جاري تحميل قائمة الكاشير...');
+  google.script.run.withSuccessHandler(function(result) {
+    hideProgressModal();
+    var cashiers = result?.cashiers || result || [];
+    loadSafesAndAccounts();
+    let html = '';
+    if (!cashiers || cashiers.length === 0) {
+      html = '<tr><td colspan="6" style="text-align:center;">لا توجد كاشير</td></tr>';
+    } else {
+      cashiers.forEach(cashier => {
+        const status = cashier.is_active === 'TRUE' || cashier.is_active === true ? 'نشط' : 'غير نشط';
+        const statusClass = cashier.is_active === 'TRUE' || cashier.is_active === true ? 'status-active' : 'status-inactive';
+        const safeName = safesList.find(s => s.id === cashier.default_safe_id)?.account_name || '-';
+        html += '<tr>';
+        html += '<td><strong>' + (cashier.cashier_name || '-') + '</strong></td>';
+        html += '<td>' + (cashier.cashier_code || '-') + '</td>';
+        html += '<td style="font-size:12px;color:var(--text2)">👤 ' + (cashier.login_username || 'cashier_' + (cashier.cashier_code || '')) + '</td>';
+        html += '<td>' + safeName + '</td>';
+        html += '<td><span class="status-badge ' + statusClass + '">' + status + '</span></td>';
+        html += '<td>';
+        html += '<button class="btn-icon btn-module" onclick="editCashier(\'' + cashier.id + '\')">✏️</button> ';
+        html += '<button class="btn-icon btn-module" style="color:var(--danger)" onclick="resetCashierPassword(\'' + cashier.id + '\')">🔑</button> ';
+        html += '<button class="btn-icon btn-module" style="color:var(--danger)" onclick="deleteCashier(\'' + cashier.id + '\')">🗑️</button>';
+        html += '</td></tr>';
+      });
+    }
+    document.getElementById('cashiersTableBody').innerHTML = html;
+  }).withFailureHandler(function(error) {
+    hideProgressModal();
+    showNotification('خطأ في تحميل الكاشير: ' + (error?.message || error), 'error');
+  }).getCashiersList();
+}
+
+function loadSafesAndAccounts() {
+  google.script.run.withSuccessHandler(function(result) {
+    safesList = result?.accounts || result?.safes || result || [];
+    const safeSelect = document.getElementById('cashierSafeId');
+    safeSelect.innerHTML = '<option value="">اختر الخزينة...</option>';
+    safesList.forEach(safe => { safeSelect.innerHTML += '<option value="' + safe.id + '">' + safe.account_name + '</option>'; });
+  }).getSafesForPurchases();
+  google.script.run.withSuccessHandler(function(result) {
+    var accounts = result?.accounts || result?.customers || result || [];
+    accountsList = accounts.filter(a => a.bs_group === 'BS-A');
+    const accountSelect = document.getElementById('cashierAccountId');
+    accountSelect.innerHTML = '<option value="">اختر الحساب...</option>';
+    accountsList.forEach(acc => { accountSelect.innerHTML += '<option value="' + acc.id + '">' + acc.account_name + ' (' + acc.account_no + ')</option>'; });
+  }).getCustomers();
+}
+
+function openCashierModal(cashierId) {
+  currentEditingCashier = cashierId || null;
+  const modal = document.getElementById('cashierModal');
+  const title = document.getElementById('cashierModalTitle');
+  const passwordInput = document.getElementById('cashierPassword');
+  const passwordHint = document.getElementById('cashierPasswordHint');
+  loadSafesAndAccounts();
+  if (cashierId) {
+    title.innerHTML = '<span>✏️</span> تعديل الكاشير';
+    passwordHint.textContent = '(اتركها فارغة للإبقاء على كلمة المرور الحالية)';
+    passwordInput.value = '';
+    passwordInput.required = false;
+  } else {
+    title.innerHTML = '<span>➕</span> إضافة كاشير جديد';
+    passwordHint.textContent = '(الحد الأدنى: 4 أحرف)';
+    passwordInput.value = '';
+    passwordInput.required = true;
+  }
+  document.getElementById('cashierId').value = cashierId || '';
+  document.getElementById('cashierName').value = '';
+  document.getElementById('cashierCode').value = '';
+  document.getElementById('cashierAccountId').value = '';
+  document.getElementById('cashierSafeId').value = '';
+  document.getElementById('cashierStatus').value = 'TRUE';
+  document.getElementById('cashierPasswordStrength').style.display = 'none';
+  modal.classList.add('active');
+  if (cashierId) {
+    showProgressModal('تحميل البيانات', 'جاري تحميل بيانات الكاشير...');
+    google.script.run.withSuccessHandler(function(result) {
+      hideProgressModal();
+      var cashier = result?.cashier || result;
+      if (cashier) {
+        document.getElementById('cashierName').value = cashier.cashier_name || '';
+        document.getElementById('cashierCode').value = cashier.cashier_code || '';
+        document.getElementById('cashierAccountId').value = cashier.account_id || '';
+        document.getElementById('cashierSafeId').value = cashier.default_safe_id || '';
+        document.getElementById('cashierStatus').value = cashier.is_active !== false ? 'TRUE' : 'FALSE';
+      }
+    }).getCashierById(cashierId);
+  }
+}
+
+function closeCashierModal() {
+  document.getElementById('cashierModal').classList.remove('active');
+  currentEditingCashier = null;
+}
+
+function saveCashier() {
+  const cashierId = document.getElementById('cashierId').value;
+  const cashierName = document.getElementById('cashierName').value.trim();
+  const cashierCode = document.getElementById('cashierCode').value.trim();
+  const password = document.getElementById('cashierPassword').value;
+  const accountId = document.getElementById('cashierAccountId').value;
+  const safeId = document.getElementById('cashierSafeId').value;
+  const isActive = document.getElementById('cashierStatus').value === 'TRUE';
+  
+  if (!cashierName || !cashierCode) { showNotification('اسم الكاشير والكود مطلوبان', 'error'); return; }
+  if (!cashierId && !password) { showNotification('كلمة المرور مطلوبة للكاشير الجديد', 'error'); return; }
+  if (password) {
+    const strength = checkPasswordStrengthLocal(password);
+    if (!strength.valid) { showNotification(strength.message, 'error'); return; }
+  }
+  const cashierData = {
+    id: cashierId || null,
+    cashier_name: cashierName,
+    cashier_code: cashierCode,
+    password: password || null,
+    account_id: accountId || null,
+    default_safe_id: safeId || null,
+    is_active: isActive
+  };
+  showProgressModal(cashierId ? 'تحديث الكاشير' : 'إضافة كاشير', 'جاري الحفظ...');
+  google.script.run.withSuccessHandler(function(result) {
+    hideProgressModal();
+    if (result?.success) {
+      var msg = result.message;
+      if (result.login_username) { msg += '\n\n🔑 اسم المستخدم للدخول: ' + result.login_username; }
+      showNotification(msg, 'success');
+      closeCashierModal();
+      loadCashiersList();
+    } else { showNotification(result?.message || 'فشل العملية', 'error'); }
+  }).withFailureHandler(function(error) {
+    hideProgressModal();
+    showNotification('خطأ: ' + (error?.message || error), 'error');
+  })[cashierId ? 'updateCashier' : 'createCashier'](cashierData);
+}
+
+function editCashier(cashierId) { openCashierModal(cashierId); }
+
+function resetCashierPassword(cashierId) {
+  if (!confirm('هل تريد إعادة تعيين كلمة المرور لهذا الكاشير؟\nسيتم إنشاء كلمة مرور مؤقتة.')) return;
+  showProgressModal('إعادة التعيين', 'جاري إنشاء كلمة مرور جديدة...');
+  google.script.run.withSuccessHandler(function(result) {
+    hideProgressModal();
+    if (result?.success) {
+      var msg = '✅ تم إعادة تعيين كلمة المرور.\n\nكلمة المرور المؤقتة: ' + result.tempPassword;
+      if (result.login_username) { msg += '\nاسم المستخدم للدخول: ' + result.login_username; }
+      alert(msg + '\n\nيرجى إبلاغ الكاشير بتغييرها بعد تسجيل الدخول.');
+    } else { showNotification(result?.message || 'فشل إعادة التعيين', 'error'); }
+  }).resetCashierPassword(cashierId);
+}
+
+function deleteCashier(cashierId) {
+  if (!confirm('⚠️ هل أنت متأكد من حذف هذا الكاشير؟\nسيتم أيضاً حذف حساب المستخدم المرتبط.')) return;
+  showProgressModal('حذف', 'جاري حذف الكاشير...');
+  google.script.run.withSuccessHandler(function(result) {
+    hideProgressModal();
+    if (result?.success) { showNotification('تم حذف الكاشير بنجاح', 'success'); loadCashiersList(); }
+    else { showNotification(result?.message || 'فشل الحذف', 'error'); }
+  }).withFailureHandler(function(error) {
+    hideProgressModal();
+    showNotification('خطأ: ' + (error?.message || error), 'error');
+  }).deleteCashier(cashierId);
+}
+
+// ========== 🎬 التحميل الأولي ==========
+document.addEventListener('DOMContentLoaded', function() {
+  loadAvailableYears();
+  loadCompanyInfo();
+  loadUsersList();
+  loadCashiersList();
+  
+  // ربط أحداث قوة كلمة المرور
+  document.getElementById('userPassword').addEventListener('input', function(e) { checkPasswordStrength(e.target.value, 'userPasswordStrength'); });
+  document.getElementById('cashierPassword').addEventListener('input', function(e) { checkPasswordStrength(e.target.value, 'cashierPasswordStrength'); });
+});
+</script>
+</body>
+</html>
