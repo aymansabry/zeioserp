@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💰 المتحصلات - ZEIOS ERP</title>
+<style>
+:root {
+--bg: #f8f9fa; --card: #fff; --text: #202124; --text2: #5f6368;
+--border: #dadce0; --accent: #1a73e8; --shadow: 0 1px 3px rgba(0,0,0,0.1);
+--success: #34a853; --danger: #dc2626; --warning: #f59e0b;
+}
+[data-theme="dark"] {
+--bg: #121212; --card: #1e1e1e; --text: #e8eaed; --text2: #9aa0a6;
+--border: #3c4043; --shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Google Sans';
+background: var(--bg); color: var(--text); padding: 16px; direction: rtl;
+}
+.container { max-width: 1000px; margin: 0 auto; }
+.header {
+display: flex; justify-content: space-between; align-items: center;
+margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+}
+h1 { font-size: 22px; font-weight: 500; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+.btn {
+padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px;
+background: var(--card); color: var(--text); cursor: pointer;
+font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+}
+.btn:hover { background: var(--bg); border-color: var(--accent); }
+.btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+.btn-primary:hover { background: #0d5bb8; }
+.btn-success { background: var(--success); color: white; border: none; }
+.btn-success:hover { background: #2d8e49; }
+.btn-warning { background: var(--warning); color: white; border: none; }
+.btn-warning:hover { background: #d97706; }
+.btn-secondary { background: #6b7280; color: white; border: none; }
+.btn-outline { background: transparent; border-color: var(--accent); color: var(--accent); }
+.btn-outline:hover { background: rgba(26,115,232,0.1); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+/* أنماط السنة المالية */
+.fiscal-year-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+}
+.fiscal-year-badge {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    padding: 6px 14px;
+    background: #e8f4fd;
+    border-radius: 6px;
+}
+.fiscal-year-label {
+    font-size: 13px;
+    color: var(--text2);
+    font-weight: 500;
+}
+
+.card {
+background: var(--card); border: 1px solid var(--border);
+border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px;
+}
+.card-header {
+padding: 14px 18px; font-weight: 600; border-bottom: 1px solid var(--border);
+display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+}
+.card-body { padding: 20px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
+.form-group { margin-bottom: 16px; }
+label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; }
+label.required::after { content: " *"; color: var(--danger); }
+input, select, textarea {
+width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+border-radius: 8px; background: var(--card); color: var(--text);
+font-family: inherit; font-size: 14px; transition: border-color 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+outline: none; border-color: var(--accent);
+box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+}
+input[readonly] { background: #f9fafb; cursor: not-allowed; }
+.account-select-wrapper { position: relative; }
+.account-search {
+width: 100%; padding: 12px; border: 1px solid var(--border);
+border-radius: 8px; font-size: 14px;
+}
+.account-options {
+position: absolute; top: 100%; left: 0; right: 0; max-height: 250px; overflow-y: auto;
+background: white; border: 1px solid var(--border); border-radius: 8px;
+box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 1000; display: none;
+}
+.account-options.show { display: block; }
+.account-option {
+padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f0f0f0;
+transition: background 0.2s; font-size: 14px;
+}
+.account-option:hover { background: #eef2f6; }
+.account-option .account-name { font-weight: 500; display: block; }
+.account-option .account-no { font-size: 11px; color: var(--text2); display: block; margin-top: 4px; }
+.account-option .account-category {
+font-size: 11px; padding: 2px 8px; border-radius: 10px;
+background: #e0e7ff; color: #3730a3; margin-right: 8px;
+}
+.selected-account {
+padding: 12px; background: #f8fafd; border-radius: 8px; margin-top: 8px;
+display: flex; justify-content: space-between; align-items: center;
+border: 1px solid var(--border);
+}
+.selected-account .change-link {
+color: var(--accent); cursor: pointer; font-size: 12px; text-decoration: underline;
+}
+.add-new-btn {
+margin-top: 8px; padding: 8px; background: #eef2f6;
+border: 1px dashed var(--accent); border-radius: 8px; color: var(--accent);
+font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.add-new-btn:hover { background: var(--accent); color: white; }
+.balance-card {
+background: linear-gradient(145deg, var(--accent), #152a45);
+color: white; border-radius: 16px; padding: 20px; margin: 20px 0;
+display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;
+box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+.balance-item { text-align: center; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 12px; }
+.balance-label { font-size: 13px; opacity: 0.9; margin-bottom: 8px; }
+.balance-value { font-size: 24px; font-weight: 700; }
+.balance-value.positive { color: #86efac; }
+.balance-value.negative { color: #fca5a5; }
+.balance-note {
+grid-column: span 3; text-align: center; font-size: 12px; opacity: 0.7;
+margin-top: 8px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2);
+}
+.table-container { overflow-x: auto; width: 100%; }
+table { width: 100%; border-collapse: collapse; min-width: 700px; }
+th {
+background: var(--bg); text-align: right; padding: 14px 16px;
+font-weight: 600; font-size: 13px; color: var(--text2);
+border-bottom: 2px solid var(--border);
+}
+td {
+padding: 12px 16px; border-bottom: 1px solid var(--border);
+color: var(--text); text-align: right;
+}
+tr:hover { background: rgba(26,115,232,0.04); }
+.actions { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-sm-edit { background: var(--accent); color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+.btn-sm-delete { background: var(--danger); color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+.loading { text-align: center; padding: 40px; color: var(--text2); }
+.spinner {
+border: 3px solid var(--border); border-top-color: var(--accent);
+border-radius: 50%; width: 32px; height: 32px;
+animation: spin 1s linear infinite; margin: 0 auto 16px;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.search-box { display: flex; gap: 10px; margin-bottom: 16px; }
+.search-box input { flex: 1; }
+.badge {
+padding: 4px 10px; border-radius: 20px; font-size: 11px;
+font-weight: 500; display: inline-block; background: var(--accent); color: white;
+}
+.notification {
+position: fixed; top: 20px; left: 20px; padding: 14px 20px; border-radius: 10px;
+color: white; font-weight: 500; z-index: 9999; animation: slideIn 0.3s ease;
+max-width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none;
+}
+.notification.show { display: block; }
+.notification.success { background: var(--success); }
+.notification.error { background: var(--danger); }
+.notification.warning { background: var(--warning); color: #1e293b; }
+@keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.post-save-actions {
+display: none; margin-top: 20px; padding: 15px;
+background: #f0f9ff; border-radius: 12px; border: 1px solid #bae6fd; text-align: center;
+}
+.post-save-actions.show { display: block !important; }
+.post-save-actions h4 { margin: 0 0 12px 0; color: var(--accent); font-size: 16px; }
+.post-save-actions .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.whatsapp-btn { background: #25D366; color: white; border: none; }
+.whatsapp-btn:hover { background: #20bd5c; }
+.print-btn { background: #6366f1; color: white; border: none; }
+.print-btn:hover { background: #4f52d6; }
+
+/* 🖨️ تصميم الطباعة المحسّن للطابعة الحرارية */
+@media print {
+    @page { 
+        size: 80mm 297mm; 
+        margin: 2mm; 
+    }
+    body * { 
+        visibility: hidden; 
+    }
+    #printArea, #printArea * { 
+        visibility: visible; 
+    }
+    #printArea {
+        position: absolute; 
+        left: 50%;
+        transform: translateX(-50%);
+        top: 0;
+        width: 76mm; 
+        padding: 3mm 4mm;
+        font-family: 'Courier New', monospace, 'Arial', sans-serif;
+        font-size: 11px; 
+        line-height: 1.4; 
+        color: #000;
+        text-align: right;
+        direction: rtl;
+        background: #fff;
+    }
+    .print-header { 
+        text-align: center; 
+        border-bottom: 2px solid #000; 
+        padding-bottom: 3mm; 
+        margin-bottom: 4mm; 
+    }
+    .print-header h3 { 
+        font-size: 16px; 
+        margin: 0 0 2mm 0; 
+        font-weight: 800;
+        letter-spacing: 1px;
+    }
+    .print-header p { 
+        font-size: 10px; 
+        margin: 1mm 0; 
+        font-weight: 600;
+    }
+    .print-row { 
+        display: flex; 
+        justify-content: space-between; 
+        margin-bottom: 2mm; 
+        font-size: 10px; 
+        font-weight: 500;
+    }
+    .print-row-center {
+        text-align: center;
+        justify-content: center;
+        font-weight: 700;
+    }
+    .print-divider {
+        border-top: 2px solid #000;
+        margin: 3mm 0;
+    }
+    .print-dotted {
+        border-top: 1px dotted #333;
+        margin: 2mm 0;
+    }
+    .print-amount-box {
+        text-align: center;
+        margin: 4mm 0;
+        padding: 3mm;
+        background: #f0f0f0;
+        border: 2px solid #000;
+        border-radius: 3mm;
+    }
+    .print-amount {
+        font-size: 20px;
+        font-weight: 800;
+        color: #000;
+    }
+    .print-balance-box {
+        background: #f5f5f5;
+        padding: 3mm;
+        border-radius: 2mm;
+        margin: 4mm 0;
+    }
+    .print-total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 1.5mm 0;
+        font-size: 10px;
+    }
+    .print-total-row.bold {
+        font-weight: 800;
+        font-size: 12px;
+        border-top: 2px solid #000;
+        padding-top: 2mm;
+        margin-top: 2mm;
+    }
+    .print-label {
+        font-weight: 600;
+        color: #333;
+    }
+    .print-value {
+        font-weight: 700;
+        color: #000;
+    }
+    .print-footer { 
+        border-top: 2px solid #000; 
+        padding-top: 3mm; 
+        margin-top: 4mm; 
+        text-align: center; 
+        font-size: 9px; 
+    }
+}
+
+/* ✅ زر الطباعة الثابت - يظهر دائمًا */
+.fixed-print-btn {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  z-index: 9999;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 14px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+}
+.fixed-print-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 25px rgba(0,0,0,0.4);
+  background: #0d5bb8;
+}
+.fixed-print-btn:active {
+  transform: translateY(-1px);
+}
+@media (max-width: 768px) {
+  .fixed-print-btn {
+    bottom: 15px;
+    right: 15px;
+    padding: 12px 20px;
+    font-size: 13px;
+  }
+}
+@media print {
+  .fixed-print-btn { display: none !important; }
+  .btn { display: none; }
+  body { padding: 10px; }
+}
+
+@media (max-width: 768px) {
+.balance-card { grid-template-columns: 1fr; }
+.form-grid { grid-template-columns: 1fr; }
+.header { flex-direction: column; align-items: stretch; }
+.fiscal-year-selector { width: 100%; justify-content: space-between; }
+}
+</style>
+</head>
+<body>
+<!-- 🖨️ منطقة الطباعة المخفية -->
+<div id="printArea" style="display: none;"></div>
+
+<div class="container">
+<!-- الرأس -->
+<div class="header">
+<h1><span>💰</span> المتحصلات</h1>
+<div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+    <div class="fiscal-year-display">
+        <span class="fiscal-year-label">📅 السنة المالية:</span>
+        <span class="fiscal-year-badge" id="fiscalYearBadge">جاري التحميل...</span>
+    </div>
+    
+    <div style="display:flex;gap:10px;">
+        <button class="btn btn-success" onclick="backToDashboard()"><span>🏠</span> لوحة التحكم</button>
+        <button class="btn btn-primary" onclick="openNewForm()"><span>➕</span> متحصلة جديدة</button>
+    </div>
+</div>
+</div>
+
+<!-- نموذج المتحصلة -->
+<div id="formPanel" class="card" style="display: none;">
+<div class="card-header">
+<span>📝 تفاصيل المتحصلة</span>
+<button class="btn btn-warning btn-sm" onclick="getCustomerBalance()" type="button">
+<span>📊</span> جلب الرصيد
+</button>
+</div>
+<div class="card-body">
+<form id="receiptForm">
+<input type="hidden" id="receiptId">
+<div class="form-grid">
+<div class="form-group">
+<label>رقم المتحصلة</label>
+<input type="text" id="receiptNo" readonly placeholder="يولد تلقائياً" style="background:var(--bg);">
+</div>
+<div class="form-group">
+<label class="required">التاريخ</label>
+<input type="date" id="receiptDate" required>
+</div>
+</div>
+<div class="form-group">
+<label class="required">العميل (الطرف)</label>
+<div class="account-select-wrapper">
+<input type="text" class="account-search" id="customerSearch"
+placeholder="ابحث برقم أو اسم العميل..."
+oninput="filterCustomers()" onfocus="showCustomerOptions()">
+<div class="account-options" id="customerOptions"></div>
+<div class="selected-account" id="selectedCustomer" style="display: none;">
+<span class="value-text" id="selectedCustomerText"></span>
+<span class="change-link" onclick="changeCustomer()">تغيير</span>
+</div>
+<div class="add-new-btn" onclick="openAddCustomerForm()">➕ إضافة عميل جديد</div>
+</div>
+<input type="hidden" id="customerId">
+<div class="form-group" style="margin-top:10px">
+<label>هاتف العميل</label>
+<input type="tel" id="customerPhone" class="phone-input" placeholder="01xxxxxxxxx" readonly>
+</div>
+</div>
+<div class="form-group">
+<label class="required">حساب النقد/البنك (المستلم)</label>
+<div class="account-select-wrapper">
+<input type="text" class="account-search" id="safeSearch"
+placeholder="ابحث بالخزينة أو البنك..."
+oninput="filterSafes()" onfocus="showSafeOptions()">
+<div class="account-options" id="safeOptions"></div>
+<div class="selected-account" id="selectedSafe" style="display: none;">
+<span class="value-text" id="selectedSafeText"></span>
+<span class="change-link" onclick="changeSafe()">تغيير</span>
+</div>
+</div>
+<input type="hidden" id="safeId">
+</div>
+<div class="form-group">
+<label class="required">المبلغ</label>
+<input type="number" id="amount" step="0.01" min="0.01" required placeholder="0.00" oninput="updateBalanceAfter()">
+</div>
+<div class="form-group">
+<label>ملاحظات</label>
+<textarea id="notes" rows="2" placeholder="ملاحظات إضافية..."></textarea>
+</div>
+
+<!-- بطاقة الرصيد -->
+<div id="balanceSection" class="balance-card" style="display: none;">
+<div class="balance-item">
+<div class="balance-label">الرصيد السابق (عليه)</div>
+<div id="balanceBefore" class="balance-value">0.00</div>
+</div>
+<div class="balance-item">
+<div class="balance-label">قيمة المتحصلة</div>
+<div id="receiptValue" class="balance-value">0.00</div>
+</div>
+<div class="balance-item">
+<div class="balance-label">الرصيد بعد</div>
+<div id="balanceAfter" class="balance-value" style="font-size: 26px;">0.00</div>
+</div>
+<div class="balance-note">
+⚠️ الرصيد = المديونية الحالية للعميل<br>
+المتحصلة تقلل من رصيد العميل (المبلغ الذي سيتم خصمه)
+</div>
+</div>
+
+<!-- قسم الإجراءات بعد الحفظ -->
+<div id="postSaveActions" class="post-save-actions">
+<h4>✅ تم حفظ المتحصلة بنجاح!</h4>
+<div class="btn-group">
+<button type="button" class="btn print-btn" onclick="printReceipt()"><span>🖨️</span> طباعة</button>
+<button type="button" class="btn whatsapp-btn" onclick="sendWhatsApp()"><span>📱</span> واتساب</button>
+<button type="button" class="btn btn-secondary" onclick="closeForm()"><span>❌</span> إغلاق</button>
+<button type="button" class="btn btn-primary" onclick="openNewForm()"><span>➕</span> متحصلة جديدة</button>
+</div>
+</div>
+
+<div style="display:flex;gap:12px;margin-top:24px;justify-content:flex-end;">
+<button type="button" class="btn btn-outline" onclick="closeForm()">إلغاء</button>
+<button type="submit" class="btn btn-primary" id="saveButton">💾 حفظ المتحصلة</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- قائمة المتحصلات -->
+<div class="card" id="listCard">
+<div class="card-header">
+<span>📋 قائمة المتحصلات - <span id="fiscalYearTitle"></span></span>
+<span id="receiptsCount" class="badge">0</span>
+</div>
+<div class="card-body">
+<div class="search-box">
+<input type="text" id="searchInput" placeholder="🔍 بحث في المتحصلات..." oninput="filterReceipts()">
+<button class="btn btn-primary" onclick="filterReceipts()">بحث</button>
+</div>
+<div class="table-container">
+<div id="tableContainer">
+<div class="loading">
+<div class="spinner"></div>
+جاري تحميل المتحصلات...
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ✅ زر الطباعة الثابت - يظهر دائمًا -->
+<button id="fixedPrintBtn" class="fixed-print-btn" onclick="printReceipt()" title="طباعة المتحصلة">
+<span>🖨️</span> طباعة المتحصلة
+</button>
+
+<script>
+// ========== المتغيرات العامة ==========
+var isSaving = false;
+var dataLoaded = false;
+var isEditingMode = false;
+var isPostSaveMode = false;
+var isDirectEditMode = false;
+var customersList = [];
+var cashAccountsList = [];
+var currentCustomerPhone = '';
+var systemName = "ZEIOS ERP";
+var companyName = "";
+var companyPhone = "";
+var companyAddress = "";
+var selectedFiscalYear = null;
+
+// ========== التهيئة ==========
+window.onload = function() {
+    console.log('🔄 بدء تهيئة صفحة المتحصلات...');
+    document.getElementById('receiptDate').value = new Date().toISOString().split('T')[0];
+    
+    // التحقق من localStorage أولاً
+    checkLocalStorageForEdit();
+    
+    loadCompanySettings();
+    loadFiscalYearFromSession();
+    loadCustomers();
+    loadCashAccounts();
+    
+    // التحقق من طلب التعديل المباشر
+    setTimeout(checkDirectEditRequest, 500);
+};
+
+// ========== التحقق من localStorage ==========
+function checkLocalStorageForEdit() {
+    try {
+        var pendingEdit = localStorage.getItem('pendingEditRecord');
+        if (pendingEdit) {
+            var editData = JSON.parse(pendingEdit);
+            console.log('📝 تم العثور على طلب تعديل في localStorage:', editData);
+            
+            if (editData.page === 'receipts') {
+                if (Date.now() - editData.timestamp < 60000) {
+                    console.log('✅ سيتم تطبيق التعديل من localStorage');
+                    
+                    var listCard = document.getElementById('listCard');
+                    if (listCard) listCard.style.display = 'none';
+                    
+                    var formPanel = document.getElementById('formPanel');
+                    if (formPanel) {
+                        formPanel.style.display = 'block';
+                        document.getElementById('saveButton').textContent = '💾 تحديث المتحصلة';
+                    }
+                    
+                    isDirectEditMode = true;
+                    
+                    loadReceiptForDirectEdit(editData.id, editData.fiscalYear);
+                    
+                    localStorage.removeItem('pendingEditRecord');
+                } else {
+                    console.log('⚠️ انتهت صلاحية طلب التعديل');
+                    localStorage.removeItem('pendingEditRecord');
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('❌ خطأ في قراءة localStorage:', e);
+        localStorage.removeItem('pendingEditRecord');
+    }
+}
+
+// ========== دوال السنة المالية ==========
+function loadFiscalYearFromSession() {
+    google.script.run
+        .withSuccessHandler(function(year) {
+            console.log('✅ السنة المالية من الجلسة:', year);
+            if (year && String(year).trim() !== '') {
+                selectedFiscalYear = String(year).trim();
+                var badge = document.getElementById('fiscalYearBadge');
+                var title = document.getElementById('fiscalYearTitle');
+                if (badge) badge.textContent = 'سنة ' + selectedFiscalYear;
+                if (title) title.textContent = 'سنة ' + selectedFiscalYear;
+                
+                if (!isDirectEditMode) {
+                    loadReceiptsList(selectedFiscalYear);
+                }
+            } else {
+                var badge = document.getElementById('fiscalYearBadge');
+                if (badge) badge.textContent = 'غير محددة';
+                document.getElementById('tableContainer').innerHTML =
+                    '<div class="loading" style="color:var(--warning)">⚠️ لم يتم تحديد سنة مالية. يرجى اختيار السنة من لوحة التحكم أولاً.</div>';
+            }
+        })
+        .withFailureHandler(function(error) {
+            console.error('❌ خطأ في تحميل السنة المالية:', error);
+            var badge = document.getElementById('fiscalYearBadge');
+            if (badge) badge.textContent = 'خطأ';
+            document.getElementById('tableContainer').innerHTML =
+                '<div class="loading" style="color:var(--danger)">❌ فشل تحميل السنة المالية: ' + error + '</div>';
+        })
+        .getCurrentUserFiscalYear();
+}
+
+// ========== دوال التعديل المباشر ==========
+function checkDirectEditRequest() {
+    console.log('🔍 التحقق من طلب التعديل المباشر...');
+    
+    google.script.run
+        .withSuccessHandler(function(params) {
+            console.log('📦 استجابة getEditRequest:', params);
+            
+            if (params && params.editMode && params.recordId) {
+                console.log('🎯 وضع التعديل المباشر:', params);
+                
+                if (params.pageName !== 'receipts') {
+                    console.log('⚠️ طلب تعديل لصفحة أخرى:', params.pageName);
+                    return;
+                }
+                
+                var listCard = document.getElementById('listCard');
+                if (listCard) {
+                    console.log('🔄 إخفاء قائمة المتحصلات');
+                    listCard.style.display = 'none';
+                }
+                
+                var formPanel = document.getElementById('formPanel');
+                if (formPanel) {
+                    console.log('🔄 إظهار نموذج المتحصلة');
+                    formPanel.style.display = 'block';
+                    document.getElementById('saveButton').textContent = '💾 تحديث المتحصلة';
+                }
+                
+                isDirectEditMode = true;
+                
+                loadReceiptForDirectEdit(params.recordId, params.fiscalYear);
+            } else {
+                console.log('ℹ️ لا يوجد طلب تعديل مباشر');
+            }
+        })
+        .withFailureHandler(function(error) {
+            console.log('❌ خطأ في checkDirectEditRequest:', error);
+        })
+        .getEditRequest('receipts');
+}
+
+function loadReceiptForDirectEdit(receiptId, fiscalYear) {
+    console.log('📥 تحميل المتحصلة للتعديل المباشر:', receiptId, fiscalYear);
+    
+    showTableLoading(true);
+    
+    google.script.run
+        .withSuccessHandler(function(receipt) {
+            showTableLoading(false);
+            
+            console.log('✅ بيانات المتحصلة المستلمة:', receipt);
+            
+            if (!receipt || !receipt.success) {
+                alert('❌ لم يتم العثور على المتحصلة');
+                closeForm();
+                return;
+            }
+            
+            var data = receipt.data;
+            
+            var formPanel = document.getElementById('formPanel');
+            if (formPanel) formPanel.style.display = 'block';
+            
+            document.getElementById('receiptId').value = data.id || '';
+            document.getElementById('receiptNo').value = data.receipt_no || '';
+            document.getElementById('receiptDate').value = data.date || '';
+            document.getElementById('amount').value = data.amount || '';
+            document.getElementById('notes').value = data.notes || '';
+            
+            if (data.partner_id) {
+                var customer = customersList.find(function(c) { return String(c.id) === String(data.partner_id); });
+                if (customer) {
+                    selectCustomer(customer.id, customer.account_name, customer.account_no, customer.phone || '');
+                } else if (data.partner_name) {
+                    selectCustomer(data.partner_id, data.partner_name, '', data.partner_phone || '');
+                }
+            }
+            
+            if (data.account_id) {
+                var safe = cashAccountsList.find(function(s) { return String(s.id) === String(data.account_id); });
+                if (safe) {
+                    selectSafe(safe.id, safe.account_name, safe.account_no);
+                } else if (data.account_name) {
+                    selectSafe(data.account_id, data.account_name, '');
+                }
+            }
+            
+            // حساب الرصيد إذا كان متاحاً
+            if (data.balance_before !== undefined && data.balance_after !== undefined) {
+                document.getElementById('balanceSection').style.display = 'grid';
+                document.getElementById('balanceBefore').textContent = data.balance_before.toFixed(2);
+                document.getElementById('receiptValue').textContent = data.amount.toFixed(2);
+                document.getElementById('balanceAfter').textContent = data.balance_after.toFixed(2);
+            }
+            
+            console.log('✅ تم تحميل المتحصلة للتعديل:', receiptId);
+        })
+        .withFailureHandler(function(error) {
+            showTableLoading(false);
+            console.error('❌ فشل تحميل المتحصلة:', error);
+            alert('❌ فشل تحميل المتحصلة: ' + error);
+            closeForm();
+        })
+        .getReceiptForDirectEdit(receiptId, fiscalYear);
+}
+
+function showTableLoading(show) {
+    var container = document.getElementById('tableContainer');
+    if (show) {
+        container.innerHTML = '<div class="loading"><div class="spinner"></div> جاري تحميل المتحصلة...</div>';
+    }
+}
+
+function loadCompanySettings() {
+    google.script.run
+    .withSuccessHandler(function(data) {
+        companyName = data?.name || "";
+        companyPhone = data?.phone || "";
+        companyAddress = data?.address || "";
+        console.log("🏢 معلومات الشركة:", {name: companyName, phone: companyPhone, address: companyAddress});
+    })
+    .withFailureHandler(function() {
+        console.warn("⚠️ فشل تحميل معلومات الشركة");
+    })
+    .getCompanySettings();
+}
+
+function backToDashboard() {
+    try { google.script.host.close(); } catch(e) {}
+    google.script.run.showDashboard?.();
+}
+
+function openAddCustomerForm() {
+    google.script.run.withSuccessHandler(function() {
+        setTimeout(refreshCustomersList, 1000);
+    }).openAccountForm();
+}
+
+function refreshCustomersList() {
+    google.script.run.withSuccessHandler(function(accounts) {
+        customersList = accounts || [];
+        renderCustomerOptions();
+    }).getAccountsForReceiptRecipient();
+}
+
+// ========== تحميل العملاء ==========
+function loadCustomers() {
+    google.script.run
+    .withSuccessHandler(function(accounts) {
+        customersList = accounts || [];
+        console.log("✅ تم تحميل العملاء:", customersList.length);
+        var withPhone = customersList.filter(function(acc) {
+            return acc.phone && acc.phone.trim() !== '';
+        }).length;
+        console.log(`📊 إحصائية الأرقام: ${withPhone} عميل لديه رقم هاتف من أصل ${customersList.length}`);
+        renderCustomerOptions();
+        dataLoaded = true;
+    })
+    .withFailureHandler(function(err) {
+        console.error('❌ فشل تحميل العملاء:', err);
+        showMessage('⚠️ فشل تحميل العملاء', 'warning');
+    })
+    .getAccountsForReceiptRecipient();
+}
+
+function loadCashAccounts() {
+    google.script.run
+    .withSuccessHandler(function(accounts) {
+        cashAccountsList = accounts || [];
+        console.log("✅ تم تحميل الخزائن:", cashAccountsList.length);
+        renderSafeOptions();
+    })
+    .withFailureHandler(function(err) {
+        console.error('❌ فشل تحميل الخزائن:', err);
+    })
+    .getCashAccounts();
+}
+
+// ========== عرض خيارات العملاء ==========
+function renderCustomerOptions() {
+    var container = document.getElementById('customerOptions');
+    if (!container) return;
+    var html = '';
+    for (var i = 0; i < customersList.length; i++) {
+        var acc = customersList[i];
+        var phone = acc.phone || '';
+        html += '<div class="account-option" onclick="selectCustomer(\'' + acc.id + '\',\'' + escapeHtml(acc.account_name) + '\',\'' + escapeHtml(acc.account_no) + '\',\'' + escapeHtml(phone) + '\')">' +
+            '<span class="account-name">' + escapeHtml(acc.account_name) + '</span>' +
+            '<span class="account-no">' + escapeHtml(acc.account_no) + '</span>';
+        if (phone) {
+            html += '<small style="color: #4caf50; margin-right:8px; font-weight:bold;">📱 ' + phone + '</small>';
+        } else {
+            html += '<small style="color: #999; margin-right:8px;">🚫 لا يوجد رقم</small>';
+        }
+        html += '</div>';
+    }
+    container.innerHTML = html;
+}
+
+function renderSafeOptions() {
+    var container = document.getElementById('safeOptions');
+    if (!container) return;
+    var html = '';
+    for (var i = 0; i < cashAccountsList.length; i++) {
+        var acc = cashAccountsList[i];
+        html += '<div class="account-option" onclick="selectSafe(\'' + acc.id + '\',\'' + escapeHtml(acc.account_name) + '\',\'' + escapeHtml(acc.account_no) + '\')">' +
+            '<span class="account-name">' + escapeHtml(acc.account_name) + '</span>' +
+            '<span class="account-no">' + escapeHtml(acc.account_no) + '</span>' +
+            '</div>';
+    }
+    container.innerHTML = html;
+}
+
+// ========== دوال البحث والاختيار ==========
+function showCustomerOptions() {
+    var container = document.getElementById('customerOptions');
+    if (container) {
+        container.classList.add('show');
+        filterCustomers();
+    }
+}
+
+function filterCustomers() {
+    var searchText = (document.getElementById('customerSearch')?.value || '').toLowerCase();
+    var options = document.querySelectorAll('#customerOptions .account-option');
+    for (var i = 0; i < options.length; i++) {
+        var text = options[i].textContent.toLowerCase();
+        options[i].style.display = text.indexOf(searchText) > -1 ? 'block' : 'none';
+    }
+}
+
+function selectCustomer(id, name, no, phone) {
+    document.getElementById('customerId').value = String(id||'').trim();
+    document.getElementById('customerSearch').value = name + ' (' + no + ')';
+    document.getElementById('customerSearch').style.display = 'none';
+    document.getElementById('selectedCustomerText').textContent = name + ' - ' + no;
+    document.getElementById('selectedCustomer').style.display = 'flex';
+    document.getElementById('customerOptions').classList.remove('show');
+    currentCustomerPhone = phone || '';
+    document.getElementById('customerPhone').value = currentCustomerPhone;
+    
+    var whatsappBtn = document.getElementById('whatsappBtn');
+    if (whatsappBtn) {
+        whatsappBtn.style.display = currentCustomerPhone ? 'inline-flex' : 'none';
+    }
+}
+
+function changeCustomer() {
+    document.getElementById('customerId').value = '';
+    document.getElementById('customerSearch').value = '';
+    document.getElementById('customerSearch').style.display = 'block';
+    document.getElementById('customerSearch').focus();
+    document.getElementById('selectedCustomer').style.display = 'none';
+    document.getElementById('balanceSection').style.display = 'none';
+    currentCustomerPhone = '';
+    document.getElementById('customerPhone').value = '';
+    var whatsappBtn = document.getElementById('whatsappBtn');
+    if (whatsappBtn) {
+        whatsappBtn.style.display = 'none';
+    }
+}
+
+function showSafeOptions() {
+    var container = document.getElementById('safeOptions');
+    if (container) {
+        container.classList.add('show');
+        filterSafes();
+    }
+}
+
+function filterSafes() {
+    var searchText = (document.getElementById('safeSearch')?.value || '').toLowerCase();
+    var options = document.querySelectorAll('#safeOptions .account-option');
+    for (var i = 0; i < options.length; i++) {
+        var text = options[i].textContent.toLowerCase();
+        options[i].style.display = text.indexOf(searchText) > -1 ? 'block' : 'none';
+    }
+}
+
+function selectSafe(id, name, no) {
+    document.getElementById('safeId').value = String(id||'').trim();
+    document.getElementById('safeSearch').value = name + ' (' + no + ')';
+    document.getElementById('safeSearch').style.display = 'none';
+    document.getElementById('selectedSafeText').textContent = name + ' - ' + no;
+    document.getElementById('selectedSafe').style.display = 'flex';
+    document.getElementById('safeOptions').classList.remove('show');
+}
+
+function changeSafe() {
+    document.getElementById('safeId').value = '';
+    document.getElementById('safeSearch').value = '';
+    document.getElementById('safeSearch').style.display = 'block';
+    document.getElementById('safeSearch').focus();
+    document.getElementById('selectedSafe').style.display = 'none';
+}
+
+// ========== فتح/إغلاق النموذج ==========
+function openNewForm() {
+    if (!selectedFiscalYear) {
+        alert('⚠️ لم يتم تحديد سنة مالية. يرجى اختيار السنة من لوحة التحكم أولاً.');
+        return;
+    }
+    
+    isEditingMode = false;
+    isPostSaveMode = false;
+    isDirectEditMode = false;
+    
+    document.getElementById('formPanel').style.display = 'block';
+    document.getElementById('receiptForm').reset();
+    document.getElementById('receiptId').value = '';
+    document.getElementById('receiptNo').value = '';
+    document.getElementById('receiptDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('amount').value = '';
+    document.getElementById('notes').value = '';
+    changeCustomer();
+    changeSafe();
+    document.getElementById('balanceSection').style.display = 'none';
+    document.getElementById('postSaveActions').classList.remove('show');
+    document.getElementById('saveButton').style.display = 'inline-flex';
+    enableAllFields();
+    setTimeout(function() {
+        document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+}
+
+function closeForm() {
+    document.getElementById('formPanel').style.display = 'none';
+    isEditingMode = false;
+    isPostSaveMode = false;
+    isDirectEditMode = false;
+    
+    var listCard = document.getElementById('listCard');
+    if (listCard) listCard.style.display = 'block';
+    
+    if (selectedFiscalYear) {
+        loadReceiptsList(selectedFiscalYear);
+    }
+}
+
+function enableAllFields() {
+    document.querySelectorAll('#receiptForm input, #receiptForm textarea, #receiptForm select').forEach(function(el) {
+        el.readOnly = false;
+        el.style.background = 'var(--card)';
+    });
+}
+
+// ========== جلب وعرض رصيد العميل ==========
+function getCustomerBalance() {
+    var customerId = document.getElementById('customerId')?.value;
+    if (!customerId) {
+        showMessage('⚠️ اختر العميل أولاً', 'warning');
+        return;
+    }
+    if (!selectedFiscalYear) {
+        showMessage('⚠️ لم يتم تحديد سنة مالية', 'warning');
+        return;
+    }
+    document.getElementById('balanceSection').style.display = 'grid';
+    document.getElementById('balanceBefore').textContent = 'جاري...';
+    google.script.run
+    .withSuccessHandler(function(data) {
+        var balance = parseFloat(data?.balance || data?.display_balance || 0);
+        var balanceElement = document.getElementById('balanceBefore');
+        balanceElement.textContent = balance.toFixed(2);
+        balanceElement.className = 'balance-value ' + (balance > 0 ? 'positive' : balance < 0 ? 'negative' : '');
+        updateBalanceAfter();
+    })
+    .withFailureHandler(function() {
+        document.getElementById('balanceBefore').textContent = '0.00';
+        showMessage('⚠️ فشل جلب الرصيد', 'warning');
+    })
+    .getCustomerBalanceForReceipt(document.getElementById('customerId').value, selectedFiscalYear);
+}
+
+function updateBalanceAfter() {
+    var before = parseFloat(document.getElementById('balanceBefore')?.textContent) || 0;
+    var amount = parseFloat(document.getElementById('amount')?.value) || 0;
+    document.getElementById('receiptValue').textContent = amount.toFixed(2);
+    var after = before - amount;
+    var afterElement = document.getElementById('balanceAfter');
+    afterElement.textContent = after.toFixed(2);
+    afterElement.className = 'balance-value ' + (after > 0 ? 'positive' : after < 0 ? 'negative' : '');
+}
+
+// ========== قائمة المتحصلات ==========
+function loadReceiptsList(fiscalYear) {
+    var year = fiscalYear || selectedFiscalYear;
+    var container = document.getElementById('tableContainer');
+    
+    if (!year) {
+        container.innerHTML = '<div class="loading">⚠️ يرجى اختيار سنة مالية من لوحة التحكم أولاً</div>';
+        return;
+    }
+    
+    if (isDirectEditMode) {
+        console.log('📝 في وضع التعديل المباشر - لا يتم عرض قائمة المتحصلات');
+        return;
+    }
+    
+    container.innerHTML = '<div class="loading"><div class="spinner"></div> جاري التحميل...</div>';
+    
+    google.script.run
+    .withSuccessHandler(function(receipts) {
+        if (!receipts || receipts.length === 0) {
+            container.innerHTML = '<div class="loading">📭 لا توجد متحصلات لسنة ' + year + '</div>';
+            document.getElementById('receiptsCount').textContent = '0';
+            return;
+        }
+        document.getElementById('receiptsCount').textContent = receipts.length;
+        var html = '<table><thead><tr><th>رقم المتحصلة</th><th>التاريخ</th><th>العميل</th><th>إلى الخزنة</th><th>المبلغ</th><th>الإجراءات</th></tr></thead><tbody>';
+        for (var i = 0; i < receipts.length; i++) {
+            var r = receipts[i];
+            html += '<tr>' +
+                '<td><strong>' + escapeHtml(r.receipt_no || '') + '</strong></td>' +
+                '<td>' + escapeHtml(r.date || '') + '</td>' +
+                '<td>' + escapeHtml(r.partner_name || '') + '</td>' +
+                '<td>' + escapeHtml(r.account_name || '') + '</td>' +
+                '<td style="font-weight:600;color:var(--accent);">' + parseFloat(r.amount || 0).toFixed(2) + '</td>' +
+                '<td class="actions">' +
+                '<button class="btn-sm btn-sm-edit" onclick="editReceipt(\'' + escapeHtml(r.id || '') + '\')">✏️</button>' +
+                '<button class="btn-sm btn-sm-delete" onclick="deleteReceipt(\'' + escapeHtml(r.id || '') + '\')">🗑️</button>' +
+                '</td></tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    })
+    .withFailureHandler(function() {
+        container.innerHTML = '<div class="loading" style="color:var(--danger)">❌ فشل التحميل</div>';
+    })
+    .getReceiptsList(year);
+}
+
+function filterReceipts() {
+    var searchText = (document.getElementById('searchInput')?.value || '').toLowerCase();
+    var rows = document.querySelectorAll('#tableContainer table tbody tr');
+    var visibleCount = 0;
+    for (var i = 0; i < rows.length; i++) {
+        var match = false;
+        var cells = rows[i].querySelectorAll('td');
+        for (var j = 0; j < cells.length; j++) {
+            if (cells[j].textContent.toLowerCase().indexOf(searchText) > -1) {
+                match = true;
+                break;
+            }
+        }
+        rows[i].style.display = match ? '' : 'none';
+        if (match) visibleCount++;
+    }
+    document.getElementById('receiptsCount').textContent = '(' + visibleCount + '/' + rows.length + ')';
+}
+
+// ========== حفظ المتحصلة ==========
+document.getElementById('receiptForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    if (isSaving) {
+        showMessage('⏳ جاري الحفظ...', 'info');
+        return;
+    }
+    if (!dataLoaded) {
+        showMessage('⏳ جاري تحميل البيانات...', 'warning');
+        return;
+    }
+    if (!selectedFiscalYear) {
+        showMessage('⚠️ لم يتم تحديد سنة مالية. يرجى اختيار السنة من لوحة التحكم أولاً.', 'warning');
+        return;
+    }
+    
+    var date = document.getElementById('receiptDate').value;
+    var customerId = document.getElementById('customerId').value;
+    var safeId = document.getElementById('safeId').value;
+    var amount = parseFloat(document.getElementById('amount').value) || 0;
+    
+    if (!date) { showMessage('⚠️ التاريخ مطلوب', 'warning'); return; }
+    if (!customerId) { showMessage('⚠️ العميل مطلوب', 'warning'); return; }
+    if (!safeId) { showMessage('⚠️ حساب الخزنة مطلوب', 'warning'); return; }
+    if (amount <= 0) { showMessage('⚠️ المبلغ يجب أن يكون أكبر من صفر', 'warning'); return; }
+    if (customerId === safeId) { showMessage('⚠️ لا يمكن أن يكون حساب الخزنة هو نفس حساب العميل', 'warning'); return; }
+    
+    var formData = {
+        id: document.getElementById('receiptId')?.value || null,
+        receipt_no: document.getElementById('receiptNo')?.value || null,
+        date: date,
+        partner_id: customerId,
+        account_id: safeId,
+        amount: amount,
+        notes: document.getElementById('notes')?.value.trim() || ''
+    };
+    
+    console.log("💰 بدء حفظ المتحصلة:", formData);
+    isSaving = true;
+    var saveButton = document.getElementById('saveButton');
+    var originalText = saveButton.textContent;
+    saveButton.textContent = '⏳ جاري الحفظ...';
+    saveButton.disabled = true;
+    
+    google.script.run
+    .withSuccessHandler(function(response) {
+        isSaving = false;
+        saveButton.textContent = originalText;
+        saveButton.disabled = false;
+        console.log("📥 استجابة الحفظ:", response);
+        if (response?.success) {
+            showMessage('✅ ' + (response.message || 'تم الحفظ'), 'success');
+            if (response.receipt_no && !document.getElementById('receiptId').value) {
+                document.getElementById('receiptNo').value = response.receipt_no;
+            }
+            var postSave = document.getElementById('postSaveActions');
+            if (postSave) {
+                postSave.classList.add('show');
+                console.log("✅ تم إظهار قسم الإجراءات بعد الحفظ");
+            }
+            document.getElementById('saveButton').style.display = 'none';
+            document.querySelectorAll('#receiptForm input, #receiptForm textarea, #receiptForm select').forEach(function(el) {
+                if (el.id !== 'amount') {
+                    el.readOnly = true;
+                    el.style.background = '#f9fafb';
+                }
+            });
+            isPostSaveMode = true;
+        } else {
+            showMessage('❌ ' + (response?.message || 'فشل الحفظ'), 'error');
+        }
+    })
+    .withFailureHandler(function(error) {
+        isSaving = false;
+        saveButton.textContent = originalText;
+        saveButton.disabled = false;
+        console.error("❌ خطأ في الحفظ:", error);
+        showMessage('❌ خطأ: ' + error, 'error');
+    })
+    .saveReceipt(formData, selectedFiscalYear);
+});
+
+// ========== تعديل متحصلة (من القائمة) ==========
+function editReceipt(id) {
+    if (!dataLoaded) {
+        showMessage('⏳ جاري تحميل البيانات...', 'warning');
+        return;
+    }
+    if (!selectedFiscalYear) {
+        showMessage('⚠️ لم يتم تحديد سنة مالية', 'warning');
+        return;
+    }
+    
+    isEditingMode = true;
+    isDirectEditMode = true;
+    
+    google.script.run
+    .withSuccessHandler(function(receipt) {
+        if (!receipt) {
+            showMessage('❌ لم يتم العثور على المتحصلة', 'error');
+            isEditingMode = false;
+            isDirectEditMode = false;
+            return;
+        }
+        console.log("📝 تحميل بيانات المتحصلة:", receipt);
+        
+        document.getElementById('formPanel').style.display = 'block';
+        document.getElementById('receiptId').value = receipt.id || '';
+        document.getElementById('receiptNo').value = receipt.receipt_no || '';
+        document.getElementById('receiptDate').value = receipt.date || '';
+        document.getElementById('amount').value = receipt.amount || '';
+        document.getElementById('notes').value = receipt.notes || '';
+        
+        if (receipt.partner_id) {
+            var foundCustomer = customersList.find(function(c) {
+                return String(c.id) === String(receipt.partner_id);
+            });
+            if (foundCustomer) {
+                selectCustomer(foundCustomer.id, foundCustomer.account_name, foundCustomer.account_no, foundCustomer.phone || '');
+            } else if (receipt.partner_name) {
+                selectCustomer(receipt.partner_id, receipt.partner_name, '', receipt.partner_phone || '');
+            }
+        }
+        
+        if (receipt.account_id) {
+            var foundSafe = cashAccountsList.find(function(s) {
+                return String(s.id) === String(receipt.account_id);
+            });
+            if (foundSafe) {
+                selectSafe(foundSafe.id, foundSafe.account_name, foundSafe.account_no);
+            } else if (receipt.account_name) {
+                selectSafe(receipt.account_id, receipt.account_name, '');
+            }
+        }
+        
+        var postSave = document.getElementById('postSaveActions');
+        if (postSave) postSave.classList.remove('show');
+        document.getElementById('saveButton').style.display = 'inline-flex';
+        enableAllFields();
+        
+        setTimeout(function() {
+            document.getElementById('balanceSection').style.display = 'none';
+            document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth' });
+        }, 300);
+    })
+    .withFailureHandler(function(error) {
+        console.error("❌ فشل تحميل المتحصلة:", error);
+        showMessage('❌ فشل التحميل: ' + error, 'error');
+        isEditingMode = false;
+        isDirectEditMode = false;
+    })
+    .getReceiptById(id, selectedFiscalYear);
+}
+
+// ========== حذف متحصلة ==========
+function deleteReceipt(id) {
+    if (!confirm('⚠️ تأكيد حذف هذه المتحصلة؟\nسيتم حذف القيود المحاسبية المرتبطة بها أيضاً.')) return;
+    if (!selectedFiscalYear) {
+        showMessage('⚠️ لم يتم تحديد سنة مالية', 'warning');
+        return;
+    }
+    
+    google.script.run
+    .withSuccessHandler(function(response) {
+        if (response?.success) {
+            showMessage('✅ ' + response.message, 'success');
+            loadReceiptsList(selectedFiscalYear);
+        } else {
+            showMessage('❌ ' + (response?.message || 'فشل الحذف'), 'error');
+        }
+    })
+    .withFailureHandler(function(error) {
+        console.error("❌ فشل الحذف:", error);
+        showMessage('❌ خطأ: ' + error, 'error');
+    })
+    .deleteReceipt(id, selectedFiscalYear);
+}
+
+// ========== طباعة المتحصلة ==========
+function printReceipt() {
+    console.log("🖨️ بدء طباعة المتحصلة");
+    var receiptNo = document.getElementById('receiptNo')?.value || 'غير محدد';
+    var customerName = document.getElementById('selectedCustomerText')?.textContent || 'غير محدد';
+    var safeName = document.getElementById('selectedSafeText')?.textContent || 'غير محدد';
+    var date = document.getElementById('receiptDate')?.value || '';
+    var amount = document.getElementById('amount')?.value || '0';
+    var notes = document.getElementById('notes')?.value || '';
+    var balanceBefore = document.getElementById('balanceBefore')?.textContent || '0.00';
+    var balanceAfter = document.getElementById('balanceAfter')?.textContent || '0.00';
+    var balanceVisible = document.getElementById('balanceSection').style.display !== 'none';
+    var phone = currentCustomerPhone || '';
+
+    var printHtml = '<div class="print-header">';
+    printHtml += '<h3 style="font-size:16px; font-weight:800;">ZEIOS ERP</h3>';
+    printHtml += '<p style="font-size:11px; font-weight:600;">متحصلة نقدية</p>';
+    printHtml += '</div>';
+
+    printHtml += '<div class="print-row"><span class="print-label">رقم المتحصلة:</span><span class="print-value">' + receiptNo + '</span></div>';
+    printHtml += '<div class="print-row"><span class="print-label">التاريخ:</span><span class="print-value">' + date + '</span></div>';
+    printHtml += '<div class="print-row"><span class="print-label">العميل:</span><span class="print-value">' + customerName + '</span></div>';
+    printHtml += '<div class="print-row"><span class="print-label">إلى حساب:</span><span class="print-value">' + safeName + '</span></div>';
+    if (phone) {
+        printHtml += '<div class="print-row"><span class="print-label">هاتف:</span><span class="print-value">' + phone + '</span></div>';
+    }
+
+    if (notes) {
+        printHtml += '<div class="print-dotted"></div>';
+        printHtml += '<div class="print-item-details">ملاحظات: ' + notes + '</div>';
+    }
+
+    printHtml += '<div class="print-dotted"></div>';
+    printHtml += '<div class="print-amount-box">';
+    printHtml += '<div style="font-size: 12px; font-weight:600;">قيمة المتحصلة</div>';
+    printHtml += '<div class="print-amount">' + parseFloat(amount).toFixed(2) + ' ₪</div>';
+    printHtml += '</div>';
+
+    if (balanceVisible && parseFloat(balanceBefore) !== 0) {
+        printHtml += '<div class="print-balance-box">';
+        printHtml += '<div style="font-weight:600; margin-bottom:2mm;">📊 كشف حساب العميل</div>';
+        printHtml += '<div class="print-total-row"><span class="print-label">الرصيد السابق:</span><span class="print-value">' + balanceBefore + ' ₪</span></div>';
+        printHtml += '<div class="print-total-row"><span class="print-label">قيمة المتحصلة:</span><span class="print-value">' + amount + ' ₪</span></div>';
+        printHtml += '<div class="print-total-row bold"><span class="print-label">الرصيد المتبقي:</span><span class="print-value">' + balanceAfter + ' ₪</span></div>';
+        printHtml += '</div>';
+    }
+
+    printHtml += '<div class="print-footer">';
+    printHtml += '<p style="font-weight:600;">شكراً لتعاملكم</p>';
+    printHtml += '<p>ZEIOS ERP</p>';
+    printHtml += '<p>' + new Date().toLocaleDateString('ar-EG') + ' ' + new Date().toLocaleTimeString('ar-EG') + '</p>';
+    printHtml += '</div>';
+
+    var printArea = document.getElementById('printArea');
+    printArea.innerHTML = printHtml;
+    printArea.style.display = 'block';
+    window.print();
+    setTimeout(function() { printArea.style.display = 'none'; }, 1000);
+}
+
+// ========== واتساب ==========
+function sendWhatsApp() {
+    if (!currentCustomerPhone) {
+        showMessage('⚠️ هذا العميل لا يحتوي على رقم هاتف', 'warning');
+        return;
+    }
+    var receiptNo = document.getElementById('receiptNo')?.value || 'غير محدد';
+    var customerName = document.getElementById('selectedCustomerText')?.textContent || 'غير محدد';
+    var safeName = document.getElementById('selectedSafeText')?.textContent || 'غير محدد';
+    var date = document.getElementById('receiptDate')?.value || '';
+    var amount = document.getElementById('amount')?.value || '0';
+    var notes = document.getElementById('notes')?.value || '';
+    var balanceVisible = document.getElementById('balanceSection').style.display !== 'none';
+    var balanceBefore = document.getElementById('balanceBefore')?.textContent || '0.00';
+    var balanceAfter = document.getElementById('balanceAfter')?.textContent || '0.00';
+
+    var phone = currentCustomerPhone.replace(/\D/g, '');
+    console.log("📞 رقم الهاتف المستخدم:", phone);
+    console.log("📝 بدء إرسال واتساب للمتحصلة:", receiptNo);
+
+    var message = '';
+    if (companyName) {
+        message += '*' + companyName + '*\n';
+    }
+    if (companyPhone) message += '📞 هاتف: ' + companyPhone + '\n';
+    if (companyAddress) message += '📍 عنوان: ' + companyAddress + '\n';
+    message += '\n*💰 متحصلة نقدية*\n';
+    message += '*📋 رقم المتحصلة:* ' + receiptNo + '\n';
+    message += '*🤝 العميل:* ' + customerName + '\n';
+    message += '*🏦 إلى حساب:* ' + safeName + '\n';
+    message += '*📅 التاريخ:* ' + date + '\n';
+    message += '*📱 هاتف العميل:* ' + currentCustomerPhone + '\n';
+    message += '\n*💰 قيمة المتحصلة: ' + amount + ' ₪*\n';
+    if (notes) {
+        message += '*📝 ملاحظات:* ' + notes + '\n';
+    }
+    if (balanceVisible && parseFloat(balanceBefore) !== 0) {
+        message += '------------------\n';
+        message += '*📊 كشف حساب العميل:*\n';
+        message += 'الرصيد السابق (عليه): ' + balanceBefore + ' ₪\n';
+        message += 'قيمة المتحصلة (مدفوع): ' + amount + ' ₪\n';
+        message += '*الرصيد المتبقي: ' + balanceAfter + ' ₪*\n';
+    }
+    message += '\n------------------\n';
+    message += 'تم الإنشاء عبر نظام *ZEIOS ERP*';
+
+    console.log("📝 الرسالة المرسلة:", message);
+    var url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(message);
+    window.open(url, '_blank');
+}
+
+// ========== دوال مساعدة ==========
+function showMessage(msg, type) {
+    var alert = document.createElement('div');
+    alert.className = 'notification ' + type;
+    alert.textContent = msg;
+    document.body.appendChild(alert);
+    setTimeout(function() {
+        alert.classList.add('show');
+    }, 10);
+    setTimeout(function() {
+        alert.classList.remove('show');
+        setTimeout(function() {
+            alert.remove();
+        }, 300);
+    }, 4000);
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function showLoading(show) {
+    var container = document.getElementById('tableContainer');
+    if (show) {
+        container.innerHTML = '<div class="loading"><div class="spinner"></div> جاري التحميل...</div>';
+    }
+}
+
+// ========== إغلاق القوائم عند النقر خارجها ==========
+document.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('account-search')) {
+        document.querySelectorAll('.account-options').forEach(function(container) {
+            container.classList.remove('show');
+        });
+    }
+});
+</script>
+</body>
+</html>
