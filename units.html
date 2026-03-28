@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚖️ وحدات القياس - ZEIOS ERP</title>
+  <style>
+    :root {
+      --bg: #f8f9fa; --card: #fff; --text: #202124; --text2: #5f6368;
+      --border: #dadce0; --accent: #1a73e8; --shadow: 0 1px 3px rgba(0,0,0,0.1);
+      --success: #34a853; --warning: #f59e0b; --danger: #dc2626;
+    }
+    [data-theme="dark"] {
+      --bg: #121212; --card: #1e1e1e; --text: #e8eaed; --text2: #9aa0a6;
+      --border: #3c4043; --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Google Sans';
+      background: var(--bg); color: var(--text); padding: 16px; direction: rtl;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+    
+    /* ===== الهيدر ===== */
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+    }
+    h1 { font-size: 22px; font-weight: 500; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+    
+    /* ===== الأزرار ===== */
+    button {
+      padding: 8px 16px; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--card); color: var(--text); cursor: pointer;
+      font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+    }
+    button:hover { background: var(--bg); border-color: var(--accent); }
+    .btn-primary { background: var(--accent); color: white; border: none; }
+    .btn-primary:hover { background: #0d5bb8; }
+    .btn-success { background: var(--success); color: white; border: none; }
+    .btn-success:hover { background: #2d8e49; }
+    .btn-danger { background: var(--danger); color: white; border: none; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-outline { background: transparent; border-color: var(--accent); color: var(--accent); }
+    .btn-outline:hover { background: rgba(26,115,232,0.1); }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+    
+    /* ===== البطاقات ===== */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px;
+    }
+    .card-header {
+      padding: 14px 18px; font-weight: 600; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .card-body { padding: 20px; }
+    
+    /* ===== النموذج ===== */
+    .form-group { margin-bottom: 16px; }
+    label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; }
+    label.required::after { content: " *"; color: var(--danger); }
+    
+    input, select, textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 6px; background: var(--card); color: var(--text);
+      font-family: inherit; font-size: 14px; transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+    input[readonly] { background: var(--bg); color: var(--text2); cursor: not-allowed; }
+    
+    .form-hint {
+      font-size: 12px; color: var(--text2); margin-top: 4px;
+      padding: 6px 10px; background: rgba(0,0,0,0.03); border-radius: 4px;
+    }
+    
+    /* ===== الجدول ===== */
+    .table-container { overflow-x: auto; width: 100%; }
+    table { width: 100%; border-collapse: collapse; min-width: 500px; }
+    th {
+      background: var(--bg); text-align: right; padding: 14px 16px;
+      font-weight: 600; font-size: 13px; color: var(--text2);
+      border-bottom: 2px solid var(--border); white-space: nowrap;
+    }
+    td {
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      color: var(--text); font-size: 14px; text-align: right;
+    }
+    tr:hover { background: rgba(26,115,232,0.04); }
+    
+    /* ===== الإجراءات ===== */
+    .actions { display: flex; gap: 6px; justify-content: flex-end; }
+    
+    /* ===== التحميل والرسائل ===== */
+    .loading { text-align: center; padding: 40px 20px; color: var(--text2); }
+    .spinner {
+      border: 3px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; width: 32px; height: 32px;
+      animation: spin 1s linear infinite; margin: 0 auto 16px;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    
+    .empty-state {
+      text-align: center; padding: 40px 20px; color: var(--text2);
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+    
+    /* ===== البحث ===== */
+    .search-bar {
+      display: flex; gap: 10px; margin-bottom: 16px;
+    }
+    .search-bar input { flex: 1; }
+    
+    /* ===== التجاوب ===== */
+    @media (max-width: 768px) {
+      .header { flex-direction: column; align-items: stretch; }
+      .card-body { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- الرأس -->
+    <div class="header">
+      <h1>⚖️ وحدات القياس</h1>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn-success" onclick="backToDashboard()">🏠 لوحة التحكم</button>
+        <button class="btn-primary" onclick="openNewForm()">➕ إضافة وحدة</button>
+      </div>
+    </div>
+
+    <!-- نموذج الإضافة/التعديل -->
+    <div id="formPanel" class="card" style="display:none;">
+      <div class="card-header">
+        <span id="formTitle">➕ إضافة وحدة جديدة</span>
+        <button class="btn-sm btn-outline" onclick="closeForm()">✕ إغلاق</button>
+      </div>
+      <div class="card-body">
+        <form id="unitForm">
+          <input type="hidden" id="originalCode">
+          
+          <div class="form-group">
+            <label for="unitCode" class="required">رمز الوحدة</label>
+            <input type="text" id="unitCode" required 
+              pattern="[A-Z0-9\-_]+" 
+              title="أحرف كبيرة، أرقام، وشرطات فقط"
+              placeholder="مثال: PCS"
+              style="text-transform:uppercase; font-family:monospace;">
+            <div class="form-hint">💡 يُستخدم كرمز فريد، لا يمكن تعديله بعد الحفظ</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="unitName" class="required">اسم الوحدة</label>
+            <input type="text" id="unitName" required 
+              placeholder="مثال: قطعة"
+              oninput="suggestUnitCode()">
+            <div class="form-hint">اكتب الاسم لاقتراح رمز تلقائي</div>
+          </div>
+
+          <!-- أزرار الحفظ -->
+          <div style="display:flex; gap:10px; margin-top:24px; justify-content:flex-end;">
+            <button type="button" class="btn-outline" onclick="closeForm()">إلغاء</button>
+            <button type="submit" class="btn-primary" id="saveBtn">💾 حفظ الوحدة</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- شريط البحث -->
+    <div class="card">
+      <div class="card-body">
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="🔍 ابحث بالرمز أو الاسم..." oninput="filterUnits()">
+          <button class="btn-outline" onclick="resetSearch()">🔄 مسح</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- جدول الوحدات -->
+    <div class="card">
+      <div class="card-header">
+        <span>📋 قائمة الوحدات</span>
+        <span id="unitsCount" class="badge" style="padding:4px 10px;border-radius:20px;font-size:11px;background:var(--accent);color:white;">0</span>
+      </div>
+      <div class="card-body">
+        <div class="table-container">
+          <div id="tableContainer">
+            <div class="loading">
+              <div class="spinner"></div>
+              جاري تحميل الوحدات...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== ثوابت النظام ==========
+    let allUnits = [];
+    let filteredUnits = [];
+    let isLoading = false;
+
+    // ========== التهيئة ==========
+    document.addEventListener('DOMContentLoaded', function() {
+      initTheme();
+      loadUnits();
+      setupEventListeners();
+    });
+
+    function initTheme() {
+      const saved = localStorage.getItem('zeios-theme');
+      if (saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    }
+
+    function setupEventListeners() {
+      // إغلاق المودال عند النقر خارجه
+      document.addEventListener('click', function(e) {
+        const form = document.getElementById('formPanel');
+        if (e.target === form && form.style.display !== 'none') {
+          closeForm();
+        }
+      });
+      // زر الهروب
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeForm();
+      });
+      // تحويل الكود لأحرف كبيرة أثناء الكتابة
+      document.getElementById('unitCode').addEventListener('input', function(e) {
+        e.target.value = e.target.value.toUpperCase();
+      });
+    }
+
+    // ========== تحميل البيانات ==========
+    function loadUnits() {
+      if (isLoading) return;
+      isLoading = true;
+      
+      showTableLoading();
+      
+      google.script.run
+        .withSuccessHandler(function(units) {
+          allUnits = units || [];
+          filteredUnits = [...allUnits];
+          renderTable(filteredUnits);
+          updateCount();
+          isLoading = false;
+        })
+        .withFailureHandler(function(error) {
+          showError('فشل تحميل الوحدات: ' + error);
+          isLoading = false;
+        })
+        .getUnitsList();
+    }
+
+    function showTableLoading() {
+      document.getElementById('tableContainer').innerHTML = `
+        <div class="loading">
+          <div class="spinner"></div>
+          جاري تحميل الوحدات...
+        </div>
+      `;
+    }
+
+    function renderTable(units) {
+      if (!units || units.length === 0) {
+        document.getElementById('tableContainer').innerHTML = `
+          <div class="empty-state">
+            <div class="icon">📭</div>
+            <p>لا توجد وحدات لعرضها</p>
+            <button class="btn-primary" onclick="openNewForm()" style="margin-top:12px;">➕ إضافة أول وحدة</button>
+          </div>
+        `;
+        return;
+      }
+
+      let html = `<table><thead><tr>
+        <th>الرمز</th>
+        <th>اسم الوحدة</th>
+        <th style="width:140px;">الإجراءات</th>
+      </tr></thead><tbody>`;
+
+      units.forEach(item => {
+        // ⚠️ نستخدم unit_code كمعرف فريد
+        const code = escapeHtml(item.unit_code);
+        const name = escapeHtml(item.unit_name);
+        
+        html += `<tr>
+          <td><strong style="font-family:monospace;">${code}</strong></td>
+          <td>${name}</td>
+          <td class="actions">
+            <button class="btn-sm btn-outline" onclick="editItem('${code}')" title="تعديل">✏️</button>
+            <button class="btn-sm btn-danger" onclick="deleteItem('${code}')" title="حذف">🗑️</button>
+          </td>
+        </tr>`;
+      });
+
+      html += '</tbody></table>';
+      document.getElementById('tableContainer').innerHTML = html;
+    }
+
+    function updateCount() {
+      document.getElementById('unitsCount').textContent = filteredUnits.length;
+    }
+
+    // ========== البحث ==========
+    function filterUnits() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      
+      if (!query) {
+        filteredUnits = [...allUnits];
+      } else {
+        filteredUnits = allUnits.filter(unit => 
+          unit.unit_code.toLowerCase().includes(query) ||
+          unit.unit_name.toLowerCase().includes(query)
+        );
+      }
+      
+      renderTable(filteredUnits);
+      updateCount();
+    }
+
+    function resetSearch() {
+      document.getElementById('searchInput').value = '';
+      filteredUnits = [...allUnits];
+      renderTable(filteredUnits);
+      updateCount();
+    }
+
+    // ========== دوال النموذج ==========
+    function openNewForm() {
+      document.getElementById('formPanel').style.display = 'block';
+      document.getElementById('formTitle').textContent = '➕ إضافة وحدة جديدة';
+      document.getElementById('unitForm').reset();
+      document.getElementById('originalCode').value = '';
+      document.getElementById('unitCode').readOnly = false;
+      document.getElementById('unitCode').style.background = '';
+      document.getElementById('unitCode').focus();
+    }
+
+    function closeForm() {
+      document.getElementById('formPanel').style.display = 'none';
+    }
+
+    // اقتراح رمز وحدة تلقائي بناءً على الاسم
+    function suggestUnitCode() {
+      const name = document.getElementById('unitName').value.trim();
+      const codeInput = document.getElementById('unitCode');
+      
+      // لا نقترح إذا كان المستخدم يعدل أو كتب شيئاً يدوياً
+      if (document.getElementById('originalCode').value || codeInput.value) {
+        return;
+      }
+      
+      if (name.length >= 2) {
+        // استخراج أحرف أولى
+        const initials = name
+          .split(' ')
+          .map(w => w.charAt(0))
+          .slice(0, 3)
+          .join('')
+          .toUpperCase()
+          .replace(/[^A-Z]/g, '');
+        
+        const prefix = initials || 'UNIT';
+        
+        // البحث عن آخر رقم مستخدم
+        const existing = allUnits
+          .filter(u => u.unit_code.startsWith(prefix))
+          .map(u => {
+            const num = parseInt(u.unit_code.replace(prefix, '').replace(/[^0-9]/g, ''));
+            return isNaN(num) ? 0 : num;
+          });
+        
+        const nextNum = (Math.max(0, ...existing) + 1).toString().padStart(2, '0');
+        codeInput.value = `${prefix}-${nextNum}`;
+      }
+    }
+
+    function editItem(code) {
+      // ⚠️ نمرر الكود كمعرف
+      showTableLoading();
+      
+      google.script.run
+        .withSuccessHandler(function(item) {
+          if (!item) {
+            showError('لم يتم العثور على الوحدة');
+            return;
+          }
+          
+          document.getElementById('formPanel').style.display = 'block';
+          document.getElementById('formTitle').textContent = '✏️ تعديل الوحدة';
+          
+          // حفظ الكود الأصلي للبحث عند التحديث
+          document.getElementById('originalCode').value = item.unit_code;
+          
+          document.getElementById('unitCode').value = item.unit_code;
+          document.getElementById('unitName').value = item.unit_name;
+          
+          // منع تعديل الكود بعد الإنشاء
+          document.getElementById('unitCode').readOnly = true;
+          document.getElementById('unitCode').style.background = 'var(--bg)';
+          
+        })
+        .withFailureHandler(function(error) {
+          showError('فشل تحميل بيانات الوحدة: ' + error);
+        })
+        .getUnitByCode(code);  // ⚠️ نستخدم getUnitByCode بدلاً من getById
+    }
+
+    // ========== حفظ الوحدة ==========
+    document.getElementById('unitForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = {
+        // ⚠️ نمرر original_code للتحديث
+        original_code: document.getElementById('originalCode').value,
+        unit_code: document.getElementById('unitCode').value.trim().toUpperCase(),
+        unit_name: document.getElementById('unitName').value.trim()
+      };
+      
+      // التحقق الأساسي
+      if (!formData.unit_code || !formData.unit_name) {
+        showMessage('⚠️ رمز الوحدة واسم الوحدة مطلوبان', 'warning');
+        return;
+      }
+      
+      // التحقق من تنسيق الكود
+      if (!/^[A-Z0-9\-_]+$/.test(formData.unit_code)) {
+        showMessage('⚠️ رمز الوحدة يجب أن يحتوي على أحرف كبيرة وأرقام وشرطات فقط', 'warning');
+        return;
+      }
+      
+      // تعطيل زر الحفظ أثناء المعالجة
+      const saveBtn = document.getElementById('saveBtn');
+      const originalText = saveBtn.innerHTML;
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px;"></span> جاري الحفظ...';
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = originalText;
+          
+          if (result?.success) {
+            showMessage('✅ ' + result.message, 'success');
+            closeForm();
+            loadUnits();
+          } else {
+            showMessage('❌ ' + (result?.message || 'حدث خطأ غير معروف'), 'error');
+          }
+        })
+        .withFailureHandler(function(error) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = originalText;
+          showMessage('❌ خطأ في الاتصال: ' + error, 'error');
+        })
+        .saveUnit(formData);
+    });
+
+    // ========== حذف الوحدة ==========
+    function deleteItem(code) {
+      // ⚠️ نمرر الكود للحذف
+      if (!confirm('⚠️ هل أنت متأكد من حذف هذه الوحدة؟\n\nقد يؤثر هذا على الأصناف المرتبطة بها.')) {
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result?.success) {
+            showMessage('✅ ' + result.message, 'success');
+            loadUnits();
+          } else {
+            showMessage('❌ ' + (result?.message || 'فشل الحذف'), 'error');
+          }
+        })
+        .withFailureHandler(function(error) {
+          showMessage('❌ خطأ: ' + error, 'error');
+        })
+        .deleteUnit(code);  // ⚠️ نمرر الكود مباشرة
+    }
+
+    // ========== التنقل ==========
+    function backToDashboard() {
+      try {
+        if (typeof google !== 'undefined' && google.script?.host) {
+          google.script.host.close();
+          return;
+        }
+      } catch(e) {}
+      
+      if (typeof google !== 'undefined' && google.script?.run) {
+        google.script.run.reopenDashboard?.();
+        google.script.run.openPageInSpreadsheet?.('dashboard');
+      }
+    }
+
+    // ========== دوال مساعدة ==========
+    function showMessage(message, type = 'info') {
+      const alert = document.createElement('div');
+      alert.style.cssText = `
+        position: fixed; top: 20px; left: 20px; z-index: 9999;
+        padding: 14px 20px; border-radius: 8px; color: white;
+        font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        max-width: 400px; animation: slideIn 0.3s ease;
+        background: ${type === 'success' ? '#34a853' : type === 'error' ? '#dc2626' : type === 'warning' ? '#f59e0b' : '#1a73e8'};
+      `;
+      alert.innerHTML = `<span>${escapeHtml(message)}</span>`;
+      document.body.appendChild(alert);
+      
+      setTimeout(() => {
+        alert.style.opacity = '0';
+        alert.style.transition = 'opacity 0.3s';
+        setTimeout(() => alert.remove(), 300);
+      }, 4000);
+    }
+
+    function showError(message) {
+      showMessage(message, 'error');
+    }
+
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // ========== دعم Web App ==========
+    if (typeof window.google === 'undefined') {
+      console.warn('⚠️ هذه الصفحة مصممة للعمل داخل Google Apps Script');
+    }
+  </script>
+</body>
+</html>
