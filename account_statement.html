@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📊 كشف الحساب - ZEIOS ERP</title>
+  <style>
+    :root {
+      --bg: #f8f9fa; --card: #fff; --text: #202124; --text2: #5f6368;
+      --border: #dadce0; --accent: #1a73e8; --shadow: 0 1px 3px rgba(0,0,0,0.1);
+      --debit: #2e7d32; --credit: #c62828; --black: #202124;
+      --success: #34a853; --warning: #fbbc04; --danger: #ea4335;
+    }
+    .dark-mode {
+      --bg: #121212; --card: #1e1e1e; --text: #e8eaed; --text2: #9aa0a6;
+      --border: #3c4043; --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --black: #e8eaed;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Google Sans', 'Segoe UI', 'Tajawal', Arial, sans-serif;
+      background: var(--bg); color: var(--text); padding: 16px; direction: rtl;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    
+    /* Header Styles */
+    .main-header {
+      background: linear-gradient(135deg, var(--accent), #0d47a1);
+      color: white; padding: 20px 24px; border-radius: 12px;
+      margin-bottom: 20px; box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+    }
+    .header-top {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px; padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    .company-info h1 {
+      font-size: 22px; font-weight: 600; display: flex; align-items: center; gap: 10px;
+    }
+    .company-info p { font-size: 14px; opacity: 0.9; margin-top: 4px; }
+    .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .fiscal-badge {
+      background: rgba(255,255,255,0.2); padding: 6px 14px;
+      border-radius: 20px; font-size: 13px; font-weight: 500;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .fiscal-badge.inactive { background: rgba(255,152,0,0.3); }
+    .fiscal-badge.warning { background: rgba(234,67,53,0.3); }
+    
+    /* Buttons */
+    button {
+      padding: 10px 18px; border: none; border-radius: 6px;
+      background: var(--card); color: var(--text); cursor: pointer;
+      font-size: 14px; font-weight: 500; transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+    }
+    button:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: #0d5bb8; }
+    .btn-dashboard { background: var(--success); color: white; }
+    .btn-dashboard:hover { background: #2d8e49; }
+    .btn-print { background: var(--warning); color: #202124; }
+    .btn-print:hover { background: #e6a700; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { background: rgba(26,115,232,0.1); }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    
+    /* Edit Button */
+    .btn-edit-entry {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .btn-edit-entry:hover {
+      background: #0d5bb8;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    /* Cards */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; box-shadow: var(--shadow);
+      overflow: hidden; margin-bottom: 20px;
+    }
+    .card-header {
+      padding: 16px 20px; font-weight: 600; font-size: 16px;
+      border-bottom: 1px solid var(--border); background: var(--bg);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .card-body { padding: 20px; }
+    
+    .filters {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px; margin-bottom: 16px;
+    }
+    .form-group { margin-bottom: 0; }
+    label {
+      display: block; margin-bottom: 6px; font-weight: 500;
+      font-size: 13px; color: var(--text2);
+    }
+    input, select {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 6px; background: var(--card); color: var(--text);
+      font-family: inherit; font-size: 14px;
+    }
+    input:focus, select:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+    }
+    
+    /* Report Banner */
+    .report-banner {
+      padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;
+      font-size: 14px; display: flex; align-items: center; gap: 10px;
+    }
+    .report-banner.info {
+      background: rgba(26, 115, 232, 0.1); border-right: 4px solid var(--accent); color: var(--black);
+    }
+    .report-banner.warning {
+      background: rgba(255, 152, 0, 0.1); border-right: 4px solid var(--warning); color: var(--black);
+    }
+    .report-banner.error {
+      background: rgba(234, 67, 53, 0.1); border-right: 4px solid var(--danger); color: var(--black);
+    }
+    
+    /* Table Styles */
+    .table-container { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; min-width: 1100px; font-size: 14px; }
+    th {
+      background: var(--bg); text-align: right; padding: 14px 16px;
+      font-weight: 600; border-bottom: 2px solid var(--border); color: var(--black);
+      position: sticky; top: 0; z-index: 1;
+    }
+    td {
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      color: var(--text2); vertical-align: middle;
+    }
+    tr:hover { background: rgba(26, 115, 232, 0.04); }
+    tr:last-child td { border-bottom: none; }
+    
+    .text-left { text-align: left !important; }
+    .text-right { text-align: right !important; }
+    .text-center { text-align: center !important; }
+    
+    .debit { color: var(--debit); font-weight: 500; }
+    .credit { color: var(--credit); font-weight: 500; }
+    .balance { font-weight: 600; color: var(--black); }
+    .balance.positive { color: var(--debit); }
+    .balance.negative { color: var(--credit); }
+    
+    .ref-badge {
+      display: inline-block; padding: 4px 10px;
+      background: rgba(26, 115, 232, 0.1); color: var(--accent);
+      border-radius: 4px; font-size: 12px; font-weight: 500;
+    }
+    .ref-id {
+      font-family: monospace; font-size: 12px; color: var(--text2);
+      background: var(--bg); padding: 2px 6px; border-radius: 3px;
+    }
+    
+    /* Summary Section */
+    .summary {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px; margin-top: 20px; padding: 16px;
+      background: rgba(26, 115, 232, 0.05); border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .summary-item {
+      text-align: center; padding: 14px 12px; background: white;
+      border-radius: 8px; border: 1px solid var(--border);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .summary-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
+    .summary-value { font-size: 18px; font-weight: bold; color: var(--black); font-family: monospace; }
+    .summary-value.debit { color: var(--debit); }
+    .summary-value.credit { color: var(--credit); }
+    .summary-value.opening { color: var(--accent); }
+    .summary-value.closing {
+      color: var(--accent); font-size: 22px; padding: 8px 12px;
+      background: rgba(26, 115, 232, 0.1); border-radius: 6px;
+    }
+    
+    /* Loading & Empty States */
+    .loading { text-align: center; padding: 50px 20px; color: var(--text2); }
+    .spinner {
+      border: 3px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; width: 36px; height: 36px;
+      animation: spin 1s linear infinite; margin: 0 auto 16px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text2); }
+    .empty-state-icon { font-size: 56px; margin-bottom: 12px; opacity: 0.4; }
+    .empty-state-title { font-size: 16px; font-weight: 500; margin: 8px 0; color: var(--black); }
+    .empty-state-desc { font-size: 13px; }
+    
+    .action-bar { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+    
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--black); color: white; padding: 12px 24px;
+      border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      font-size: 14px; z-index: 1000; transition: transform 0.3s ease;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--danger); }
+    .toast.warning { background: var(--warning); color: #202124; }
+    
+    @media print {
+      .no-print { display: none !important; }
+      .btn-edit-entry { display: none !important; }
+      body { background: white; padding: 0; }
+      .card { box-shadow: none; border: none; }
+      .table-container { overflow: visible; }
+      table { min-width: auto; }
+      th { position: static; }
+    }
+    @media (max-width: 768px) {
+      .header-top { flex-direction: column; align-items: flex-start; }
+      .header-actions { width: 100%; justify-content: flex-start; }
+      .filters { grid-template-columns: 1fr; }
+      .summary { grid-template-columns: repeat(2, 1fr); }
+      .action-bar { flex-direction: column; }
+      button { width: 100%; justify-content: center; }
+      .btn-edit-entry { padding: 4px 8px; font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <!-- Main Header -->
+    <div class="main-header no-print">
+      <div class="header-top">
+        <div class="company-info">
+          <h1>📊 كشف الحساب <span id="companyName">ZEIOS ERP</span></h1>
+          <p id="companyDetails">جاري تحميل بيانات الشركة...</p>
+        </div>
+        <div class="header-actions">
+          <span id="fiscalBadge" class="fiscal-badge" style="display:none;">
+            📅 <span id="fiscalYearText"></span>
+          </span>
+          <button class="btn-outline btn-sm" onclick="toggleDarkMode()">🌓 الوضع</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+        <button class="btn-dashboard" onclick="backToDashboard()">🏠 لوحة التحكم</button>
+        <button class="btn-print" onclick="printReport()">🖨️ طباعة</button>
+        <button class="btn-outline" onclick="exportToCSV()">📥 تصدير CSV</button>
+      </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="card no-print">
+      <div class="card-header"><span>🔍 فلاتر البحث</span></div>
+      <div class="card-body">
+        <div class="filters">
+          <div class="form-group">
+            <label for="accountId">الحساب</label>
+            <select id="accountId" required>
+              <option value="">-- اختر الحساب --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="fromDate">من تاريخ</label>
+            <input type="date" id="fromDate">
+          </div>
+          <div class="form-group">
+            <label for="toDate">إلى تاريخ</label>
+            <input type="date" id="toDate">
+          </div>
+        </div>
+        <div class="action-bar">
+          <button class="btn-primary" onclick="loadReport()">🔍 عرض الكشف</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report Banner -->
+    <div id="reportBanner" class="report-banner info" style="display:none;"></div>
+
+    <!-- Statement Details Card -->
+    <div class="card">
+      <div class="card-header">
+        <span id="accountTitle">تفاصيل كشف الحساب</span>
+        <span id="recordCount" style="font-size:13px;color:var(--text2);"></span>
+      </div>
+      <div class="card-body">
+        <div class="table-container">
+          <div id="tableContainer">
+            <div class="empty-state">
+              <div class="empty-state-icon">📋</div>
+              <div class="empty-state-title">لا توجد بيانات معروضة</div>
+              <div class="empty-state-desc">اختر حساباً ونطاقاً زمنياً، ثم اضغط على "عرض الكشف"</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Summary Section -->
+        <div id="summarySection" class="summary" style="display:none;">
+          <div class="summary-item"><div class="summary-label">الرصيد الافتتاحي</div><div class="summary-value opening" id="openingBalance">0.00</div></div>
+          <div class="summary-item"><div class="summary-label">إجمالي مدين</div><div class="summary-value debit" id="totalDebit">0.00</div></div>
+          <div class="summary-item"><div class="summary-label">إجمالي دائن</div><div class="summary-value credit" id="totalCredit">0.00</div></div>
+          <div class="summary-item"><div class="summary-label">الرصيد الختامي</div><div class="summary-value closing" id="closingBalance">0.00</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"><span id="toastIcon">✅</span><span id="toastMessage"></span></div>
+
+  <script>
+    // ========== المتغيرات العامة ==========
+    let currentReportData = null;
+    let currentFiscalYear = null;
+    let isFiscalYearActive = false;
+    let companyInfo = null;
+
+    // ========== التهيئة ==========
+    window.onload = function() {
+      loadCompanySettings();
+      loadFiscalYearForReports();
+      loadAccounts();
+    };
+
+    // ========== معلومات الشركة ==========
+    function loadCompanySettings() {
+      google.script.run
+        .withSuccessHandler(function(info) {
+          companyInfo = info;
+          document.getElementById('companyName').textContent = info?.name || 'ZEIOS ERP';
+          let details = [];
+          if (info?.address) details.push(info.address);
+          if (info?.phone) details.push('📞 ' + info.phone);
+          if (info?.tax_no) details.push('🧾 ض.ق: ' + info.tax_no);
+          document.getElementById('companyDetails').textContent = 
+            details.length > 0 ? details.join(' | ') : 'نظام ZEIOS ERP للمحاسبة';
+        })
+        .withFailureHandler(function(err) {
+          console.warn('Failed to load company info:', err);
+          document.getElementById('companyName').textContent = 'ZEIOS ERP';
+          document.getElementById('companyDetails').textContent = 'نظام المحاسبة المتكامل';
+        })
+        .getCompanySettings();
+    }
+
+    // ========== السنة المالية ==========
+    function loadFiscalYearForReports() {
+      google.script.run
+        .withSuccessHandler(function(fiscalYearData) {
+          if (fiscalYearData.error) {
+            setDefaultDates();
+            updateFiscalBadge('غير محدد', false, true);
+            return;
+          }
+          currentFiscalYear = fiscalYearData;
+          isFiscalYearActive = fiscalYearData.is_active === true;
+          const formatDateInput = (dateStr) => {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+          };
+          const fromDate = formatDateInput(fiscalYearData.date_from);
+          const toDate = formatDateInput(fiscalYearData.date_to);
+          if (fromDate && toDate) {
+            document.getElementById('fromDate').value = fromDate;
+            document.getElementById('toDate').value = toDate;
+          } else {
+            setDefaultDates();
+          }
+          updateFiscalBadge(fiscalYearData.year_code || 'غير محدد', isFiscalYearActive, false);
+          if (!isFiscalYearActive) {
+            showBanner(`⚠️ تعمل على سنة مالية غير نشطة: ${fiscalYearData.year_code || ""}. التقارير متاحة لكن العمليات محجوبة.`, 'warning');
+          }
+        })
+        .withFailureHandler(function(error) {
+          console.warn('Fiscal year load failed:', error);
+          setDefaultDates();
+          updateFiscalBadge('خطأ', false, true);
+        })
+        .getActiveFiscalYearForReports();
+    }
+
+    function updateFiscalBadge(text, isActive, isWarning) {
+      const badge = document.getElementById('fiscalBadge');
+      const textEl = document.getElementById('fiscalYearText');
+      textEl.textContent = text;
+      badge.className = 'fiscal-badge' + (isWarning ? ' warning' : (!isActive ? ' inactive' : ''));
+      badge.style.display = 'inline-flex';
+    }
+
+    function setDefaultDates() {
+      const today = new Date();
+      const yearStart = today.getFullYear() + "-01-01";
+      const todayStr = today.toISOString().split('T')[0];
+      document.getElementById('fromDate').value = yearStart;
+      document.getElementById('toDate').value = todayStr;
+    }
+
+    // ========== تحميل الحسابات ==========
+    function loadAccounts() {
+      google.script.run
+        .withSuccessHandler(function(accounts) {
+          const sel = document.getElementById('accountId');
+          sel.innerHTML = '<option value="">-- اختر الحساب --</option>';
+          accounts.forEach(acc => {
+            const opt = document.createElement('option');
+            opt.value = acc.id;
+            opt.textContent = `${acc.account_no} - ${acc.account_name}`;
+            sel.appendChild(opt);
+          });
+        })
+        .withFailureHandler(function(error) {
+          console.error('Failed to load accounts:', error);
+          const sel = document.getElementById('accountId');
+          sel.innerHTML = '<option value="">❌ خطأ في التحميل</option>';
+          showToast('فشل تحميل قائمة الحسابات', 'error');
+        })
+        .getAllAccountsForStatement();
+    }
+
+    // ========== عرض الكشف ==========
+    function loadReport() {
+      const accountId = document.getElementById('accountId').value;
+      if (!accountId) { showToast('⚠️ يرجى اختيار حساب أولاً', 'warning'); return; }
+      const fromDate = document.getElementById('fromDate').value;
+      const toDate = document.getElementById('toDate').value;
+      if (fromDate && toDate && new Date(fromDate) > new Date(toDate)) {
+        showToast('⚠️ تاريخ "من" لا يمكن أن يكون بعد تاريخ "إلى"', 'warning');
+        return;
+      }
+      showLoading();
+      document.getElementById('summarySection').style.display = 'none';
+      hideBanner();
+      
+      google.script.run
+        .withSuccessHandler(renderReport)
+        .withFailureHandler(showError)
+        .getAccountStatement(accountId, fromDate, toDate, currentFiscalYear?.year_code);
+    }
+
+    // ========== فتح نموذج تعديل القيد مباشرة ==========
+    function openEditEntry(refType, refId) {
+      if (!refId || refId === '-' || refId === 'null' || refId === 'undefined') {
+        showToast('⚠️ لا يوجد معرف للحركة', 'warning');
+        return;
+      }
+      
+      console.log('🎯 فتح تعديل:', refType, refId);
+      showToast(`جاري فتح الفاتورة...`, 'info');
+      
+      // خريطة ربط أنواع المراجع بأسماء الملفات
+      let pageName = '';
+      let title = '';
+      
+      // مشتريات
+      if (refType === 'PURCHASE' || refType === 'PURCHASE_INVENTORY' || 
+          refType === 'PURCHASE_TAX' || refType === 'PURCHASE_DISCOUNT' ||
+          refType === 'SHIPPING_EXPENSE_PURCHASE') {
+        pageName = 'purchases';
+        title = '✏️ تعديل فاتورة مشتريات';
+      }
+      // مبيعات
+      else if (refType === 'SALE' || refType === 'SALE_INVENTORY' || 
+               refType === 'SALE_TAX' || refType === 'SALE_DISCOUNT' ||
+               refType === 'SHIPPING_EXPENSE_SALE') {
+        pageName = 'sales';
+        title = '✏️ تعديل فاتورة مبيعات';
+      }
+      // مرتجعات مشتريات
+      else if (refType === 'PURCHASE_RETURN' || refType === 'PURCHASE_RETURN_INVENTORY' ||
+               refType === 'PURCHASE_RETURN_TAX' || refType === 'PURCHASE_RETURN_DISCOUNT' ||
+               refType === 'PURCHASE_RETURN_EXPENSE' || refType === 'PURCHASE_RETURN_RECEIPT') {
+        pageName = 'purchases_return';
+        title = '✏️ تعديل مرتجع شراء';
+      }
+      // مرتجعات مبيعات
+      else if (refType === 'SALES_RETURN' || refType === 'SALES_RETURN_INVENTORY' ||
+               refType === 'SALES_RETURN_TAX' || refType === 'SALES_RETURN_DISCOUNT' ||
+               refType === 'SHIPPING_EXPENSE_SALES_RETURN' || refType === 'RETURN_PAYMENT' ||
+               refType === 'SALES_RETURN_COGS') {
+        pageName = 'sales_return';
+        title = '✏️ تعديل مرتجع مبيعات';
+      }
+      // دفعات
+      else if (refType === 'PAYMENT') {
+        pageName = 'payments';
+        title = '✏️ تعديل دفعة';
+      }
+      // قبض
+      else if (refType === 'RECEIPT' || refType === 'ORDER_PAYMENT') {
+        pageName = 'receipts';
+        title = '✏️ تعديل قبض';
+      }
+      // شيكات
+      else if (refType === 'CHECK_RECEIPT' || refType === 'CHECK_EXPORT' ||
+               refType === 'CHECK_RETURN_DEST' || refType === 'CHECK_RETURN_SOURCE') {
+        pageName = 'checks';
+        title = '✏️ تعديل شيك';
+      }
+      // قيود يومية
+      else if (refType === 'JOURNAL') {
+        pageName = 'general_journal';
+        title = '✏️ تعديل قيد يومية';
+      }
+      // طلبيات
+      else if (refType === 'ORDER') {
+        pageName = 'customer_orders';
+        title = '✏️ تعديل طلبية';
+      }
+      // رصيد افتتاحي
+      else if (refType === 'OPENING_BALANCE') {
+        showToast('ℹ️ لا يمكن تعديل الرصيد الافتتاحي', 'info');
+        return;
+      }
+      // مخزون
+      else if (refType === 'STOCK_ADJUSTMENT' || refType === 'STOCK_TRANSFER') {
+        pageName = 'item_transfer';
+        title = '⚙️ حركة مخزون';
+      }
+      else {
+        showToast('❌ نوع القيد غير مدعوم: ' + refType, 'error');
+        return;
+      }
+      
+      // تخزين معرف الفاتورة في localStorage قبل فتح الصفحة
+      try {
+        localStorage.setItem('pendingEditRecord', JSON.stringify({
+          id: refId,
+          page: pageName,
+          fiscalYear: currentFiscalYear?.year_code,
+          timestamp: Date.now()
+        }));
+        console.log('✅ تم تخزين في localStorage:', {id: refId, page: pageName});
+      } catch (e) {
+        console.warn('❌ فشل التخزين في localStorage:', e);
+      }
+      
+      // فتح الصفحة
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.success === false) {
+            showToast('❌ ' + (result.message || 'فشل فتح الفاتورة'), 'error');
+          }
+        })
+        .withFailureHandler(function(error) {
+          showToast('❌ فشل فتح الفاتورة: ' + error, 'error');
+        })
+        .openFormWithId(pageName, refId, currentFiscalYear?.year_code, title);
+    }
+
+    // ========== عرض التقرير مع أزرار التعديل ==========
+    function renderReport(data) {
+      if (data.error) { showError(data.error); return; }
+      currentReportData = data;
+      const acc = data.account;
+      document.getElementById('accountTitle').textContent = `${acc.account_no} - ${acc.account_name}`;
+      
+      if (!isFiscalYearActive && currentFiscalYear) {
+        showBanner(`⚠️ سنة مالية غير نشطة: ${currentFiscalYear.year_code}`, 'warning');
+      }
+      
+      if (!data.movements || data.movements.length === 0) {
+        showEmptyState('لا توجد حركات في الفترة المحددة');
+        document.getElementById('summarySection').style.display = 'none';
+        return;
+      }
+
+      // بناء الجدول مع أزرار التعديل
+      let html = `<table><thead><tr>
+        <th style="width:100px">التاريخ</th>
+        <th style="width:140px">النوع</th>
+        <th style="width:100px">الإجراءات</th>
+        <th style="width:120px">المرجع</th>
+        <th>البيان</th>
+        <th class="text-left" style="width:100px">مدين</th>
+        <th class="text-left" style="width:100px">دائن</th>
+        <th class="text-left" style="width:100px">الرصيد</th>
+      </tr></thead><tbody>`;
+
+      let hasMovements = false;
+      
+      data.movements.forEach(mov => {
+        hasMovements = true;
+        const balance = parseFloat(mov.balance_after || 0);
+        const balanceClass = balance >= 0 ? 'positive' : 'negative';
+        const refType = getRefTypeLabel(mov.ref_type);
+        const refId = mov.ref_id || '-';
+        
+        html += `<tr>
+          <td>${formatDateDisplay(mov.date)}</td>
+          <td><span class="ref-badge">${refType}</span></td>
+          <td class="text-center">`;
+        
+        // إضافة زر التعديل إذا كان هناك معرف صالح وليس رصيد افتتاحي
+        if (refId && refId !== '-' && refId !== 'null' && refId !== 'undefined' && mov.ref_type !== 'OPENING_BALANCE') {
+          html += `<button class="btn-edit-entry" onclick='openEditEntry("${mov.ref_type}", "${mov.ref_id}")' title="تعديل القيد">
+            <span>✏️</span> تعديل
+          </button>`;
+        } else if (mov.ref_type === 'OPENING_BALANCE') {
+          html += `<span style="color:var(--text2); font-size:11px;">رصيد افتتاحي</span>`;
+        } else {
+          html += `<span style="color:var(--text2); font-size:11px;">-</span>`;
+        }
+        
+        html += `</td>
+          <td><span class="ref-id">${formatRefId(refId)}</span></td>
+          <td>${mov.description || '-'}</td>
+          <td class="text-left debit">${mov.debit ? formatNumber(mov.debit) : ''}</td>
+          <td class="text-left credit">${mov.credit ? formatNumber(mov.credit) : ''}</td>
+          <td class="text-left balance ${balanceClass}">${formatNumber(balance)}</td>
+        </tr>`;
+      });
+
+      if (!hasMovements) {
+        html += `<tr><td colspan="8" class="text-center" style="color:var(--text2);">لا توجد حركات في الفترة المحددة</td></tr>`;
+      }
+
+      html += '</tbody></table>';
+      document.getElementById('tableContainer').innerHTML = html;
+      document.getElementById('recordCount').textContent = `(${data.movements.length} حركة)`;
+
+      // تحديث الملخص
+      document.getElementById('openingBalance').textContent = formatNumber(data.opening_balance);
+      document.getElementById('totalDebit').textContent = formatNumber(data.total_debit);
+      document.getElementById('totalCredit').textContent = formatNumber(data.total_credit);
+      document.getElementById('closingBalance').textContent = formatNumber(data.closing_balance);
+      document.getElementById('summarySection').style.display = 'grid';
+      
+      showToast(`تم عرض ${data.movements.length} حركة بنجاح`, 'success');
+    }
+
+    // دالة مساعدة لعرض نوع المرجع بشكل مقروء
+    function getRefTypeLabel(refType) {
+      if (!refType) return '-';
+      const labels = {
+        'PURCHASE': '📥 فاتورة شراء',
+        'PURCHASE_INVENTORY': '📦 مخزون شراء',
+        'PURCHASE_TAX': '🧾 ضريبة شراء',
+        'PURCHASE_DISCOUNT': '💸 خصم شراء',
+        'SHIPPING_EXPENSE_PURCHASE': '🚚 مصروفات شحن شراء',
+        'SALE': '📤 فاتورة مبيعات',
+        'SALE_INVENTORY': '📦 مخزون مبيعات',
+        'SALE_TAX': '🧾 ضريبة مبيعات',
+        'SALE_DISCOUNT': '💸 خصم مبيعات',
+        'SHIPPING_EXPENSE_SALE': '🚚 مصروفات شحن مبيعات',
+        'PURCHASE_RETURN': '↩️ مرتجع شراء',
+        'PURCHASE_RETURN_INVENTORY': '📦 مخزون مرتجع شراء',
+        'PURCHASE_RETURN_TAX': '🧾 ضريبة مرتجع شراء',
+        'PURCHASE_RETURN_DISCOUNT': '💸 خصم مرتجع شراء',
+        'PURCHASE_RETURN_EXPENSE': '🚚 مصروفات مرتجع شراء',
+        'PURCHASE_RETURN_RECEIPT': '💰 قبض مرتجع شراء',
+        'SALES_RETURN': '↩️ مرتجع مبيعات',
+        'SALES_RETURN_INVENTORY': '📦 مخزون مرتجع مبيعات',
+        'SALES_RETURN_TAX': '🧾 ضريبة مرتجع مبيعات',
+        'SALES_RETURN_DISCOUNT': '💸 خصم مرتجع مبيعات',
+        'SHIPPING_EXPENSE_SALES_RETURN': '🚚 مصروفات مرتجع مبيعات',
+        'RETURN_PAYMENT': '💰 دفعة مرتجع',
+        'SALES_RETURN_COGS': '📊 تكلفة مرتجع',
+        'PAYMENT': '💰 دفعة',
+        'RECEIPT': '🧾 قبض',
+        'ORDER': '📋 طلبية عميل',
+        'ORDER_PAYMENT': '💰 دفعة طلبية',
+        'OPENING_BALANCE': '📊 رصيد افتتاحي',
+        'STOCK_ADJUSTMENT': '⚙️ تسوية مخزون',
+        'STOCK_TRANSFER': '🔄 تحويل مخزون',
+        'CHECK_RECEIPT': '💳 استلام شيك',
+        'CHECK_EXPORT': '📤 تصدير شيك',
+        'CHECK_RETURN_DEST': '↩️ إرجاع شيك (وجهة)',
+        'CHECK_RETURN_SOURCE': '↩️ إرجاع شيك (مصدر)',
+        'JOURNAL': '📒 قيد يومية'
+      };
+      return labels[refType] || refType;
+    }
+
+    // ========== واجهة المستخدم ==========
+    function showLoading() {
+      document.getElementById('tableContainer').innerHTML = `
+        <div class="loading"><div class="spinner"></div><div>جاري تحميل كشف الحساب...</div></div>`;
+    }
+
+    function showEmptyState(message) {
+      document.getElementById('tableContainer').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">📭</div>
+          <div class="empty-state-title">لا توجد حركات</div>
+          <div class="empty-state-desc">${message || 'حاول تعديل نطاق التواريخ'}</div>
+        </div>`;
+    }
+
+    function showError(error) {
+      console.error('Report error:', error);
+      const msg = typeof error === 'object' ? error.message || JSON.stringify(error) : error;
+      document.getElementById('tableContainer').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">❌</div>
+          <div class="empty-state-title">خطأ في التحميل</div>
+          <div class="empty-state-desc">${msg}</div>
+          <button class="btn-primary" style="margin-top:20px;width:auto;" onclick="loadReport()">🔄 إعادة المحاولة</button>
+        </div>`;
+      document.getElementById('summarySection').style.display = 'none';
+      showToast('❌ ' + msg, 'error');
+    }
+
+    function showBanner(message, type = 'info') {
+      const banner = document.getElementById('reportBanner');
+      banner.textContent = message;
+      banner.className = `report-banner ${type}`;
+      banner.style.display = 'flex';
+    }
+
+    function hideBanner() { document.getElementById('reportBanner').style.display = 'none'; }
+
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toastIcon');
+      const msg = document.getElementById('toastMessage');
+      toast.className = `toast ${type}`;
+      icon.textContent = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+      msg.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 4000);
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      localStorage.setItem('zeios_dark_mode', isDark);
+    }
+
+    // ========== طباعة وتصدير ==========
+    function printReport() {
+      if (!currentReportData?.movements?.length) { showToast('⚠️ لا توجد بيانات للطباعة', 'warning'); return; }
+      window.print();
+    }
+
+    function exportToCSV() {
+      if (!currentReportData?.movements?.length) { showToast('⚠️ لا توجد بيانات للتصدير', 'warning'); return; }
+      const acc = currentReportData.account;
+      let csv = 'التاريخ,النوع,المرجع,البيان,مدين,دائن,الرصيد\n';
+      currentReportData.movements.forEach(mov => {
+        csv += `"${formatDateCSV(mov.date)}","${getRefTypeLabel(mov.ref_type)}","${mov.ref_id || ''}","${(mov.description || '').replace(/"/g, '""')}",`;
+        csv += `${mov.debit || 0},${mov.credit || 0},${mov.balance_after || 0}\n`;
+      });
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `كشف_حساب_${acc?.account_no || 'account'}_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('✅ تم تصدير الملف بنجاح', 'success');
+    }
+
+    function backToDashboard() {
+      try { if (typeof google !== 'undefined' && google.script?.host) { google.script.host.close(); } } catch (e) {}
+      google.script.run.showDashboard?.();
+    }
+
+    // ========== تنسيقات ==========
+    function formatDateDisplay(dateStr) {
+      if (!dateStr) return '-';
+      try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        return d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' });
+      } catch (e) { return dateStr; }
+    }
+
+    function formatDateCSV(dateStr) {
+      if (!dateStr) return '';
+      try {
+        const d = new Date(dateStr);
+        return isNaN(d.getTime()) ? dateStr : d.toISOString().split('T')[0];
+      } catch (e) { return dateStr; }
+    }
+
+    function formatRefId(refId) {
+      if (!refId || refId === 'null' || refId === 'undefined') return '-';
+      return refId.length > 12 ? refId.substring(0, 10) + '...' : refId;
+    }
+
+    function formatNumber(num) {
+      const n = parseFloat(num || 0);
+      return n.toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // تحميل الوضع الليلي إذا كان مفعلاً
+    if (localStorage.getItem('zeios_dark_mode') === 'true') {
+      document.body.classList.add('dark-mode');
+    }
+  </script>
+</body>
+</html>
