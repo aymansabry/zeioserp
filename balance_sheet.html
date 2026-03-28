@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏦 الميزانية العمومية - ZEIOS ERP</title>
+
+  <style>
+    :root {
+      --bg:#f8f9fa; --card:#fff; --text:#202124; --text2:#5f6368;
+      --border:#dadce0; --accent:#1a73e8; --shadow:0 1px 3px rgba(0,0,0,0.1);
+      --success:#34a853; --warning:#fbbc04; --danger:#ea4335;
+      --black:#202124;
+      --asset-bg:rgba(46, 125, 50, 0.1);
+      --liability-bg:rgba(198, 40, 40, 0.1);
+      --equity-bg:rgba(245, 124, 0, 0.1);
+      --asset-border:#2e7d32;
+      --liability-border:#c62828;
+      --equity-border:#f57c00;
+    }
+    .dark-mode {
+      --bg:#121212; --card:#1e1e1e; --text:#e8eaed; --text2:#9aa0a6;
+      --border:#3c4043; --shadow:0 1px 3px rgba(0,0,0,0.3);
+      --black:#e8eaed;
+      --asset-bg:rgba(129, 199, 132, 0.2);
+      --liability-bg:rgba(229, 115, 115, 0.2);
+      --equity-bg:rgba(255, 183, 77, 0.2);
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      font-family: 'Google Sans', 'Segoe UI', 'Tajawal', Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      padding:16px;
+      direction: rtl;
+    }
+    .container { max-width:1200px; margin:auto; }
+    
+    /* ========== Header Styles ========== */
+    .main-header {
+      background: linear-gradient(135deg, var(--accent), #0d47a1);
+      color: white;
+      padding: 20px 24px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    .company-info h1 {
+      font-size: 22px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .company-info p {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .fiscal-badge {
+      background: rgba(255,255,255,0.2);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .fiscal-badge.inactive { background: rgba(255,152,0,0.3); }
+    .fiscal-badge.warning { background: rgba(234,67,53,0.3); }
+    
+    /* ========== Buttons ========== */
+    button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 6px;
+      background: var(--card);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: #0d5bb8; }
+    .btn-dashboard { background: var(--success); color: white; }
+    .btn-dashboard:hover { background: #2d8e49; }
+    .btn-print { background: var(--warning); color: #202124; }
+    .btn-print:hover { background: #e6a700; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { background: rgba(26,115,232,0.1); }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    /* ========== Card Styles ========== */
+    .card {
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:12px;
+      box-shadow:var(--shadow);
+      margin-bottom:20px;
+    }
+    .card-header {
+      padding:16px 20px;
+      font-weight:600;
+      font-size:16px;
+      border-bottom:1px solid var(--border);
+      background: var(--bg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-body { padding:20px; }
+
+    /* ========== Report Banner ========== */
+    .report-banner {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .report-banner.info {
+      background: rgba(26, 115, 232, 0.1);
+      border-right: 4px solid var(--accent);
+      color: var(--black);
+    }
+    .report-banner.warning {
+      background: rgba(255, 152, 0, 0.1);
+      border-right: 4px solid var(--warning);
+      color: var(--black);
+    }
+    .report-banner.success {
+      background: rgba(52, 168, 83, 0.1);
+      border-right: 4px solid var(--success);
+      color: var(--black);
+    }
+    .report-banner.error {
+      background: rgba(234, 67, 53, 0.1);
+      border-right: 4px solid var(--danger);
+      color: var(--black);
+    }
+
+    /* ========== Balance Sheet Items ========== */
+    .bs-section { 
+      margin-bottom:24px; 
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .bs-title { 
+      font-size:18px; 
+      font-weight:600; 
+      margin-bottom:12px; 
+      color: var(--accent);
+      padding: 12px 16px;
+      background: linear-gradient(135deg, rgba(26,115,232,0.1), rgba(26,115,232,0.05));
+      border-radius: 8px;
+      border-right: 4px solid var(--accent);
+    }
+    .bs-item, .bs-subitem {
+      display:flex; 
+      justify-content:space-between;
+      padding:10px 16px;
+      font-size: 15px;
+      border-bottom: 1px dashed var(--border);
+    }
+    
+    /* ✅ عرض اسم الحساب فقط مع تحسينات */
+    .bs-subitem .account-name {
+      font-weight: 500;
+      color: var(--text);
+      padding-right: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .bs-subitem {
+      cursor: default;
+      transition: all 0.15s ease;
+      border-radius: 0;
+      margin: 0;
+    }
+
+    .bs-subitem:hover {
+      background: var(--bg);
+      padding-right: 24px;
+    }
+
+    .bs-subitem:hover .account-name {
+      color: var(--accent);
+    }
+
+    .bs-amount {
+      font-family: 'Segoe UI', monospace;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      direction: ltr;
+      text-align: left;
+      min-width: 120px;
+      color: var(--black);
+    }
+
+    .bs-total {
+      margin-top:8px;
+      padding:14px 16px;
+      border-top:2px solid var(--border);
+      font-weight:700;
+      font-size: 16px;
+      color: var(--black);
+      background: var(--bg);
+      border-radius: 6px;
+    }
+
+    .bs-total .bs-amount {
+      color: var(--accent);
+      font-size: 17px;
+    }
+
+    .bs-grand-total {
+      margin-top:16px;
+      padding:18px;
+      border-top:3px double var(--text);
+      font-weight:800;
+      font-size: 18px;
+      background: linear-gradient(135deg, rgba(26,115,232,0.15), rgba(26,115,232,0.05));
+      border: 2px solid var(--accent);
+      border-radius: 10px;
+    }
+
+    .bs-grand-total .bs-amount {
+      font-size: 22px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* ========== Group-specific styling ========== */
+    .asset-section { border-right: 4px solid #2e7d32; }
+    .liability-section { border-right: 4px solid #c62828; }
+    .equity-section { border-right: 4px solid #f57c00; }
+    
+    .asset-section .bs-title { border-right-color: #2e7d32; }
+    .liability-section .bs-title { border-right-color: #c62828; }
+    .equity-section .bs-title { border-right-color: #f57c00; }
+
+    /* ========== Balance Status ========== */
+    .balance-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      margin-top: 20px;
+    }
+    .balance-status.balanced {
+      background: rgba(52, 168, 83, 0.15);
+      color: var(--success);
+      border: 1px solid var(--success);
+    }
+    .balance-status.unbalanced {
+      background: rgba(234, 67, 53, 0.15);
+      color: var(--danger);
+      border: 1px solid var(--danger);
+    }
+    .balance-diff {
+      font-family: monospace;
+      font-weight: 700;
+      margin-right: 4px;
+    }
+
+    /* ========== Two Column Layout ========== */
+    .bs-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    @media (min-width: 900px) {
+      .bs-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+      }
+      .bs-subitem {
+        padding: 12px 20px;
+      }
+      .bs-subitem:hover {
+        padding-right: 28px;
+      }
+    }
+
+    /* ========== Loading & Empty States ========== */
+    .loading {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--text2);
+    }
+    .spinner {
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { 
+      0% { transform: rotate(0deg); } 
+      100% { transform: rotate(360deg); } 
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text2);
+    }
+    .empty-state-icon { font-size: 56px; margin-bottom: 12px; opacity: 0.4; }
+    .empty-state-title { font-size: 16px; font-weight: 500; margin: 8px 0; color: var(--black); }
+    .empty-state-desc { font-size: 13px; }
+
+    /* ========== Toast Notification ========== */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--black);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      font-size: 14px;
+      z-index: 1000;
+      transition: transform 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--danger); }
+    .toast.warning { background: var(--warning); color: #202124; }
+
+    /* ========== Print Styles ========== */
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white; padding: 0; direction: rtl; }
+      .card { box-shadow: none; border: none; }
+      .bs-subitem { border-right: none !important; }
+      .bs-grand-total { background: #f5f5f5 !important; }
+      .bs-grid { gap: 40px; }
+    }
+
+    /* ========== Responsive ========== */
+    @media (max-width: 768px) {
+      .header-top { flex-direction: column; align-items: flex-start; }
+      .header-actions { width: 100%; justify-content: flex-start; }
+      .bs-grid { grid-template-columns: 1fr; }
+      button { width: 100%; justify-content: center; }
+      .bs-item, .bs-subitem { flex-wrap: wrap; gap: 4px; }
+      .bs-amount { width: 100%; text-align: left; margin-top: 4px; }
+      .fiscal-badge { width: 100%; justify-content: center; }
+    }
+
+    /* ========== Dark Mode Improvements ========== */
+    .dark-mode .bs-subitem:hover {
+      background: rgba(26, 115, 232, 0.15);
+    }
+
+    .dark-mode .bs-total {
+      background: rgba(26, 115, 232, 0.12);
+    }
+
+    .dark-mode .bs-grand-total {
+      background: linear-gradient(135deg, rgba(26,115,232,0.2), rgba(26,115,232,0.1));
+    }
+    
+    .dark-mode .asset-section .bs-title { background: rgba(46, 125, 50, 0.2); }
+    .dark-mode .liability-section .bs-title { background: rgba(198, 40, 40, 0.2); }
+    .dark-mode .equity-section .bs-title { background: rgba(245, 124, 0, 0.2); }
+  </style>
+</head>
+
+<body>
+<div class="container">
+
+  <!-- ========== Main Header with Company Info ========== -->
+  <div class="main-header no-print">
+    <div class="header-top">
+      <div class="company-info">
+        <h1>🏦 الميزانية العمومية <span id="companyName">ZEIOS ERP</span></h1>
+        <p id="companyDetails">جاري تحميل بيانات الشركة...</p>
+      </div>
+      <div class="header-actions">
+        <span id="fiscalBadge" class="fiscal-badge" style="display:none;">
+          📅 <span id="fiscalYearText"></span>
+        </span>
+        <button class="btn-outline btn-sm" onclick="toggleDarkMode()">
+          🌓 الوضع
+        </button>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+      <button class="btn-dashboard" onclick="backToDashboard()">
+        🏠 لوحة التحكم
+      </button>
+      <button class="btn-primary" onclick="loadReport()">
+        🔄 تحديث
+      </button>
+      <button class="btn-print" onclick="printReport()">
+        🖨️ طباعة
+      </button>
+      <button class="btn-outline" onclick="exportToCSV()">
+        📥 تصدير CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== Report Banner ========== -->
+  <div id="reportBanner" class="report-banner info" style="display:none;"></div>
+
+  <!-- ========== Balance Sheet Card ========== -->
+  <div class="card">
+    <div class="card-header">
+      <span id="reportTitle">تفاصيل الميزانية العمومية</span>
+      <span id="asOfDate" style="font-size:13px;color:var(--text2);"></span>
+    </div>
+    <div class="card-body">
+      <div id="reportContent" class="loading">جاري تحميل الميزانية...</div>
+      
+      <!-- Balance Status -->
+      <div id="balanceStatus" class="balance-status" style="display:none;"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast">
+  <span id="toastIcon">✅</span>
+  <span id="toastMessage"></span>
+</div>
+
+<script>
+let currentReportData = null;
+let currentFiscalYear = null;
+let isFiscalYearActive = false;
+let companyInfo = null;
+
+// ========== Initialization ==========
+window.onload = function() {
+  loadCompanySettings(); // ✅ FIXED: use loadCompanySettings instead of loadCompanyInfo
+  loadFiscalYearForReports();
+};
+
+// ========== Company Settings (FIXED) ==========
+function loadCompanySettings() {
+  google.script.run
+    .withSuccessHandler(function(info) {
+      companyInfo = info;
+      document.getElementById('companyName').textContent = info?.name || 'ZEIOS ERP';
+      
+      let details = [];
+      if (info?.address) details.push(info.address);
+      if (info?.phone) details.push('📞 ' + info.phone);
+      if (info?.tax_no) details.push('🧾 ض.ق: ' + info.tax_no);
+      
+      document.getElementById('companyDetails').textContent = 
+        details.length > 0 ? details.join(' | ') : 'نظام ZEIOS ERP للمحاسبة';
+    })
+    .withFailureHandler(function(err) {
+      console.warn('Failed to load company info:', err);
+      document.getElementById('companyName').textContent = 'ZEIOS ERP';
+      document.getElementById('companyDetails').textContent = 'نظام المحاسبة المتكامل';
+    })
+    .getCompanySettings(); // ✅ FIXED: Use getCompanySettings() instead of getCompanyInfo()
+}
+
+// ========== Fiscal Year ==========
+function loadFiscalYearForReports() {
+  google.script.run
+    .withSuccessHandler(function(fiscalYearData) {
+      _processFiscalYearData(fiscalYearData);
+    })
+    .withFailureHandler(function(error) {
+      console.warn('Fallback: getActiveFiscalYearForReports failed:', error);
+      google.script.run
+        .withSuccessHandler(_processFiscalYearData)
+        .withFailureHandler(_handleFiscalYearError)
+        .getActiveFiscalYear();
+    })
+    .getActiveFiscalYearForReports(); // ✅ Correct function name
+}
+
+function _processFiscalYearData(fiscalYearData) {
+  if (fiscalYearData?.error) {
+    console.warn('Server returned error:', fiscalYearData.error);
+    updateFiscalBadge('غير محدد', false, true);
+    showBanner('⚠️ تعذر تحميل السنة المالية: ' + fiscalYearData.error, 'warning');
+    loadReport();
+    return;
+  }
+  
+  currentFiscalYear = fiscalYearData;
+  isFiscalYearActive = fiscalYearData.is_active === true;
+  
+  const asOfDate = formatDateDisplay(fiscalYearData.date_to) || 'غير محدد';
+  document.getElementById('asOfDate').textContent = 'حتى تاريخ: ' + asOfDate;
+  
+  updateFiscalBadge(
+    fiscalYearData.year_code || 'غير محدد',
+    isFiscalYearActive,
+    false
+  );
+  
+  if (!isFiscalYearActive && fiscalYearData.note) {
+    showBanner(fiscalYearData.note, 'warning');
+  }
+  
+  // Load report after fiscal year is ready
+  loadReport();
+}
+
+function _handleFiscalYearError(error) {
+  console.error('All fiscal year attempts failed:', error);
+  updateFiscalBadge('خطأ', false, true);
+  const defaultDate = new Date().toLocaleDateString('ar-EG');
+  document.getElementById('asOfDate').textContent = 'حتى: ' + defaultDate;
+  showBanner('⚠️ تعذر تحميل السنة المالية', 'warning');
+  loadReport(); // Try to load anyway
+}
+
+function updateFiscalBadge(text, isActive, isWarning) {
+  const badge = document.getElementById('fiscalBadge');
+  const textEl = document.getElementById('fiscalYearText');
+  
+  textEl.textContent = text;
+  badge.className = 'fiscal-badge' + 
+    (isWarning ? ' warning' : (!isActive ? ' inactive' : ''));
+  badge.style.display = 'inline-flex';
+}
+
+// ========== Load Report ==========
+function loadReport() {
+  document.getElementById('reportContent').innerHTML = `
+    <div class="loading">
+      <div class="spinner"></div>
+      <div>جاري تحميل الميزانية العمومية...</div>
+    </div>
+  `;
+  document.getElementById('balanceStatus').style.display = 'none';
+  hideBanner();
+
+  google.script.run
+    .withSuccessHandler(renderReport)
+    .withFailureHandler(showError)
+    .getBalanceSheetDetailed(currentFiscalYear?.year_code); // ✅ Pass fiscal year
+}
+
+// ========== Render Report ==========
+function renderReport(data) {
+  if (data?.error) {
+    showError(data.error);
+    return;
+  }
+  
+  currentReportData = data;
+  
+  if (!isFiscalYearActive && currentFiscalYear?.note) {
+    showBanner(currentFiscalYear.note, 'warning');
+  }
+  
+  const hasAssets = data.assets?.sub?.length > 0;
+  const hasLiabilities = data.liabilities?.sub?.length > 0;
+  const hasEquity = data.equity?.sub?.length > 0;
+  
+  if (!hasAssets && !hasLiabilities && !hasEquity) {
+    document.getElementById('reportContent').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📊</div>
+        <div class="empty-state-title">لا توجد بيانات في الميزانية</div>
+        <div class="empty-state-desc">ستظهر الحسابات هنا بمجرد تسجيل معاملات مالية</div>
+      </div>
+    `;
+    return;
+  }
+
+  let html = `<div class="bs-grid">`;
+  
+  // Left Column: Assets
+  html += `<div class="asset-section">`;
+  html += renderGroup("الأصول", data.assets, 'asset');
+  html += `<div class="bs-item bs-grand-total">
+            <span>إجمالي الأصول</span>
+            <span class="bs-amount">${formatNumber(data.total_assets)}</span>
+          </div>`;
+  html += `</div>`;
+  
+  // Right Column: Liabilities + Equity
+  html += `<div>`;
+  html += `<div class="liability-section">`;
+  html += renderGroup("الالتزامات", data.liabilities, 'liability');
+  html += `</div>`;
+  html += `<div class="equity-section">`;
+  html += renderGroup("حقوق الملكية", data.equity, 'equity');
+  html += `</div>`;
+  html += `<div class="bs-item bs-grand-total">
+            <span>إجمالي الالتزامات وحقوق الملكية</span>
+            <span class="bs-amount">${formatNumber(data.total_liabilities_equity)}</span>
+          </div>`;
+  html += `</div>`;
+  
+  html += `</div>`;
+  
+  document.getElementById('reportContent').innerHTML = html;
+  
+  showBalanceStatus(data);
+  
+  showToast('✅ تم تحميل الميزانية بنجاح', 'success');
+}
+
+// ========== Render Group Helper - اسم الحساب فقط ==========
+function renderGroup(title, group, type) {
+  if (!group || !Array.isArray(group.sub) || group.sub.length === 0) {
+    return `<div class="bs-section">
+              <div class="bs-title">${title}</div>
+              <div class="bs-item" style="color:var(--text2);">لا توجد حسابات في هذه الفئة</div>
+              <div class="bs-item bs-total">
+                <span>مجموع ${title}</span>
+                <span class="bs-amount">0.00</span>
+              </div>
+            </div>`;
+  }
+
+  let html = `<div class="bs-section">
+                <div class="bs-title">${title}</div>`;
+
+  group.sub.forEach(a => {
+    // ✅ عرض اسم الحساب فقط بدون رقم
+    html += `<div class="bs-subitem">
+              <span class="account-name">${a.account_name || '-'}</span>
+              <span class="bs-amount">${formatNumber(a.balance)}</span>
+            </div>`;
+  });
+
+  html += `<div class="bs-item bs-total">
+            <span>مجموع ${title}</span>
+            <span class="bs-amount">${formatNumber(group.total || 0)}</span>
+          </div></div>`;
+
+  return html;
+}
+
+// ========== Show Balance Status ==========
+function showBalanceStatus(data) {
+  const assets = parseFloat(data.total_assets || 0);
+  const liabEquity = parseFloat(data.total_liabilities_equity || 0);
+  const diff = Math.abs(assets - liabEquity);
+  const tolerance = 0.50;
+  
+  const statusEl = document.getElementById('balanceStatus');
+  
+  if (diff < tolerance) {
+    statusEl.innerHTML = `✅ الميزانية متوازنة`;
+    statusEl.className = 'balance-status balanced';
+  } else {
+    statusEl.innerHTML = `⚠️ غير متوازنة - الفرق: <span class="balance-diff">${formatNumber(diff)}</span>`;
+    statusEl.className = 'balance-status unbalanced';
+  }
+  statusEl.style.display = 'inline-flex';
+}
+
+// ========== UI Helpers ==========
+function showError(error) {
+  console.error('Report error:', error);
+  const msg = typeof error === 'object' ? error.message || JSON.stringify(error) : error;
+  
+  document.getElementById('reportContent').innerHTML = `
+    <div class="empty-state">
+      <div class="empty-state-icon">❌</div>
+      <div class="empty-state-title">خطأ في التحميل</div>
+      <div class="empty-state-desc">${msg}</div>
+      <button class="btn-primary" style="margin-top:20px;width:auto;" onclick="loadReport()">
+        🔄 إعادة المحاولة
+      </button>
+    </div>
+  `;
+  document.getElementById('balanceStatus').style.display = 'none';
+  showToast('❌ ' + msg, 'error');
+}
+
+function showBanner(message, type = 'info') {
+  const banner = document.getElementById('reportBanner');
+  banner.textContent = message;
+  banner.className = `report-banner ${type}`;
+  banner.style.display = 'flex';
+}
+
+function hideBanner() {
+  document.getElementById('reportBanner').style.display = 'none';
+}
+
+function showToast(message, type = 'info') {
+  const toast = document.getElementById('toast');
+  const icon = document.getElementById('toastIcon');
+  const msg = document.getElementById('toastMessage');
+  
+  toast.className = `toast ${type}`;
+  icon.textContent = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+  msg.textContent = message;
+  
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  localStorage.setItem('zeios_dark_mode', isDark);
+}
+
+// ========== Print & Export ==========
+function printReport() {
+  if (!currentReportData) {
+    showToast('⚠️ لا توجد بيانات للطباعة', 'warning');
+    return;
+  }
+  window.print();
+}
+
+function exportToCSV() {
+  if (!currentReportData) {
+    showToast('⚠️ لا توجد بيانات للتصدير', 'warning');
+    return;
+  }
+  
+  let csv = 'النوع,اسم_الحساب,المبلغ\n';
+  
+  if (currentReportData.assets?.sub) {
+    currentReportData.assets.sub.forEach(a => {
+      csv += `"أصول","${(a.account_name || '').replace(/"/g, '""')}",${a.balance || 0}\n`;
+    });
+  }
+  
+  if (currentReportData.liabilities?.sub) {
+    currentReportData.liabilities.sub.forEach(a => {
+      csv += `"التزامات","${(a.account_name || '').replace(/"/g, '""')}",${a.balance || 0}\n`;
+    });
+  }
+  
+  if (currentReportData.equity?.sub) {
+    currentReportData.equity.sub.forEach(a => {
+      csv += `"حقوق ملكية","${(a.account_name || '').replace(/"/g, '""')}",${a.balance || 0}\n`;
+    });
+  }
+  
+  csv += `\n"إجمالي الأصول","",${currentReportData.total_assets || 0}\n`;
+  csv += `"إجمالي الالتزامات وحقوق الملكية","",${currentReportData.total_liabilities_equity || 0}\n`;
+  csv += `"فرق التوازن","",${currentReportData.balancing_difference || 0}\n`;
+  
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `الميزانية_العمومية_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  
+  showToast('✅ تم تصدير الملف بنجاح', 'success');
+}
+
+function backToDashboard() {
+  try { 
+    if (typeof google !== 'undefined' && google.script?.host) {
+      google.script.host.close(); 
+    }
+  } catch (e) {}
+  google.script.run.reopenDashboard();
+}
+
+// ========== Format Helpers ==========
+function formatNumber(num) {
+  const n = parseFloat(num || 0);
+  if (isNaN(n)) return '0.00';
+  return n.toLocaleString('ar-EG', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+function formatDateDisplay(dateStr) {
+  if (!dateStr) return '-';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('ar-EG', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    });
+  } catch (e) { return dateStr; }
+}
+
+// Check for dark mode preference
+if (localStorage.getItem('zeios_dark_mode') === 'true') {
+  document.body.classList.add('dark-mode');
+}
+</script>
+
+</body>
+</html>
