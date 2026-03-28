@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎨 إدارة الألوان - ZEIOS ERP</title>
+  <style>
+    :root {
+      --bg: #f8f9fa; --card: #fff; --text: #202124; --text2: #5f6368;
+      --border: #dadce0; --accent: #1a73e8; --shadow: 0 1px 3px rgba(0,0,0,0.1);
+      --success: #34a853; --warning: #f59e0b; --danger: #dc2626;
+    }
+    [data-theme="dark"] {
+      --bg: #121212; --card: #1e1e1e; --text: #e8eaed; --text2: #9aa0a6;
+      --border: #3c4043; --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Google Sans';
+      background: var(--bg); color: var(--text); padding: 16px; direction: rtl;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+    
+    /* ===== الهيدر ===== */
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+    }
+    h1 { font-size: 22px; font-weight: 500; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+    
+    /* ===== الأزرار ===== */
+    button {
+      padding: 8px 16px; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--card); color: var(--text); cursor: pointer;
+      font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+    }
+    button:hover { background: var(--bg); border-color: var(--accent); }
+    .btn-primary { background: var(--accent); color: white; border: none; }
+    .btn-primary:hover { background: #0d5bb8; }
+    .btn-success { background: var(--success); color: white; border: none; }
+    .btn-success:hover { background: #2d8e49; }
+    .btn-danger { background: var(--danger); color: white; border: none; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-outline { background: transparent; border-color: var(--accent); color: var(--accent); }
+    .btn-outline:hover { background: rgba(26,115,232,0.1); }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+    
+    /* ===== البطاقات ===== */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px;
+    }
+    .card-header {
+      padding: 14px 18px; font-weight: 600; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .card-body { padding: 20px; }
+    
+    /* ===== النموذج ===== */
+    .form-group { margin-bottom: 16px; }
+    label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; }
+    label.required::after { content: " *"; color: var(--danger); }
+    
+    input, select, textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 6px; background: var(--card); color: var(--text);
+      font-family: inherit; font-size: 14px; transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+    input[readonly] { background: var(--bg); color: var(--text2); cursor: not-allowed; }
+    
+    .form-hint {
+      font-size: 12px; color: var(--text2); margin-top: 4px;
+      padding: 6px 10px; background: rgba(0,0,0,0.03); border-radius: 4px;
+    }
+    
+    /* ===== معاينة اللون ===== */
+    .color-preview-box {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px; background: var(--bg); border-radius: 8px; margin-top: 8px;
+    }
+    .color-dot {
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 2px solid var(--border); flex-shrink: 0;
+    }
+    .color-code { font-family: monospace; font-weight: 600; }
+    
+    /* ===== الجدول ===== */
+    .table-container { overflow-x: auto; width: 100%; }
+    table { width: 100%; border-collapse: collapse; min-width: 600px; }
+    th {
+      background: var(--bg); text-align: right; padding: 14px 16px;
+      font-weight: 600; font-size: 13px; color: var(--text2);
+      border-bottom: 2px solid var(--border); white-space: nowrap;
+    }
+    td {
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      color: var(--text); font-size: 14px; text-align: right;
+    }
+    tr:hover { background: rgba(26,115,232,0.04); }
+    
+    /* ===== الإجراءات ===== */
+    .actions { display: flex; gap: 6px; justify-content: center; }
+    
+    /* ===== التحميل والرسائل ===== */
+    .loading { text-align: center; padding: 40px 20px; color: var(--text2); }
+    .spinner {
+      border: 3px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; width: 32px; height: 32px;
+      animation: spin 1s linear infinite; margin: 0 auto 16px;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    
+    .empty-state {
+      text-align: center; padding: 40px 20px; color: var(--text2);
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+    
+    /* ===== البحث ===== */
+    .search-bar {
+      display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .search-bar input { flex: 1; min-width: 150px; }
+    
+    /* ===== الشارات ===== */
+    .badge {
+      padding: 4px 10px; border-radius: 20px; font-size: 11px;
+      font-weight: 500; display: inline-block;
+    }
+    .badge-protected { background: #fef3c7; color: #92400e; }
+    
+    /* ===== التجاوب ===== */
+    @media (max-width: 768px) {
+      .header { flex-direction: column; align-items: stretch; }
+      .card-body { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- الرأس -->
+    <div class="header">
+      <h1>🎨 إدارة الألوان</h1>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn-success" onclick="backToDashboard()">🏠 لوحة التحكم</button>
+        <button class="btn-primary" onclick="openNewForm()">➕ إضافة لون</button>
+      </div>
+    </div>
+
+    <!-- نموذج الإضافة/التعديل -->
+    <div id="formPanel" class="card" style="display:none;">
+      <div class="card-header">
+        <span id="formTitle">➕ إضافة لون جديد</span>
+        <button class="btn-sm btn-outline" onclick="closeForm()">✕ إغلاق</button>
+      </div>
+      <div class="card-body">
+        <form id="colorForm">
+          <input type="hidden" id="originalCode">
+          
+          <div class="form-group">
+            <label for="colorCode" class="required">كود اللون</label>
+            <input type="text" id="colorCode" required 
+              pattern="[A-Z0-9\-_]+" 
+              title="أحرف كبيرة، أرقام، وشرطات فقط"
+              placeholder="مثال: RED"
+              style="text-transform:uppercase; font-family:monospace;"
+              maxlength="20">
+            <div class="form-hint">💡 يُستخدم كرمز فريد، لا يمكن تعديله بعد الحفظ</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="colorName" class="required">اسم اللون</label>
+            <input type="text" id="colorName" required 
+              placeholder="مثال: أحمر"
+              oninput="suggestColorCode()">
+            <div class="form-hint">اكتب الاسم لاقتراح كود تلقائي</div>
+          </div>
+
+          <!-- معاينة اللون -->
+          <div class="form-group">
+            <label>معاينة اللون</label>
+            <div class="color-preview-box">
+              <div id="colorDot" class="color-dot" style="background:#f0f0f0;"></div>
+              <div>
+                <div class="color-code" id="previewCode">—</div>
+                <div style="font-size:12px;color:var(--text2)" id="previewHint">أدخل كود اللون للمعاينة</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- أزرار الحفظ -->
+          <div style="display:flex; gap:10px; margin-top:24px; justify-content:flex-end;">
+            <button type="button" class="btn-outline" onclick="closeForm()">إلغاء</button>
+            <button type="submit" class="btn-primary" id="saveBtn">💾 حفظ اللون</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- شريط البحث -->
+    <div class="card">
+      <div class="card-body">
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="🔍 ابحث بالكود أو الاسم..." oninput="filterColors()">
+          <button class="btn-outline" onclick="resetSearch()">🔄 مسح</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- جدول الألوان -->
+    <div class="card">
+      <div class="card-header">
+        <span>📋 قائمة الألوان</span>
+        <span id="colorsCount" class="badge" style="padding:4px 10px;border-radius:20px;font-size:11px;background:var(--accent);color:white;">0</span>
+      </div>
+      <div class="card-body">
+        <div class="table-container">
+          <div id="tableContainer">
+            <div class="loading">
+              <div class="spinner"></div>
+              جاري تحميل الألوان...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== ثوابت النظام ==========
+    // خريطة ألوان للمعاينة البصرية
+    const COLOR_PREVIEW_MAP = {
+      'RED': '#e53935', 'BLUE': '#1e88e5', 'GREEN': '#43a047', 'YELLOW': '#fdd835',
+      'BLACK': '#212121', 'WHITE': '#ffffff', 'BROWN': '#6d4c41', 'GRAY': '#757575',
+      'ORANGE': '#fb8c00', 'PURPLE': '#8e24aa', 'PINK': '#d81b60', 'CYAN': '#00acc1',
+      'TEAL': '#00897b', 'INDIGO': '#3949ab', 'LIME': '#c0ca33', 'GOLD': '#f9a825'
+    };
+    
+    // الألوان المحمية التي لا يمكن حذفها
+    const PROTECTED_COLORS = ['RED', 'BLUE', 'GREEN', 'YELLOW', 'BLACK', 'WHITE', 'BROWN', 'GRAY', 'ORANGE', 'PURPLE'];
+
+    let allColors = [];
+    let filteredColors = [];
+    let isLoading = false;
+
+    // ========== التهيئة ==========
+    document.addEventListener('DOMContentLoaded', function() {
+      initTheme();
+      loadColors();
+      setupEventListeners();
+    });
+
+    function initTheme() {
+      const saved = localStorage.getItem('zeios-theme');
+      if (saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    }
+
+    function setupEventListeners() {
+      // إغلاق المودال عند النقر خارجه
+      document.addEventListener('click', function(e) {
+        const form = document.getElementById('formPanel');
+        if (e.target === form && form.style.display !== 'none') {
+          closeForm();
+        }
+      });
+      // زر الهروب
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeForm();
+      });
+      // تحويل الكود لأحرف كبيرة أثناء الكتابة + تحديث المعاينة
+      document.getElementById('colorCode').addEventListener('input', function(e) {
+        e.target.value = e.target.value.toUpperCase();
+        updateColorPreview(e.target.value);
+      });
+    }
+
+    // ========== تحميل البيانات ==========
+    function loadColors() {
+      if (isLoading) return;
+      isLoading = true;
+      
+      showTableLoading();
+      
+      google.script.run
+        .withSuccessHandler(function(colors) {
+          allColors = colors || [];
+          filteredColors = [...allColors];
+          renderTable(filteredColors);
+          updateCount();
+          isLoading = false;
+        })
+        .withFailureHandler(function(error) {
+          showError('فشل تحميل الألوان: ' + error);
+          isLoading = false;
+        })
+        .getColorsList();
+    }
+
+    function showTableLoading() {
+      document.getElementById('tableContainer').innerHTML = `
+        <div class="loading">
+          <div class="spinner"></div>
+          جاري تحميل الألوان...
+        </div>
+      `;
+    }
+
+    function renderTable(colors) {
+      if (!colors || colors.length === 0) {
+        document.getElementById('tableContainer').innerHTML = `
+          <div class="empty-state">
+            <div class="icon">🎨</div>
+            <p>لا توجد ألوان لعرضها</p>
+            <button class="btn-primary" onclick="openNewForm()" style="margin-top:12px;">➕ إضافة أول لون</button>
+          </div>
+        `;
+        return;
+      }
+
+      let html = `<table><thead><tr>
+        <th>الكود</th>
+        <th>اسم اللون</th>
+        <th>معاينة</th>
+        <th>الحالة</th>
+        <th style="width:140px;">الإجراءات</th>
+      </tr></thead><tbody>`;
+
+      colors.forEach(item => {
+        const code = escapeHtml(item.color_code);
+        const name = escapeHtml(item.color_name);
+        const previewColor = COLOR_PREVIEW_MAP[code] || '#f0f0f0';
+        const isProtected = PROTECTED_COLORS.includes(code);
+        
+        html += `<tr>
+          <td><strong style="font-family:monospace;">${code}</strong></td>
+          <td>${name}</td>
+          <td><div class="color-dot" style="background:${previewColor};border-color:${code==='WHITE'||code==='YELLOW'?'#ccc':'transparent'}"></div></td>
+          <td>${isProtected ? '<span class="badge badge-protected">🔒 محمي</span>' : '—'}</td>
+          <td class="actions">
+            <button class="btn-sm btn-outline" onclick="editItem('${code}')" title="تعديل">✏️</button>
+            <button class="btn-sm btn-danger" onclick="deleteItem('${code}')" title="حذف">🗑️</button>
+          </td>
+        </tr>`;
+      });
+
+      html += '</tbody></table>';
+      document.getElementById('tableContainer').innerHTML = html;
+    }
+
+    function updateCount() {
+      document.getElementById('colorsCount').textContent = filteredColors.length;
+    }
+
+    // ========== البحث ==========
+    function filterColors() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      
+      if (!query) {
+        filteredColors = [...allColors];
+      } else {
+        filteredColors = allColors.filter(color => 
+          color.color_code.toLowerCase().includes(query) ||
+          color.color_name.toLowerCase().includes(query)
+        );
+      }
+      
+      renderTable(filteredColors);
+      updateCount();
+    }
+
+    function resetSearch() {
+      document.getElementById('searchInput').value = '';
+      filteredColors = [...allColors];
+      renderTable(filteredColors);
+      updateCount();
+    }
+
+    // ========== دوال النموذج ==========
+    function openNewForm() {
+      document.getElementById('formPanel').style.display = 'block';
+      document.getElementById('formTitle').textContent = '➕ إضافة لون جديد';
+      document.getElementById('colorForm').reset();
+      document.getElementById('originalCode').value = '';
+      document.getElementById('colorCode').readOnly = false;
+      document.getElementById('colorCode').style.background = '';
+      resetPreview();
+      document.getElementById('colorCode').focus();
+    }
+
+    function closeForm() {
+      document.getElementById('formPanel').style.display = 'none';
+    }
+
+    function resetPreview() {
+      document.getElementById('colorDot').style.background = '#f0f0f0';
+      document.getElementById('previewCode').textContent = '—';
+      document.getElementById('previewHint').textContent = 'أدخل كود اللون للمعاينة';
+    }
+
+    function updateColorPreview(code) {
+      const previewColor = COLOR_PREVIEW_MAP[code] || '#f0f0f0';
+      const dot = document.getElementById('colorDot');
+      const previewCode = document.getElementById('previewCode');
+      const previewHint = document.getElementById('previewHint');
+      
+      dot.style.background = previewColor;
+      // تعديل حدود الدائرة للألوان الفاتحة
+      if (code === 'WHITE' || code === 'YELLOW') {
+        dot.style.borderColor = '#ccc';
+      } else {
+        dot.style.borderColor = 'transparent';
+      }
+      
+      if (COLOR_PREVIEW_MAP[code]) {
+        previewCode.textContent = code;
+        previewHint.textContent = 'لون معروف في النظام';
+      } else if (code) {
+        previewCode.textContent = code;
+        previewHint.textContent = 'لون مخصص';
+      } else {
+        resetPreview();
+      }
+    }
+
+    // اقتراح كود لون تلقائي بناءً على الاسم
+    function suggestColorCode() {
+      const name = document.getElementById('colorName').value.trim();
+      const codeInput = document.getElementById('colorCode');
+      
+      // لا نقترح إذا كان المستخدم يعدل أو كتب شيئاً يدوياً
+      if (document.getElementById('originalCode').value || codeInput.value) {
+        return;
+      }
+      
+      if (name.length >= 2) {
+        // استخراج أحرف أولى من الاسم العربي أو الإنجليزي
+        const initials = name
+          .split(/[\s\-]+/)
+          .map(w => w.charAt(0))
+          .slice(0, 3)
+          .join('')
+          .toUpperCase()
+          .replace(/[^A-Z]/g, '');
+        
+        const prefix = initials || 'COL';
+        
+        // البحث عن آخر رقم مستخدم
+        const existing = allColors
+          .filter(c => c.color_code.startsWith(prefix))
+          .map(c => {
+            const num = parseInt(c.color_code.replace(prefix, '').replace(/[^0-9]/g, ''));
+            return isNaN(num) ? 0 : num;
+          });
+        
+        const nextNum = (Math.max(0, ...existing) + 1).toString().padStart(2, '0');
+        codeInput.value = `${prefix}-${nextNum}`;
+        updateColorPreview(codeInput.value);
+      }
+    }
+
+    function editItem(code) {
+      // ⚠️ نمرر الكود كمعرف (حسب بنية Colors.gs)
+      showTableLoading();
+      
+      google.script.run
+        .withSuccessHandler(function(item) {
+          if (!item) {
+            showError('لم يتم العثور على اللون');
+            return;
+          }
+          
+          document.getElementById('formPanel').style.display = 'block';
+          document.getElementById('formTitle').textContent = '✏️ تعديل اللون';
+          
+          // حفظ الكود الأصلي للبحث عند التحديث
+          document.getElementById('originalCode').value = item.color_code;
+          
+          document.getElementById('colorCode').value = item.color_code;
+          document.getElementById('colorName').value = item.color_name;
+          updateColorPreview(item.color_code);
+          
+          // منع تعديل الكود بعد الإنشاء (اختياري - يمكن إزالته إذا أردت السماح بالتعديل)
+          document.getElementById('colorCode').readOnly = true;
+          document.getElementById('colorCode').style.background = 'var(--bg)';
+          
+        })
+        .withFailureHandler(function(error) {
+          showError('فشل تحميل بيانات اللون: ' + error);
+        })
+        .getColorByCode(code);  // ⚠️ نستخدم getColorByCode بدلاً من getById
+    }
+
+    // ========== حفظ اللون ==========
+    document.getElementById('colorForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = {
+        // ⚠️ نمرر original_code للتحقق من تغيير الكود عند التحديث
+        original_code: document.getElementById('originalCode').value,
+        color_code: document.getElementById('colorCode').value.trim().toUpperCase(),
+        color_name: document.getElementById('colorName').value.trim()
+      };
+      
+      // التحقق الأساسي
+      if (!formData.color_code || !formData.color_name) {
+        showMessage('⚠️ كود اللون واسم اللون مطلوبان', 'warning');
+        return;
+      }
+      
+      // التحقق من تنسيق الكود
+      if (!/^[A-Z0-9\-_]+$/.test(formData.color_code)) {
+        showMessage('⚠️ كود اللون يجب أن يحتوي على أحرف كبيرة وأرقام وشرطات فقط', 'warning');
+        return;
+      }
+      
+      // تعطيل زر الحفظ أثناء المعالجة
+      const saveBtn = document.getElementById('saveBtn');
+      const originalText = saveBtn.innerHTML;
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px;"></span> جاري الحفظ...';
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = originalText;
+          
+          if (result?.success) {
+            showMessage('✅ ' + result.message, 'success');
+            closeForm();
+            loadColors();
+          } else {
+            showMessage('❌ ' + (result?.message || 'حدث خطأ غير معروف'), 'error');
+          }
+        })
+        .withFailureHandler(function(error) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = originalText;
+          showMessage('❌ خطأ في الاتصال: ' + error, 'error');
+        })
+        .saveColor(formData);
+    });
+
+    // ========== حذف اللون ==========
+    function deleteItem(code) {
+      // ⚠️ نمرر الكود للحذف (حسب بنية Colors.gs)
+      const isProtected = PROTECTED_COLORS.includes(code.toUpperCase());
+      
+      if (isProtected) {
+        showMessage(`⚠️ لا يمكن حذف اللون "${code}" لأنه محمي في النظام. يمكنك تعديله فقط.`, 'warning');
+        return;
+      }
+      
+      if (!confirm(`⚠️ هل أنت متأكد من حذف اللون "${code}"؟\n\nقد يؤثر هذا على الأصناف والطلبات المرتبطة به.`)) {
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result?.success) {
+            showMessage('✅ ' + result.message, 'success');
+            loadColors();
+          } else {
+            showMessage('❌ ' + (result?.message || 'فشل الحذف'), 'error');
+          }
+        })
+        .withFailureHandler(function(error) {
+          showMessage('❌ خطأ: ' + error, 'error');
+        })
+        .deleteColor(code);  // ⚠️ نمرر الكود مباشرة
+    }
+
+    // ========== التنقل ==========
+    function backToDashboard() {
+      try {
+        if (typeof google !== 'undefined' && google.script?.host) {
+          google.script.host.close();
+          return;
+        }
+      } catch(e) {}
+      
+      if (typeof google !== 'undefined' && google.script?.run) {
+        google.script.run.reopenDashboard?.();
+        google.script.run.openPageInSpreadsheet?.('dashboard');
+      }
+    }
+
+    // ========== دوال مساعدة ==========
+    function showMessage(message, type = 'info') {
+      const alert = document.createElement('div');
+      alert.style.cssText = `
+        position: fixed; top: 20px; left: 20px; z-index: 9999;
+        padding: 14px 20px; border-radius: 8px; color: white;
+        font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        max-width: 400px; animation: slideIn 0.3s ease;
+        background: ${type === 'success' ? '#34a853' : type === 'error' ? '#dc2626' : type === 'warning' ? '#f59e0b' : '#1a73e8'};
+      `;
+      alert.innerHTML = `<span>${escapeHtml(message)}</span>`;
+      document.body.appendChild(alert);
+      
+      setTimeout(() => {
+        alert.style.opacity = '0';
+        alert.style.transition = 'opacity 0.3s';
+        setTimeout(() => alert.remove(), 300);
+      }, 4000);
+    }
+
+    function showError(message) {
+      showMessage(message, 'error');
+    }
+
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // ========== دعم Web App ==========
+    if (typeof window.google === 'undefined') {
+      console.warn('⚠️ هذه الصفحة مصممة للعمل داخل Google Apps Script');
+    }
+  </script>
+</body>
+</html>
