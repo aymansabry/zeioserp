@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    .license-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .license-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .license-status {
+      background: rgba(255,255,255,0.2);
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 13px;
+    }
+    .license-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      font-size: 14px;
+    }
+    .progress-bar {
+      background: rgba(255,255,255,0.3);
+      height: 8px;
+      border-radius: 4px;
+      margin-top: 15px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      background: #4ade80;
+      height: 100%;
+      transition: width 0.3s;
+    }
+    .renew-btn {
+      background: white;
+      color: #667eea;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="license-card">
+    <div class="license-header">
+      <span>📋 حالة الترخيص</span>
+      <span class="license-status" id="statusBadge">نشط</span>
+    </div>
+    
+    <div class="license-info">
+      <div>
+        <strong>نوع الخطة:</strong>
+        <div id="planType">--</div>
+      </div>
+      <div>
+        <strong>تاريخ الانتهاء:</strong>
+        <div id="expiresAt">--</div>
+      </div>
+      <div>
+        <strong>الأيام المتبقية:</strong>
+        <div id="daysRemaining">--</div>
+      </div>
+      <div>
+        <strong>الحالة:</strong>
+        <div id="validStatus">--</div>
+      </div>
+    </div>
+    
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+    </div>
+    
+    <button class="renew-btn" onclick="renewLicense()">🔄 تجديد الاشتراك</button>
+  </div>
+  
+  <script>
+    function loadLicenseStatus() {
+      google.script.run
+        .withSuccessHandler(function(license) {
+          document.getElementById('planType').textContent = license.planType;
+          document.getElementById('expiresAt').textContent = license.expiresAt ? 
+            new Date(license.expiresAt).toLocaleDateString('ar-EG') : '--';
+          document.getElementById('daysRemaining').textContent = license.daysRemaining + ' يوم';
+          document.getElementById('validStatus').textContent = license.valid ? '✅ صالح' : '❌ غير صالح';
+          document.getElementById('statusBadge').textContent = license.valid ? 'نشط' : 'منتهي';
+          
+          // شريط التقدم
+          if (license.daysRemaining > 0) {
+            var totalDays = 90; // فترة التجربة
+            var percentage = (license.daysRemaining / totalDays) * 100;
+            document.getElementById('progressFill').style.width = percentage + '%';
+            
+            if (percentage < 20) {
+              document.getElementById('progressFill').style.background = '#ef4444';
+            } else if (percentage < 50) {
+              document.getElementById('progressFill').style.background = '#f59e0b';
+            }
+          }
+        })
+        .getLicenseStatusForDashboard();
+    }
+    
+    function renewLicense() {
+      window.open('https://wa.me/201205951462', '_blank');
+    }
+    
+    loadLicenseStatus();
+  </script>
+</body>
+</html>
