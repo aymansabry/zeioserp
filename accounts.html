@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📊 شجرة الحسابات - ZEIOS ERP</title>
+  <style>
+    :root {
+      --bg: #f8f9fa; --card: #fff; --text: #202124; --text2: #5f6368;
+      --border: #dadce0; --accent: #1a73e8; --shadow: 0 1px 3px rgba(0,0,0,0.1);
+      --success: #34a853; --warning: #f59e0b; --danger: #dc2626;
+    }
+    [data-theme="dark"] {
+      --bg: #121212; --card: #1e1e1e; --text: #e8eaed; --text2: #9aa0a6;
+      --border: #3c4043; --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Google Sans';
+      background: var(--bg); color: var(--text); padding: 16px; direction: rtl;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+    }
+    h1 { font-size: 22px; font-weight: 500; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+    button {
+      padding: 8px 16px; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--card); color: var(--text); cursor: pointer;
+      font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+    }
+    button:hover { background: var(--bg); border-color: var(--accent); }
+    .btn-primary { background: var(--accent); color: white; border: none; }
+    .btn-primary:hover { background: #0d5bb8; }
+    .btn-success { background: var(--success); color: white; border: none; }
+    .btn-success:hover { background: #2d8e49; }
+    .btn-danger { background: var(--danger); color: white; border: none; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-outline { background: transparent; border-color: var(--accent); color: var(--accent); }
+    .btn-outline:hover { background: rgba(26,115,232,0.1); }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px;
+    }
+    .card-header {
+      padding: 14px 18px; font-weight: 600; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .card-body { padding: 20px; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; }
+    label.required::after { content: " *"; color: var(--danger); }
+    input, select, textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 6px; background: var(--card); color: var(--text);
+      font-family: inherit; font-size: 14px; transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+    input[readonly] { background: var(--bg); color: var(--text2); cursor: not-allowed; }
+    .form-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px; margin-bottom: 16px;
+    }
+    .account-type-section {
+      background: linear-gradient(135deg, rgba(26,115,232,0.08), rgba(26,115,232,0.03));
+      padding: 16px 20px; border-radius: 10px; margin-bottom: 24px;
+      border-right: 4px solid var(--accent);
+    }
+    .account-type-section label {
+      font-weight: 600; color: var(--accent); font-size: 15px; margin-bottom: 10px;
+    }
+    .account-type-section select {
+      font-size: 15px; padding: 12px; font-weight: 500;
+    }
+    .type-hint {
+      font-size: 12px; color: var(--text2); margin-top: 6px;
+      padding: 8px 12px; background: rgba(0,0,0,0.03); border-radius: 6px;
+    }
+    .table-container { overflow-x: auto; width: 100%; }
+    table { width: 100%; border-collapse: collapse; min-width: 900px; }
+    th {
+      background: var(--bg); text-align: right; padding: 14px 16px;
+      font-weight: 600; font-size: 13px; color: var(--text2);
+      border-bottom: 2px solid var(--border); white-space: nowrap;
+    }
+    td {
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      color: var(--text); font-size: 14px; text-align: right;
+    }
+    tr:hover { background: rgba(26,115,232,0.04); }
+    tr.locked-account { opacity: 0.7; background: repeating-linear-gradient(45deg, var(--bg), var(--bg) 10px, var(--card) 10px, var(--card) 20px); }
+    tr.locked-account:hover { background: var(--bg); }
+    .actions { display: flex; gap: 6px; justify-content: flex-end; }
+    .loading { text-align: center; padding: 40px 20px; color: var(--text2); }
+    .spinner {
+      border: 3px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; width: 32px; height: 32px;
+      animation: spin 1s linear infinite; margin: 0 auto 16px;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .empty-state {
+      text-align: center; padding: 40px 20px; color: var(--text2);
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+    .badge {
+      padding: 4px 10px; border-radius: 20px; font-size: 11px;
+      font-weight: 500; display: inline-block; white-space: nowrap;
+    }
+    .badge-asset { background: #dbeafe; color: #1e40af; }
+    .badge-liability { background: #fee2e2; color: #991b1b; }
+    .badge-equity { background: #f3e8ff; color: #6b21a8; }
+    .badge-revenue { background: #d1fae5; color: #065f46; }
+    .badge-expense { background: #fef3c7; color: #92400e; }
+    .search-bar {
+      display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .search-bar input { flex: 1; min-width: 200px; }
+    .search-bar select { min-width: 150px; }
+    @media (max-width: 768px) {
+      .header { flex-direction: column; align-items: stretch; }
+      .form-row { grid-template-columns: 1fr; }
+      .card-body { padding: 16px; }
+    }
+    .notification {
+      position: fixed; top: 20px; left: 20px; z-index: 9999;
+      padding: 14px 20px; border-radius: 8px; color: white;
+      font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      max-width: 400px; animation: slideIn 0.3s ease; display: none;
+    }
+    .notification.show { display: block; }
+    .notification.success { background: var(--success); }
+    .notification.error { background: var(--danger); }
+    .notification.warning { background: var(--warning); color: #1e293b; }
+    @keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1><span>📊</span> شجرة الحسابات</h1>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-success" onclick="backToDashboard()"><span>🏠</span> لوحة التحكم</button>
+        <button class="btn btn-primary" onclick="openNewForm()"><span>➕</span> إضافة حساب</button>
+      </div>
+    </div>
+
+    <div id="formPanel" class="card" style="display:none;">
+      <div class="card-header">
+        <span id="formTitle">➕ إضافة حساب جديد</span>
+        <button class="btn btn-sm btn-outline" onclick="closeForm()">✕ إغلاق</button>
+      </div>
+      <div class="card-body">
+        <form id="accountForm">
+          <input type="hidden" id="accountId">
+          
+          <div class="account-type-section">
+            <label for="accountType" class="required">نوع الحساب</label>
+            <select id="accountType" onchange="onAccountTypeChange()" required>
+              <option value="">-- اختر نوع الحساب --</option>
+              <option value="customers">👥 عميل (حسابات القبض)</option>
+              <option value="suppliers">🏭 مورد (حسابات الدفع)</option>
+              <option value="cash">💵 خزينة نقدية</option>
+              <option value="banks">🏦 حساب بنكي</option>
+              <option value="inventory">📦 مخزون سلعي</option>
+              <option value="expenses">📉 مصروف تشغيلي</option>
+              <option value="revenue">📈 إيراد مبيعات</option>
+              <option value="fixed_assets">🏢 أصل ثابت</option>
+              <option value="equity">⚖️ حقوق ملكية</option>
+              <option value="cost_of_sales">🧾 تكلفة مبيعات</option>
+              <option value="other_assets">📦 أصول أخرى</option>
+              <option value="other_liabilities">📋 التزامات أخرى</option>
+            </select>
+            <div class="type-hint" id="typeHint">
+              اختر نوع الحساب لتوليد رمز الحساب ومجموعة الميزانية تلقائياً
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="accountNo" class="required">رمز الحساب</label>
+              <input type="text" id="accountNo" required readonly class="auto-filled" placeholder="يتم التوليد تلقائياً">
+            </div>
+            <div class="form-group">
+              <label for="accountName" class="required">اسم الحساب</label>
+              <input type="text" id="accountName" required placeholder="مثال: مورد زيوس الرئيسي">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="parentAccountId">الحساب الأصل (اختياري)</label>
+            <input type="text" id="parentAccountId" readonly class="auto-filled" placeholder="يتم التحديد تلقائياً">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="bsGroupId">مجموعة الميزانية</label>
+              <input type="text" id="bsGroupId" readonly class="auto-filled" placeholder="—">
+            </div>
+            <div class="form-group">
+              <label for="plGroupId">مجموعة الربح والخسارة</label>
+              <input type="text" id="plGroupId" readonly class="auto-filled" placeholder="—">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="contactName">اسم جهة الاتصال</label>
+              <input type="text" id="contactName" placeholder="اختياري">
+            </div>
+            <div class="form-group">
+              <label for="phone">رقم الهاتف</label>
+              <input type="tel" id="phone" placeholder="اختياري">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">البريد الإلكتروني</label>
+              <input type="email" id="email" placeholder="اختياري">
+            </div>
+            <div class="form-group">
+              <label for="address">العنوان</label>
+              <textarea id="address" rows="2" placeholder="اختياري"></textarea>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="creditLimit">الحد الائتماني</label>
+            <input type="number" id="creditLimit" step="0.01" min="0" value="0" placeholder="0.00">
+          </div>
+
+          <div style="display:flex; gap:10px; margin-top:24px; justify-content:flex-end;">
+            <button type="button" class="btn btn-outline" onclick="closeForm()">إلغاء</button>
+            <button type="submit" class="btn btn-primary" id="saveBtn">💾 حفظ الحساب</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span>🔍 بحث وتصفية</span>
+      </div>
+      <div class="card-body">
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="ابحث بالاسم أو الرمز..." oninput="filterAccounts()">
+          <select id="filterType" onchange="filterAccounts()">
+            <option value="">جميع الأنواع</option>
+            <option value="customers">عملاء</option>
+            <option value="suppliers">موردين</option>
+            <option value="cash">خزائن</option>
+            <option value="banks">بنوك</option>
+            <option value="inventory">مخزون</option>
+            <option value="expenses">مصروفات</option>
+            <option value="revenue">إيرادات</option>
+          </select>
+          <button class="btn btn-outline" onclick="resetFilters()">🔄 إعادة تعيين</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span>📋 قائمة الحسابات</span>
+        <span id="accountsCount" class="badge badge-asset">0</span>
+      </div>
+      <div class="card-body">
+        <div class="table-container">
+          <div id="tableContainer">
+            <div class="loading">
+              <div class="spinner"></div>
+              جاري تحميل الحسابات...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ACCOUNT_TYPE_CONFIG = {
+      customers: { label: "عميل", bs_group: "BS-A", pl_group: "", parent: "1200", prefix: "1200-", badge: "badge-asset", accountNoStart: "1200" },
+      suppliers: { label: "مورد", bs_group: "BS-L", pl_group: "", parent: "2100", prefix: "2100-", badge: "badge-liability", accountNoStart: "2100" },
+      cash: { label: "خزينة", bs_group: "BS-A", pl_group: "", parent: "1100", prefix: "1100-", badge: "badge-asset", accountNoStart: "1100" },
+      banks: { label: "بنك", bs_group: "BS-A", pl_group: "", parent: "1100", prefix: "1100-", badge: "badge-asset", accountNoStart: "1100" },
+      inventory: { label: "مخزون", bs_group: "BS-A", pl_group: "", parent: "1300", prefix: "1300-", badge: "badge-asset", accountNoStart: "1300" },
+      expenses: { label: "مصروف", bs_group: "", pl_group: "PL-E", parent: "6000", prefix: "6000-", badge: "badge-expense", accountNoStart: "6000" },
+      revenue: { label: "إيراد", bs_group: "", pl_group: "PL-R", parent: "4000", prefix: "4000-", badge: "badge-revenue", accountNoStart: "4000" },
+      fixed_assets: { label: "أصل ثابت", bs_group: "BS-A", pl_group: "", parent: "1500", prefix: "1500-", badge: "badge-asset", accountNoStart: "1500" },
+      equity: { label: "حقوق ملكية", bs_group: "BS-E", pl_group: "", parent: "3000", prefix: "3000-", badge: "badge-equity", accountNoStart: "3000" },
+      cost_of_sales: { label: "تكلفة مبيعات", bs_group: "", pl_group: "PL-C", parent: "5000", prefix: "5000-", badge: "badge-expense", accountNoStart: "5000" },
+      other_assets: { label: "أصول أخرى", bs_group: "BS-A", pl_group: "", parent: "1900", prefix: "1900-", badge: "badge-asset", accountNoStart: "1900" },
+      other_liabilities: { label: "التزامات أخرى", bs_group: "BS-L", pl_group: "", parent: "2900", prefix: "2900-", badge: "badge-liability", accountNoStart: "2900" }
+    };
+
+    let allAccounts = [];
+    let filteredAccounts = [];
+    let isLoading = false;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      initTheme();
+      loadAccounts();
+      setupEventListeners();
+    });
+
+    function initTheme() {
+      const saved = localStorage.getItem('zeios-theme');
+      if (saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    }
+
+    function setupEventListeners() {
+      document.addEventListener('click', function(e) {
+        const form = document.getElementById('formPanel');
+        if (e.target === form && form.style.display !== 'none') closeForm();
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeForm();
+      });
+    }
+
+    function loadAccounts() {
+      if (isLoading) return;
+      isLoading = true;
+      showTableLoading();
+      
+      google.script.run
+        .withSuccessHandler(function(accounts) {
+          allAccounts = accounts || [];
+          filteredAccounts = [...allAccounts];
+          renderTable(filteredAccounts);
+          updateCount();
+          isLoading = false;
+        })
+        .withFailureHandler(function(error) {
+          showMessage('فشل تحميل الحسابات: ' + error, 'error');
+          isLoading = false;
+        })
+        .getAccountsList();
+    }
+
+    function showTableLoading() {
+      document.getElementById('tableContainer').innerHTML = `
+        <div class="loading">
+          <div class="spinner"></div>
+          جاري تحميل الحسابات...
+        </div>`;
+    }
+
+    function renderTable(accounts) {
+      if (!accounts || accounts.length === 0) {
+        document.getElementById('tableContainer').innerHTML = `
+          <div class="empty-state">
+            <div class="icon">📭</div>
+            <p>لا توجد حسابات لعرضها</p>
+            <button class="btn btn-primary" onclick="openNewForm()" style="margin-top:12px;">➕ إضافة أول حساب</button>
+          </div>`;
+        return;
+      }
+
+      let html = `<table><thead><tr>
+        <th>الرمز</th><th>اسم الحساب</th><th>النوع</th><th>المجموعة</th>
+        <th>الحساب الأصل</th><th>الحد الائتماني</th><th style="width:140px;">الإجراءات</th>
+      </tr></thead><tbody>`;
+
+      accounts.forEach(item => {
+        const typeInfo = getAccountTypeInfo(item);
+        const groupDisplay = item.bs_group_id || item.pl_group_id || '—';
+        const badgeClass = typeInfo?.badge || 'badge-asset';
+        const isLocked = item.locked === 'TRUE' || item.locked === true || item.locked === 'نعم';
+        
+        html += `<tr class="${isLocked ? 'locked-account' : ''}" ${isLocked ? 'title="حساب نظامي مغلق"' : ''}>
+          <td><strong>${escapeHtml(item.account_no)}</strong></td>
+          <td>${escapeHtml(item.account_name)}</td>
+          <td><span class="badge ${badgeClass}">${typeInfo?.label || '—'}</span></td>
+          <td>${escapeHtml(groupDisplay)}</td>
+          <td>${item.parent_account_id ? item.parent_account_id : (item.parent_account_no || '—')}</td>
+          <td>${formatNumber(item.credit_limit)}</td>
+          <td class="actions">`;
+          
+          if (isLocked) {
+            html += `<span style="color:var(--text2);font-size:12px;" title="هذا الحساب نظامي ولا يمكن تعديله">🔒 مغلق</span>`;
+          } else {
+            html += `
+              <button class="btn btn-sm btn-outline" onclick="editItem('${item.id}')" title="تعديل">✏️</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteItem('${item.id}')" title="حذف">🗑️</button>`;
+          }
+          html += `</td></tr>`;
+      });
+
+      html += '</tbody></table>';
+      document.getElementById('tableContainer').innerHTML = html;
+    }
+
+    function updateCount() {
+      document.getElementById('accountsCount').textContent = filteredAccounts.length;
+    }
+
+    function filterAccounts() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const typeFilter = document.getElementById('filterType').value;
+      
+      filteredAccounts = allAccounts.filter(acc => {
+        const matchesSearch = !query || 
+          acc.account_no.toLowerCase().includes(query) ||
+          acc.account_name.toLowerCase().includes(query) ||
+          (acc.contact_name && acc.contact_name.toLowerCase().includes(query));
+        const matchesType = !typeFilter || getAccountTypeKey(acc) === typeFilter;
+        return matchesSearch && matchesType;
+      });
+      
+      renderTable(filteredAccounts);
+      updateCount();
+    }
+
+    function resetFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('filterType').value = '';
+      filteredAccounts = [...allAccounts];
+      renderTable(filteredAccounts);
+      updateCount();
+    }
+
+    function openNewForm() {
+      document.getElementById('formPanel').style.display = 'block';
+      document.getElementById('formTitle').textContent = '➕ إضافة حساب جديد';
+      document.getElementById('accountForm').reset();
+      document.getElementById('accountId').value = '';
+      document.getElementById('accountType').value = '';
+      document.getElementById('typeHint').textContent = 'اختر نوع الحساب لتوليد رمز الحساب ومجموعة الميزانية تلقائياً';
+      resetAutoFields();
+      document.getElementById('accountName').focus();
+    }
+
+    function closeForm() {
+      document.getElementById('formPanel').style.display = 'none';
+    }
+
+    function onAccountTypeChange() {
+      const type = document.getElementById('accountType').value;
+      const config = ACCOUNT_TYPE_CONFIG[type];
+      
+      if (!config) {
+        resetAutoFields();
+        document.getElementById('typeHint').textContent = 'اختر نوع الحساب لتوليد رمز الحساب ومجموعة الميزانية تلقائياً';
+        return;
+      }
+      
+      document.getElementById('typeHint').textContent = 
+        `${config.label} → مجموعة: ${config.bs_group || config.pl_group || '—'} | الحساب الأصل: ${config.parent}`;
+      
+      document.getElementById('bsGroupId').value = config.bs_group || '';
+      document.getElementById('plGroupId').value = config.pl_group || '';
+      document.getElementById('parentAccountId').value = config.parent;
+      
+      generateNextAccountNumber(config);
+    }
+
+    function resetAutoFields() {
+      document.getElementById('accountNo').value = '';
+      document.getElementById('parentAccountId').value = '';
+      document.getElementById('bsGroupId').value = '';
+      document.getElementById('plGroupId').value = '';
+    }
+
+    function generateNextAccountNumber(config) {
+      const existing = allAccounts.filter(acc => 
+        acc.account_no?.startsWith(config.prefix) &&
+        ((config.bs_group && acc.bs_group_id === config.bs_group) ||
+         (config.pl_group && acc.pl_group_id === config.pl_group))
+      );
+      
+      let maxNum = 0;
+      existing.forEach(acc => {
+        const suffix = acc.account_no.replace(config.prefix, '');
+        const num = parseInt(suffix);
+        if (!isNaN(num) && num > maxNum) maxNum = num;
+      });
+      
+      const nextNum = (maxNum + 1).toString().padStart(2, '0');
+      document.getElementById('accountNo').value = config.prefix + nextNum;
+    }
+
+    function editItem(id) {
+      showTableLoading();
+      
+      google.script.run
+        .withSuccessHandler(function(item) {
+          if (!item) {
+            showMessage('لم يتم العثور على الحساب', 'error');
+            return;
+          }
+          
+          document.getElementById('formPanel').style.display = 'block';
+          document.getElementById('formTitle').textContent = '✏️ تعديل الحساب';
+          document.getElementById('accountId').value = item.id;
+          document.getElementById('accountNo').value = item.account_no;
+          document.getElementById('accountName').value = item.account_name;
+          document.getElementById('parentAccountId').value = item.parent_account_id || item.parent_account_no || '';
+          document.getElementById('bsGroupId').value = item.bs_group_id || '—';
+          document.getElementById('plGroupId').value = item.pl_group_id || '—';
+          document.getElementById('contactName').value = item.contact_name || '';
+          document.getElementById('address').value = item.address || '';
+          document.getElementById('phone').value = item.phone || '';
+          document.getElementById('email').value = item.email || '';
+          document.getElementById('creditLimit').value = item.credit_limit || '0';
+          
+          const detectedType = detectAccountType(item);
+          document.getElementById('accountType').value = detectedType || '';
+          if (detectedType) onAccountTypeChange();
+          
+        })
+        .withFailureHandler(function(error) {
+          showMessage('فشل تحميل بيانات الحساب: ' + error, 'error');
+        })
+        .getAccountById(id);
+    }
+
+    function detectAccountType(item) {
+      if (!item) return null;
+      const accountNo = item.account_no || '';
+      const bsGroup = item.bs_group_id || '';
+      const plGroup = item.pl_group_id || '';
+      const parent = item.parent_account_id || item.parent_account_no || '';
+      
+      for (const [key, config] of Object.entries(ACCOUNT_TYPE_CONFIG)) {
+        let score = 0;
+        if (config.accountNoStart && accountNo.startsWith(config.accountNoStart)) score += 3;
+        if (config.bs_group && bsGroup === config.bs_group) score += 2;
+        if (config.pl_group && plGroup === config.pl_group) score += 2;
+        if (config.parent && parent === config.parent) score += 1;
+        if (score >= 3) return key;
+      }
+      for (const [key, config] of Object.entries(ACCOUNT_TYPE_CONFIG)) {
+        if ((config.bs_group && bsGroup === config.bs_group) ||
+            (config.pl_group && plGroup === config.pl_group)) return key;
+      }
+      return null;
+    }
+
+    function getAccountTypeInfo(item) {
+      if (!item) return null;
+      const accountNo = item.account_no || '';
+      const bsGroup = item.bs_group_id || '';
+      const plGroup = item.pl_group_id || '';
+      
+      for (const [key, config] of Object.entries(ACCOUNT_TYPE_CONFIG)) {
+        let score = 0;
+        if (config.accountNoStart && accountNo.startsWith(config.accountNoStart)) score += 3;
+        if (config.bs_group && bsGroup === config.bs_group) score += 2;
+        if (config.pl_group && plGroup === config.pl_group) score += 2;
+        if (score >= 3) return config;
+      }
+      for (const [key, config] of Object.entries(ACCOUNT_TYPE_CONFIG)) {
+        if ((config.bs_group && bsGroup === config.bs_group) ||
+            (config.pl_group && plGroup === config.pl_group)) return config;
+      }
+      return null;
+    }
+
+    function getAccountTypeKey(item) {
+      return getAccountTypeInfo(item)?.value || null;
+    }
+
+    // ✅ نموذج الحفظ المُصحح - يرسل جميع الحقول المطلوبة
+    document.getElementById('accountForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const accountType = document.getElementById('accountType').value;
+      if (!accountType) {
+        showMessage('يرجى اختيار نوع الحساب أولاً', 'warning');
+        return;
+      }
+      
+      // ✅ formData مع أسماء الحقول المطابقة للخلفية (ChartOfAccounts.gs)
+      const formData = {
+        id: document.getElementById('accountId').value,
+        account_type: accountType,  // ✅ هذا هو المفتاح! يجب إرساله
+        account_no: document.getElementById('accountNo').value.trim(),
+        account_name: document.getElementById('accountName').value.trim(),
+        parent_account_id: document.getElementById('parentAccountId').value.trim(),
+        bs_group_id: document.getElementById('bsGroupId').value.trim(),  // ✅ اسم الحقل الصحيح
+        pl_group_id: document.getElementById('plGroupId').value.trim(),  // ✅ اسم الحقل الصحيح
+        contact_name: document.getElementById('contactName').value.trim(),
+        address: document.getElementById('address').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        credit_limit: document.getElementById('creditLimit').value || '0'
+      };
+      
+      if (!formData.account_no || !formData.account_name) {
+        showMessage('رمز الحساب واسم الحساب مطلوبان', 'warning');
+        return;
+      }
+      
+      const saveBtn = document.getElementById('saveBtn');
+      const originalText = saveBtn.innerHTML;
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px;"></span> جاري الحفظ...';
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = originalText;
+          
+          if (result?.success) {
+            showMessage(result.message, 'success');
+            closeForm();
+            loadAccounts();
+          } else {
+            showMessage(result?.message || 'حدث خطأ غير معروف', 'error');
+          }
+        })
+        .withFailureHandler(function(error) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = originalText;
+          showMessage('خطأ في الاتصال: ' + error, 'error');
+        })
+        .saveAccount(formData);  // ✅ الدالة الصحيحة في ChartOfAccounts.gs
+    });
+
+    function deleteItem(id) {
+      if (!confirm('هل أنت متأكد من حذف هذا الحساب؟\n\nقد يؤثر هذا على التقارير المالية والحركات المرتبطة.')) {
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result?.success) {
+            showMessage(result.message, 'success');
+            loadAccounts();
+          } else {
+            showMessage(result?.message || 'فشل الحذف', 'error');
+          }
+        })
+        .withFailureHandler(function(error) {
+          showMessage('خطأ: ' + error, 'error');
+        })
+        .deleteAccount(id);
+    }
+
+    function backToDashboard() {
+      try {
+        if (typeof google !== 'undefined' && google.script?.host) {
+          google.script.host.close();
+          return;
+        }
+      } catch(e) {}
+      if (typeof google !== 'undefined' && google.script?.run) {
+        google.script.run.reopenDashboard?.();
+        google.script.run.openPageInSpreadsheet?.('dashboard');
+      }
+    }
+
+    function showMessage(message, type = 'info') {
+      const alert = document.getElementById('notification') || document.createElement('div');
+      alert.id = 'notification';
+      alert.className = `notification ${type}`;
+      alert.textContent = message;
+      document.body.appendChild(alert);
+      setTimeout(() => { alert.classList.add('show'); }, 10);
+      setTimeout(() => {
+        alert.classList.remove('show');
+        setTimeout(() => alert.remove(), 300);
+      }, 4000);
+    }
+
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function formatNumber(value) {
+      const num = parseFloat(value) || 0;
+      return num.toLocaleString('ar-SA', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    }
+
+    if (typeof window.google === 'undefined') {
+      console.warn('⚠️ هذه الصفحة مصممة للعمل داخل Google Apps Script');
+    }
+  </script>
+</body>
+</html>
