@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📈 قائمة الدخل - ZEIOS ERP</title>
+  <style>
+    :root {
+      --bg: #f8f9fa; --card: #fff; --text: #202124; --text2: #5f6368;
+      --border: #dadce0; --accent: #1a73e8; --shadow: 0 1px 3px rgba(0,0,0,0.1);
+      --profit: #2e7d32; --loss: #c62828; --black: #202124;
+      --success: #34a853; --warning: #fbbc04; --danger: #ea4335;
+      --revenue: #1976d2; --cogs: #d32f2f; --expense: #f57c00; --other-revenue: #7b1fa2;
+    }
+    .dark-mode {
+      --bg: #121212; --card: #1e1e1e; --text: #e8eaed; --text2: #9aa0a6;
+      --border: #3c4043; --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --black: #e8eaed;
+      --revenue: #64b5f6; --cogs: #ef5350; --expense: #ffb74d; --other-revenue: #ba68c8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Google Sans', 'Segoe UI', 'Tajawal', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 16px;
+      direction: rtl;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+    
+    /* ========== Header Styles ========== */
+    .main-header {
+      background: linear-gradient(135deg, var(--accent), #0d47a1);
+      color: white;
+      padding: 20px 24px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    .company-info h1 {
+      font-size: 22px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .company-info p {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .fiscal-badge {
+      background: rgba(255,255,255,0.2);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .fiscal-badge.inactive { background: rgba(255,152,0,0.3); }
+    .fiscal-badge.warning { background: rgba(234,67,53,0.3); }
+    
+    /* ========== Buttons ========== */
+    button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 6px;
+      background: var(--card);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: #0d5bb8; }
+    .btn-dashboard { background: var(--success); color: white; }
+    .btn-dashboard:hover { background: #2d8e49; }
+    .btn-print { background: var(--warning); color: #202124; }
+    .btn-print:hover { background: #e6a700; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { background: rgba(26,115,232,0.1); }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    /* ========== Card Styles ========== */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .card-header {
+      padding: 16px 20px;
+      font-weight: 600;
+      font-size: 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-body { padding: 20px; }
+    
+    /* ========== Report Banner ========== */
+    .report-banner {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .report-banner.info {
+      background: rgba(26, 115, 232, 0.1);
+      border-right: 4px solid var(--accent);
+      color: var(--black);
+    }
+    .report-banner.warning {
+      background: rgba(255, 152, 0, 0.1);
+      border-right: 4px solid var(--warning);
+      color: var(--black);
+    }
+
+    /* ========== P&L Items ========== */
+    .pl-section { margin: 20px 0; }
+    .pl-section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 20px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 1.5px solid var(--border);
+    }
+    .pl-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 8px;
+      border-bottom: 1px dashed var(--border);
+      font-size: 15px;
+      align-items: center;
+      transition: background 0.2s;
+    }
+    .pl-item:hover { background: rgba(26,115,232,0.05); }
+    .pl-item:last-child { border-bottom: none; }
+    .pl-label { 
+      color: var(--text2); 
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pl-amount {
+      font-weight: 600;
+      font-size: 16px;
+      font-family: monospace;
+      text-align: left;
+      direction: ltr;
+    }
+    .pl-sub-item {
+      margin-right: 24px;
+      font-size: 14px;
+    }
+    .pl-sub-item .pl-label { color: var(--text); opacity: 0.8; }
+    
+    /* تنسيق أنواع الإيرادات والمصروفات */
+    .revenue-item { border-right: 3px solid var(--revenue); }
+    .cogs-item { border-right: 3px solid var(--cogs); }
+    .expense-item { border-right: 3px solid var(--expense); }
+    .other-revenue-item { border-right: 3px solid var(--other-revenue); }
+    
+    .pl-total {
+      font-weight: bold;
+      font-size: 18px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 2px solid var(--border);
+    }
+    .pl-gross-profit {
+      font-size: 19px;
+      border-top: 2px solid var(--accent);
+      padding-top: 16px;
+      margin-top: 16px;
+      background: rgba(26,115,232,0.05);
+      padding: 16px 8px;
+      border-radius: 8px;
+    }
+    .pl-net-total {
+      font-size: 22px;
+      border-top: 3px double var(--text);
+      padding-top: 20px;
+      margin-top: 24px;
+      background: rgba(46,125,50,0.05);
+      padding: 20px 8px;
+      border-radius: 8px;
+    }
+    .profit { color: var(--profit); }
+    .loss { color: var(--loss); }
+    .negative { color: var(--loss); }
+
+    /* ========== Detailed Breakdown ========== */
+    .details-toggle {
+      background: var(--bg);
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin: 8px 0;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .details-toggle:hover { background: rgba(26,115,232,0.1); }
+    .details-content {
+      display: none;
+      margin: 12px 0 12px 24px;
+      padding: 12px;
+      background: rgba(0,0,0,0.02);
+      border-radius: 8px;
+    }
+    .details-content.show { display: block; }
+
+    /* ========== Summary Grid ========== */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .summary-card {
+      background: var(--bg);
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+    .summary-label {
+      font-size: 13px;
+      color: var(--text2);
+      margin-bottom: 6px;
+    }
+    .summary-value {
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--text);
+      font-family: monospace;
+    }
+    .summary-profit { color: var(--profit); }
+    .summary-loss { color: var(--loss); }
+
+    /* ========== Loading & Empty States ========== */
+    .loading {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--text2);
+    }
+    .spinner {
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { 
+      0% { transform: rotate(0deg); } 
+      100% { transform: rotate(360deg); } 
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text2);
+    }
+    .empty-state-icon { font-size: 56px; margin-bottom: 12px; opacity: 0.4; }
+    .empty-state-title { font-size: 16px; font-weight: 500; margin: 8px 0; color: var(--black); }
+    .empty-state-desc { font-size: 13px; }
+
+    /* ========== Toast Notification ========== */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--black);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      font-size: 14px;
+      z-index: 1000;
+      transition: transform 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--danger); }
+    .toast.warning { background: var(--warning); color: #202124; }
+
+    /* ========== Print Styles ========== */
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white; padding: 0; direction: rtl; }
+      .card { box-shadow: none; border: none; }
+      .pl-item { border-bottom: 1px solid #ddd !important; }
+      .pl-gross-profit, .pl-net-total { background: #f5f5f5 !important; }
+    }
+
+    /* ========== Responsive ========== */
+    @media (max-width: 768px) {
+      .header-top { flex-direction: column; align-items: flex-start; }
+      .header-actions { width: 100%; justify-content: flex-start; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .action-bar { flex-direction: column; }
+      button { width: 100%; justify-content: center; }
+      .pl-item { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .pl-amount { text-align: right; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <!-- ========== Main Header with Company Info ========== -->
+    <div class="main-header no-print">
+      <div class="header-top">
+        <div class="company-info">
+          <h1>📈 قائمة الدخل <span id="companyName">ZEIOS ERP</span></h1>
+          <p id="companyDetails">جاري تحميل بيانات الشركة...</p>
+        </div>
+        <div class="header-actions">
+          <span id="fiscalBadge" class="fiscal-badge" style="display:none;">
+            📅 <span id="fiscalYearText"></span>
+          </span>
+          <button class="btn-outline btn-sm" onclick="toggleDarkMode()">
+            🌓 الوضع
+          </button>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+        <button class="btn-dashboard" onclick="backToDashboard()">
+          🏠 لوحة التحكم
+        </button>
+        <button class="btn-primary" onclick="loadReport()">
+          🔄 تحديث
+        </button>
+        <button class="btn-print" onclick="printReport()">
+          🖨️ طباعة
+        </button>
+        <button class="btn-outline" onclick="exportToCSV()">
+          📥 تصدير CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- ========== Report Banner ========== -->
+    <div id="reportBanner" class="report-banner info" style="display:none;"></div>
+
+    <!-- ========== P&L Card ========== -->
+    <div class="card">
+      <div class="card-header">
+        <span id="reportTitle">قائمة الدخل (الأرباح والخسائر)</span>
+        <span id="reportPeriod" style="font-size:13px;color:var(--text2);"></span>
+      </div>
+      <div class="card-body">
+        <div id="reportContent">
+          <div class="loading">
+            <div class="spinner"></div>
+            <div>جاري تحميل قائمة الدخل...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">
+    <span id="toastIcon">✅</span>
+    <span id="toastMessage"></span>
+  </div>
+
+  <script>
+    // ========== Global Variables ==========
+    let currentReportData = null;
+    let currentFiscalYear = null;
+    let isFiscalYearActive = false;
+    let companyInfo = null;
+
+    // ========== Initialization ==========
+    window.onload = function() {
+      loadCompanySettings();
+      loadFiscalYearForReports();
+    };
+
+    // ========== Company Settings (FIXED) ==========
+    function loadCompanySettings() {
+      google.script.run
+        .withSuccessHandler(function(info) {
+          companyInfo = info;
+          document.getElementById('companyName').textContent = info?.name || 'ZEIOS ERP';
+          
+          let details = [];
+          if (info?.address) details.push(info.address);
+          if (info?.phone) details.push('📞 ' + info.phone);
+          if (info?.tax_no) details.push('🧾 ض.ق: ' + info.tax_no);
+          
+          document.getElementById('companyDetails').textContent = 
+            details.length > 0 ? details.join(' | ') : 'نظام ZEIOS ERP للمحاسبة';
+        })
+        .withFailureHandler(function(err) {
+          console.warn('Failed to load company info:', err);
+          document.getElementById('companyName').textContent = 'ZEIOS ERP';
+          document.getElementById('companyDetails').textContent = 'نظام المحاسبة المتكامل';
+        })
+        .getCompanySettings(); // ✅ FIXED: Use getCompanySettings() instead of getCompanyInfo()
+    }
+
+    // ========== Fiscal Year ==========
+    function loadFiscalYearForReports() {
+      google.script.run
+        .withSuccessHandler(function(fiscalYearData) {
+          _processFiscalYearData(fiscalYearData);
+        })
+        .withFailureHandler(function(error) {
+          console.warn('Fallback: getActiveFiscalYearForReports failed:', error);
+          google.script.run
+            .withSuccessHandler(_processFiscalYearData)
+            .withFailureHandler(_handleFiscalYearError)
+            .getActiveFiscalYear();
+        })
+        .getActiveFiscalYearForReports(); // ✅ Correct function name
+    }
+
+    function _processFiscalYearData(fiscalYearData) {
+      // Handle error response format from backend
+      if (fiscalYearData?.error) {
+        console.warn('Server returned error:', fiscalYearData.error);
+        updateFiscalBadge('غير محدد', false, true);
+        showBanner('⚠️ تعذر تحميل السنة المالية: ' + fiscalYearData.error, 'warning');
+        loadReport(); // Load with defaults anyway
+        return;
+      }
+      
+      currentFiscalYear = fiscalYearData;
+      isFiscalYearActive = fiscalYearData.is_active === true;
+      
+      // Update period display
+      const periodText = `${formatDateDisplay(fiscalYearData.date_from)} - ${formatDateDisplay(fiscalYearData.date_to)}`;
+      document.getElementById('reportPeriod').textContent = periodText;
+      
+      // Update badge
+      updateFiscalBadge(
+        fiscalYearData.year_code || 'غير محدد',
+        isFiscalYearActive,
+        false
+      );
+      
+      // Show warning if inactive
+      if (!isFiscalYearActive && fiscalYearData.note) {
+        showBanner(fiscalYearData.note, 'warning');
+      }
+      
+      // Load report after fiscal year is ready
+      loadReport();
+    }
+
+    function _handleFiscalYearError(error) {
+      console.error('All fiscal year attempts failed:', error);
+      updateFiscalBadge('خطأ', false, true);
+      showBanner('⚠️ تعذر تحميل السنة المالية', 'warning');
+      loadReport(); // Try to load anyway
+    }
+
+    function updateFiscalBadge(text, isActive, isWarning) {
+      const badge = document.getElementById('fiscalBadge');
+      const textEl = document.getElementById('fiscalYearText');
+      
+      textEl.textContent = text;
+      badge.className = 'fiscal-badge' + 
+        (isWarning ? ' warning' : (!isActive ? ' inactive' : ''));
+      badge.style.display = 'inline-flex';
+    }
+
+    // ========== Load Report ==========
+    function loadReport() {
+      document.getElementById('reportContent').innerHTML = `
+        <div class="loading">
+          <div class="spinner"></div>
+          <div>جاري تحميل قائمة الدخل...</div>
+        </div>
+      `;
+      hideBanner();
+
+      google.script.run
+        .withSuccessHandler(renderReport)
+        .withFailureHandler(showError)
+        .getProfitAndLoss(currentFiscalYear?.year_code); // ✅ Pass fiscal year
+    }
+
+    // ========== Render Report ==========
+    function renderReport(data) {
+      // Handle error response format from backend
+      if (data?.error) {
+        showError(data.error);
+        return;
+      }
+      
+      currentReportData = data;
+      
+      // Show fiscal warning if inactive
+      if (!isFiscalYearActive && currentFiscalYear?.note) {
+        showBanner(currentFiscalYear.note, 'warning');
+      }
+      
+      // Check if report has data
+      const hasData = (data.revenue || data.cost_of_sales || data.expenses);
+      
+      if (!hasData) {
+        document.getElementById('reportContent').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📊</div>
+            <div class="empty-state-title">لا توجد بيانات مالية</div>
+            <div class="empty-state-desc">ستظهر المعاملات هنا بمجرد تسجيلها في النظام</div>
+          </div>
+        `;
+        return;
+      }
+      
+      let html = '';
+      
+      // ===== الإيرادات =====
+      html += `<div class="pl-section">
+        <div class="pl-section-title">
+          <span>💰 الإيرادات</span>
+          <small style="font-size:12px; margin-right:10px; color:var(--text2);">(PL-R, PL-OR)</small>
+        </div>
+        
+        <div class="pl-item revenue-item">
+          <span class="pl-label">
+            <span style="background:var(--revenue); width:8px; height:8px; border-radius:50%; display:inline-block;"></span>
+            إيرادات المبيعات (PL-R)
+          </span>
+          <span class="pl-amount">${formatNumber(data.revenue || 0)}</span>
+        </div>`;
+      
+      // إيرادات أخرى (PL-OR) إذا كانت موجودة
+      if (data.other_revenue && parseFloat(data.other_revenue) !== 0) {
+        html += `<div class="pl-item other-revenue-item pl-sub-item">
+          <span class="pl-label">
+            <span style="background:var(--other-revenue); width:8px; height:8px; border-radius:50%; display:inline-block;"></span>
+            إيرادات أخرى (خصم مكتسب، إيرادات متنوعة)
+          </span>
+          <span class="pl-amount">${formatNumber(data.other_revenue || 0)}</span>
+        </div>`;
+      }
+      
+      // إجمالي الإيرادات (محسوب)
+      const totalRevenue = (data.revenue || 0) + (data.other_revenue || 0);
+      html += `<div class="pl-item pl-total" style="background:rgba(25,118,210,0.05);">
+        <span class="pl-label" style="font-weight:600;">إجمالي الإيرادات</span>
+        <span class="pl-amount" style="font-size:18px;">${formatNumber(totalRevenue)}</span>
+      </div>`;
+      
+      html += `</div>`; // نهاية قسم الإيرادات
+      
+      // ===== تكلفة المبيعات =====
+      html += `<div class="pl-section">
+        <div class="pl-section-title">
+          <span>📦 تكلفة المبيعات</span>
+          <small style="font-size:12px; margin-right:10px; color:var(--text2);">(PL-C)</small>
+        </div>
+        
+        <div class="pl-item cogs-item">
+          <span class="pl-label">
+            <span style="background:var(--cogs); width:8px; height:8px; border-radius:50%; display:inline-block;"></span>
+            تكلفة البضاعة المباعة
+          </span>
+          <span class="pl-amount negative">(${formatNumber(Math.abs(data.cost_of_sales || 0))})</span>
+        </div>
+        
+        <div class="pl-item pl-total pl-gross-profit">
+          <span class="pl-label" style="font-weight:600;">إجمالي الربح</span>
+          <span class="pl-amount ${getProfitClass(data.gross_profit)}" style="font-size:20px;">
+            ${formatNumber(data.gross_profit || 0)}
+          </span>
+        </div>
+      </div>`;
+      
+      // ===== المصروفات التشغيلية =====
+      html += `<div class="pl-section">
+        <div class="pl-section-title">
+          <span>📉 المصروفات</span>
+          <small style="font-size:12px; margin-right:10px; color:var(--text2);">(PL-E, PL-OE)</small>
+        </div>`;
+      
+      // مصروفات تشغيلية (PL-E)
+      html += `<div class="pl-item expense-item">
+        <span class="pl-label">
+          <span style="background:var(--expense); width:8px; height:8px; border-radius:50%; display:inline-block;"></span>
+          مصروفات تشغيلية
+        </span>
+        <span class="pl-amount negative">(${formatNumber(Math.abs(data.operating_expenses || 0))})</span>
+      </div>`;
+      
+      // مصروفات أخرى (PL-OE) إذا كانت موجودة
+      if (data.other_expenses && parseFloat(data.other_expenses) !== 0) {
+        html += `<div class="pl-item expense-item pl-sub-item">
+          <span class="pl-label">
+            <span style="background:var(--expense); width:8px; height:8px; border-radius:50%; display:inline-block;"></span>
+            مصروفات أخرى (خصم ممنوح، فوائد، عمولات)
+          </span>
+          <span class="pl-amount negative">(${formatNumber(Math.abs(data.other_expenses || 0))})</span>
+        </div>`;
+      }
+      
+      // إجمالي المصروفات
+      const totalExpenses = (data.expenses || 0) + (data.other_expenses || 0);
+      html += `<div class="pl-item pl-total">
+        <span class="pl-label" style="font-weight:600;">إجمالي المصروفات</span>
+        <span class="pl-amount negative">(${formatNumber(Math.abs(totalExpenses))})</span>
+      </div>`;
+      
+      // صافي الربح/الخسارة
+      html += `<div class="pl-item pl-total pl-net-total">
+        <span class="pl-label" style="font-weight:600; font-size:18px;">صافي الربح / (الخسارة)</span>
+        <span class="pl-amount ${getProfitClass(data.net_profit)}" style="font-size:26px;">
+          ${formatNumber(data.net_profit || 0)}
+        </span>
+      </div>`;
+      
+      html += `</div>`; // نهاية قسم المصروفات
+      
+      // ===== Summary Cards =====
+      const revenue = parseFloat(data.revenue || 0);
+      const grossProfit = parseFloat(data.gross_profit || 0);
+      const netProfit = parseFloat(data.net_profit || 0);
+      const grossMargin = revenue > 0 ? (grossProfit / revenue) * 100 : 0;
+      const netMargin = revenue > 0 ? (netProfit / revenue) * 100 : 0;
+      
+      html += `
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="summary-label">هامش الربح الإجمالي</div>
+            <div class="summary-value ${getProfitClass(grossMargin)}">${formatPercent(grossMargin)}</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">هامش صافي الربح</div>
+            <div class="summary-value ${getProfitClass(netProfit)}">${formatPercent(netMargin)}</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">إجمالي الإيرادات</div>
+            <div class="summary-value">${formatNumber(revenue)}</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">عدد الحركات</div>
+            <div class="summary-value">${data.movement_count || 0}</div>
+          </div>
+        </div>
+      `;
+      
+      // ===== تفاصيل إضافية (قابلة للطي) =====
+      if (data.revenue > 0 || data.cost_of_sales > 0 || data.expenses > 0) {
+        html += `
+          <div style="margin-top:20px; text-align:center;">
+            <small style="color:var(--text2);">تم احتساب القيم بناءً على ${data.movement_count || 0} حركة محاسبية</small>
+          </div>
+        `;
+      }
+      
+      document.getElementById('reportContent').innerHTML = html;
+      showToast('✅ تم تحميل قائمة الدخل بنجاح', 'success');
+    }
+
+    // ========== UI Helpers ==========
+    function showError(error) {
+      console.error('Report error:', error);
+      const msg = typeof error === 'object' ? error.message || JSON.stringify(error) : error;
+      
+      document.getElementById('reportContent').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">❌</div>
+          <div class="empty-state-title">خطأ في التحميل</div>
+          <div class="empty-state-desc">${msg}</div>
+          <button class="btn-primary" style="margin-top:20px;width:auto;" onclick="loadReport()">
+            🔄 إعادة المحاولة
+          </button>
+        </div>
+      `;
+      showToast('❌ ' + msg, 'error');
+    }
+
+    function showBanner(message, type = 'info') {
+      const banner = document.getElementById('reportBanner');
+      banner.textContent = message;
+      banner.className = `report-banner ${type}`;
+      banner.style.display = 'flex';
+    }
+
+    function hideBanner() {
+      document.getElementById('reportBanner').style.display = 'none';
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toastIcon');
+      const msg = document.getElementById('toastMessage');
+      
+      toast.className = `toast ${type}`;
+      icon.textContent = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+      msg.textContent = message;
+      
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 4000);
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      localStorage.setItem('zeios_dark_mode', isDark);
+    }
+
+    // ========== Print & Export ==========
+    function printReport() {
+      if (!currentReportData) {
+        showToast('⚠️ لا توجد بيانات للطباعة', 'warning');
+        return;
+      }
+      window.print();
+    }
+
+    function exportToCSV() {
+      if (!currentReportData) {
+        showToast('⚠️ لا توجد بيانات للتصدير', 'warning');
+        return;
+      }
+      
+      let csv = 'البند,المبلغ,ملاحظات\n';
+      csv += `إيرادات المبيعات,${currentReportData.revenue || 0},\n`;
+      if (currentReportData.other_revenue) {
+        csv += `إيرادات أخرى,${currentReportData.other_revenue || 0},\n`;
+      }
+      csv += `تكلفة البضاعة المباعة,${currentReportData.cost_of_sales || 0},\n`;
+      csv += `إجمالي الربح,${currentReportData.gross_profit || 0},\n`;
+      csv += `مصروفات تشغيلية,${currentReportData.expenses || 0},\n`;
+      if (currentReportData.other_expenses) {
+        csv += `مصروفات أخرى,${currentReportData.other_expenses || 0},\n`;
+      }
+      csv += `صافي الربح (الخسارة),${currentReportData.net_profit || 0},\n`;
+      
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `قائمة_الدخل_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showToast('✅ تم تصدير الملف بنجاح', 'success');
+    }
+
+    function backToDashboard() {
+      try { 
+        if (typeof google !== 'undefined' && google.script?.host) {
+          google.script.host.close(); 
+        }
+      } catch (e) {}
+      google.script.run.reopenDashboard();
+    }
+
+    // ========== Format Helpers ==========
+    function formatNumber(num) {
+      const n = parseFloat(num || 0);
+      if (isNaN(n)) return '0.00';
+      return n.toLocaleString('ar-EG', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function formatPercent(val) {
+      if (isNaN(val) || !isFinite(val)) return '0.00%';
+      return val.toFixed(2) + '%';
+    }
+
+    function getProfitClass(val) {
+      const n = parseFloat(val || 0);
+      return n >= 0 ? 'profit' : 'loss';
+    }
+
+    function formatDateDisplay(dateStr) {
+      if (!dateStr) return '-';
+      try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        return d.toLocaleDateString('ar-EG', {
+          year: 'numeric', month: 'short', day: 'numeric'
+        });
+      } catch (e) { return dateStr; }
+    }
+
+    // Check for dark mode preference
+    if (localStorage.getItem('zeios_dark_mode') === 'true') {
+      document.body.classList.add('dark-mode');
+    }
+  </script>
+</body>
+</html>
