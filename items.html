@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>📦 إدارة الأصناف - نظام ZEIOS ERP</title>
+  <style>
+    :root {
+      --bg: #f8f9fa; 
+      --card: #fff; 
+      --text: #202124; 
+      --text2: #5f6368;
+      --border: #dadce0; 
+      --accent: #1a73e8; 
+      --shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .dark-mode {
+      --bg: #121212; 
+      --card: #1e1e1e; 
+      --text: #e8eaed; 
+      --text2: #9aa0a6;
+      --border: #3c4043; 
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+    }
+    body {
+      font-family: 'Google Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 16px;
+    }
+    .container { 
+      max-width: 1400px; 
+      margin: 0 auto; 
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    h1 { 
+      font-size: 24px; 
+      font-weight: 500; 
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    button {
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--card);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    button:hover {
+      background: rgba(26, 115, 232, 0.05);
+      border-color: var(--accent);
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      border: none;
+    }
+    .btn-primary:hover { 
+      background: #0d5bb8; 
+    }
+    .btn-outline {
+      background: transparent;
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .btn-outline:hover { 
+      background: rgba(26, 115, 232, 0.1); 
+    }
+    .btn-dashboard {
+      background: #34a853;
+      color: white;
+      border: none;
+    }
+    .btn-dashboard:hover { 
+      background: #2d8e49; 
+    }
+
+    #formPanel {
+      display: none;
+      margin-bottom: 24px;
+    }
+    #formPanel.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 16px 20px;
+      font-weight: 600;
+      font-size: 16px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(26, 115, 232, 0.02);
+    }
+    .card-body { 
+      padding: 24px; 
+    }
+
+    .form-group { 
+      margin-bottom: 20px; 
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--card);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    }
+
+    .image-section {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      background: rgba(26, 115, 232, 0.02);
+      text-align: center;
+    }
+    .image-preview-container {
+      margin-top: 16px;
+      text-align: center;
+    }
+    #imagePreview {
+      max-width: 200px;
+      max-height: 150px;
+      border-radius: 6px;
+      display: none;
+      border: 1px solid var(--border);
+      padding: 4px;
+    }
+    .item-image {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      width: 100%;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1000px;
+    }
+    th {
+      background: var(--bg);
+      text-align: right;
+      padding: 14px 16px;
+      font-weight: 600;
+      font-size: 14px;
+      border-bottom: 2px solid var(--border);
+    }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text2);
+      text-align: right;
+    }
+    tr:hover { 
+      background: rgba(26, 115, 232, 0.03); 
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--text2);
+    }
+    .spinner {
+      border: 3px solid var(--border);
+      border-top: 3px solid var(--accent);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { 
+      0% { transform: rotate(0deg); } 
+      100% { transform: rotate(360deg); } 
+    }
+
+    .actions { 
+      display: flex; 
+      gap: 8px; 
+      justify-content: flex-end; 
+    }
+    .btn-sm {
+      padding: 4px 12px;
+      font-size: 12px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .btn-edit { 
+      background: #4caf50; 
+      color: white; 
+      border: none; 
+    }
+    .btn-edit:hover { 
+      background: #3d8b40; 
+    }
+    .btn-delete { 
+      background: #f44336; 
+      color: white; 
+      border: none; 
+    }
+    .btn-delete:hover { 
+      background: #d32f2f; 
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .text-success { color: #4caf50; }
+    .text-danger { color: #f44336; }
+    .text-warning { color: #ff9800; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>
+        <span>📦</span>
+        إدارة الأصناف
+        <span style="font-size: 14px; color: var(--text2); font-weight: normal;" id="itemsCount"></span>
+      </h1>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-dashboard" onclick="backToDashboard()">🏠 العودة إلى لوحة التحكم</button>
+        <button class="btn-primary" onclick="openNewItemForm()">➕ إضافة صنف جديد</button>
+      </div>
+    </div>
+
+    <div id="formPanel" class="card">
+      <div class="card-header" id="formTitle">📝 إضافة صنف جديد</div>
+      <div class="card-body">
+        <form id="itemForm" onsubmit="event.preventDefault(); handleSubmit();">
+          <input type="hidden" id="itemId">
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>🔖 رمز الصنف *</label>
+              <input type="text" id="itemCode" required maxlength="20" placeholder="مثال: ITM001">
+            </div>
+            <div class="form-group">
+              <label>🏷️ اسم الصنف *</label>
+              <input type="text" id="itemName" required placeholder="اسم الصنف">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>📊 التصنيف *</label>
+              <select id="categoryId" required>
+                <option value="">-- اختر التصنيف --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>⚖️ الوحدة *</label>
+              <select id="unitId" required>
+                <option value="">-- اختر الوحدة --</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>💰 سعر البيع</label>
+              <input type="number" id="salePrice" step="0.01" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label>💵 سعر التكلفة</label>
+              <input type="number" id="costPrice" step="0.01" min="0" value="0">
+              <div class="hint">يُستخدم لتقييم المخزون</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>🔄 آخر سعر شراء</label>
+              <input type="number" id="lastPurchasePrice" step="0.01" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label>📦 الرصيد الافتتاحي</label>
+              <input type="number" id="openingBalance" step="1" min="0" value="0">
+              <div class="hint text-warning">⚠️ سيتم إنشاء حركة مخزون تلقائياً</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>📝 الوصف</label>
+            <textarea id="description" rows="2" placeholder="وصف الصنف..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>🖼️ صورة الصنف</label>
+            <div class="image-section">
+              <input type="file" id="imageUpload" accept="image/*" onchange="previewImage(event)" style="display: none;">
+              <button type="button" class="btn-outline" onclick="document.getElementById('imageUpload').click()">
+                <span>📸</span> اختر صورة
+              </button>
+              <div class="image-preview-container">
+                <img id="imagePreview" alt="معاينة الصورة">
+                <button type="button" class="btn-sm btn-delete" onclick="removeImage()" style="margin-top: 8px; display: none;" id="removeImageBtn">🗑️ إزالة الصورة</button>
+              </div>
+              <div class="hint">أقصى حجم: 5 ميجابايت - الصيغ المدعومة: JPG, PNG, GIF</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-start;">
+            <button type="button" class="btn-outline" onclick="closeForm()">❌ إلغاء</button>
+            <button type="submit" class="btn-primary" id="saveBtn">💾 حفظ الصنف</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span>📋 قائمة الأصناف</span>
+          <button class="btn-sm btn-outline" onclick="loadItemsList()" style="font-size: 12px;">🔄 تحديث</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-container">
+          <div id="itemsTableContainer">
+            <div class="loading">
+              <div class="spinner"></div>
+              جاري تحميل الأصناف...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== STATE ==========
+    let currentImageFile = null;
+    let isSaving = false;
+    let categories = [];
+    let units = [];
+    let allItems = [];
+
+    // ========== INIT ==========
+    window.onload = function() {
+      loadLookupData();
+      loadItemsList();
+    };
+
+    // ========== NAVIGATION ==========
+    function backToDashboard() {
+      google.script.run.reopenDashboard();
+      google.script.host.close();
+    }
+
+    // ========== LOAD DATA ==========
+    function loadLookupData() {
+      google.script.run
+        .withSuccessHandler(function(data) {
+          categories = data || [];
+          console.log('Categories loaded:', categories);
+          populateSelect('categoryId', categories, 'التصنيف');
+        })
+        .withFailureHandler(function(error) {
+          console.error('❌ فشل تحميل التصنيفات:', error);
+          alert('❌ فشل تحميل التصنيفات: ' + error);
+        })
+        .getCategoriesForSelect();
+
+      google.script.run
+        .withSuccessHandler(function(data) {
+          units = data || [];
+          console.log('Units loaded:', units);
+          populateSelect('unitId', units, 'الوحدة');
+        })
+        .withFailureHandler(function(error) {
+          console.error('❌ فشل تحميل الوحدات:', error);
+          alert('❌ فشل تحميل الوحدات: ' + error);
+        })
+        .getUnitsForSelect();
+    }
+
+    function populateSelect(selectId, data, label) {
+      var select = document.getElementById(selectId);
+      if (!select) return;
+      
+      select.innerHTML = '<option value="">-- اختر ' + label + ' --</option>';
+      
+      if (data && data.length > 0) {
+        for (var i = 0; i < data.length; i++) {
+          var item = data[i];
+          var id, name;
+          
+          // Handle both array and object formats
+          if (Array.isArray(item)) {
+            // Format: [id, code, name]
+            id = item[0];
+            name = item[2] || item[1];
+          } else if (typeof item === 'object') {
+            // Format: {id: xxx, code: xxx, name: xxx}
+            id = item.id;
+            name = item.name || item.code;
+          } else {
+            continue;
+          }
+          
+          if (id && name) {
+            var option = document.createElement('option');
+            option.value = id;
+            option.textContent = name;
+            select.appendChild(option);
+          }
+        }
+      }
+    }
+
+    function loadItemsList() {
+      var container = document.getElementById('itemsTableContainer');
+      container.innerHTML = '<div class="loading"><div class="spinner"></div>جاري تحميل الأصناف...</div>';
+      
+      google.script.run
+        .withSuccessHandler(renderItems)
+        .withFailureHandler(showError)
+        .getAllItems();
+    }
+
+    function renderItems(items) {
+      allItems = items || [];
+      
+      if (!allItems || allItems.length === 0) {
+        document.getElementById('itemsTableContainer').innerHTML = 
+          '<div class="loading">📭 لم يتم العثور على أصناف.<br><button class="btn-primary" onclick="openNewItemForm()" style="margin-top: 10px;">➕ إضافة أول صنف</button></div>';
+        updateCount();
+        return;
+      }
+
+      // Create maps for categories and units
+      var categoryMap = {};
+      for (var i = 0; i < categories.length; i++) {
+        var cat = categories[i];
+        if (Array.isArray(cat)) {
+          categoryMap[cat[0]] = cat[2]; // [id, code, name]
+        } else if (typeof cat === 'object') {
+          categoryMap[cat.id] = cat.name;
+        }
+      }
+      
+      var unitMap = {};
+      for (var i = 0; i < units.length; i++) {
+        var unit = units[i];
+        if (Array.isArray(unit)) {
+          unitMap[unit[0]] = unit[2]; // [id, code, name]
+        } else if (typeof unit === 'object') {
+          unitMap[unit.id] = unit.name;
+        }
+      }
+
+      var html = ' <table> <thead> <tr>' +
+        '<th>الصورة</th>' +
+        '<th>الرمز</th>' +
+        '<th>الاسم</th>' +
+        '<th>التصنيف</th>' +
+        '<th>الوحدة</th>' +
+        '<th>التكلفة</th>' +
+        '<th>البيع</th>' +
+        '<th>الرصيد</th>' +
+        '<th>الإجراءات</th>' +
+      '</tr> </thead> <tbody>';
+
+      for (var i = 0; i < allItems.length; i++) {
+        var item = allItems[i];
+        
+        var imgHtml = item.image_file_id 
+          ? '<img src="https://drive.google.com/thumbnail?id=' + escapeHtml(item.image_file_id) + '&sz=w100-h100" class="item-image" onerror="this.style.display=\'none\'">'
+          : '<div style="width:50px;height:50px;background:var(--bg);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--text2);">📦</div>';
+        
+        var categoryName = categoryMap[item.category_id] || item.category_name || '-';
+        var unitName = unitMap[item.unit_id] || item.unit_name || '-';
+        
+        html += '<tr>' +
+          '<td>' + imgHtml + '</td>' +
+          '<td><strong>' + escapeHtml(item.item_code) + '</strong></td>' +
+          '<td>' + escapeHtml(item.item_name) + '</td>' +
+          '<td>' + escapeHtml(categoryName) + '</td>' +
+          '<td>' + escapeHtml(unitName) + '</td>' +
+          '<td>' + formatNumber(item.cost_price) + '</td>' +
+          '<td>' + formatNumber(item.sale_price) + '</td>' +
+          '<td><strong class="' + (parseInt(item.opening_balance) > 0 ? 'text-success' : 'text-warning') + '">' + (item.opening_balance || 0) + '</strong></td>' +
+          '<td class="actions">' +
+            '<button class="btn-sm btn-edit" onclick="editItem(\'' + item.id + '\')">✏️ تعديل</button>' +
+            '<button class="btn-sm btn-delete" onclick="deleteItem(\'' + item.id + '\')">🗑️ حذف</button>' +
+          '</td>' +
+        '</tr>';
+      }
+
+      html += '</tbody> </table>';
+      document.getElementById('itemsTableContainer').innerHTML = html;
+      updateCount();
+    }
+
+    function showError(error) {
+      document.getElementById('itemsTableContainer').innerHTML = 
+        '<div class="loading">❌ خطأ في تحميل الأصناف:<br>' + escapeHtml(error) + '</div>';
+    }
+
+    function updateCount() {
+      var countEl = document.getElementById('itemsCount');
+      if (countEl) {
+        countEl.textContent = '(' + allItems.length + ')';
+      }
+    }
+
+    // ========== FORM HANDLING ==========
+    function openNewItemForm() {
+      document.getElementById('formTitle').textContent = '📝 إضافة صنف جديد';
+      document.getElementById('formPanel').classList.add('active');
+      document.getElementById('itemForm').reset();
+      document.getElementById('itemId').value = '';
+      removeImage();
+      window.scrollTo(0, 0);
+    }
+
+    function editItem(id) {
+      google.script.run
+        .withSuccessHandler(function(item) {
+          if (!item) return;
+          
+          console.log('Editing item:', item);
+          
+          document.getElementById('formTitle').textContent = '✏️ تعديل الصنف';
+          document.getElementById('formPanel').classList.add('active');
+          document.getElementById('itemId').value = item.id || '';
+          document.getElementById('itemCode').value = item.item_code || '';
+          document.getElementById('itemName').value = item.item_name || '';
+          document.getElementById('categoryId').value = item.category_id || '';
+          document.getElementById('unitId').value = item.unit_id || '';
+          document.getElementById('salePrice').value = item.sale_price || '0';
+          document.getElementById('costPrice').value = item.cost_price || '0';
+          document.getElementById('lastPurchasePrice').value = item.last_purchase_price || '0';
+          document.getElementById('openingBalance').value = item.opening_balance || 0;
+          document.getElementById('description').value = item.description || '';
+          
+          if (item.image_file_id) {
+            document.getElementById('imagePreview').src = 'https://drive.google.com/thumbnail?id=' + item.image_file_id + '&sz=w200-h200';
+            document.getElementById('imagePreview').style.display = 'inline-block';
+            document.getElementById('removeImageBtn').style.display = 'inline-block';
+          } else {
+            removeImage();
+          }
+          
+          window.scrollTo(0, 0);
+        })
+        .withFailureHandler(function(error) {
+          alert('❌ فشل تحميل بيانات الصنف: ' + error);
+        })
+        .getItemById(id);
+    }
+
+    function closeForm() {
+      document.getElementById('formPanel').classList.remove('active');
+      removeImage();
+    }
+
+    // ========== IMAGE HANDLING ==========
+    function previewImage(event) {
+      var file = event.target.files[0];
+      if (!file) return;
+      
+      if (file.size > 5 * 1024 * 1024) {
+        alert('⚠️ يجب أن يكون حجم الملف أقل من 5 ميجابايت');
+        removeImage();
+        return;
+      }
+      
+      var validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        alert('⚠️ يرجى رفع صورة صالحة (JPG, PNG, GIF, WebP)');
+        removeImage();
+        return;
+      }
+      
+      currentImageFile = file;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('imagePreview').src = e.target.result;
+        document.getElementById('imagePreview').style.display = 'inline-block';
+        document.getElementById('removeImageBtn').style.display = 'inline-block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeImage() {
+      currentImageFile = null;
+      document.getElementById('imagePreview').style.display = 'none';
+      document.getElementById('imageUpload').value = '';
+      document.getElementById('removeImageBtn').style.display = 'none';
+    }
+
+    // ========== SUBMIT HANDLING ==========
+    function handleSubmit() {
+      if (isSaving) return;
+
+      var itemCode = document.getElementById('itemCode').value.trim();
+      var itemName = document.getElementById('itemName').value.trim();
+      var categoryId = document.getElementById('categoryId').value;
+      var unitId = document.getElementById('unitId').value;
+
+      if (!itemCode) {
+        alert('⚠️ رمز الصنف مطلوب');
+        document.getElementById('itemCode').focus();
+        return;
+      }
+
+      if (!itemName) {
+        alert('⚠️ اسم الصنف مطلوب');
+        document.getElementById('itemName').focus();
+        return;
+      }
+
+      if (!categoryId) {
+        alert('⚠️ التصنيف مطلوب');
+        document.getElementById('categoryId').focus();
+        return;
+      }
+
+      if (!unitId) {
+        alert('⚠️ الوحدة مطلوبة');
+        document.getElementById('unitId').focus();
+        return;
+      }
+
+      var formData = {
+        id: document.getElementById('itemId').value || null,
+        item_code: itemCode,
+        item_name: itemName,
+        category_id: categoryId,
+        unit_id: unitId,
+        sale_price: parseFloat(document.getElementById('salePrice').value) || 0,
+        cost_price: parseFloat(document.getElementById('costPrice').value) || 0,
+        last_purchase_price: parseFloat(document.getElementById('lastPurchasePrice').value) || 0,
+        opening_balance: parseInt(document.getElementById('openingBalance').value) || 0,
+        description: document.getElementById('description').value.trim() || ''
+      };
+
+      console.log('Submitting form data:', formData);
+
+      var saveBtn = document.getElementById('saveBtn');
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '⏳ جاري الحفظ...';
+      isSaving = true;
+
+      if (currentImageFile) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var base64 = e.target.result.split(',')[1];
+          google.script.run
+            .withSuccessHandler(function(result) {
+              if (result && result.success) {
+                formData.image_file_id = result.fileId;
+                submitItem(formData, saveBtn);
+              } else {
+                alert('❌ فشل رفع الصورة: ' + (result?.message || 'خطأ غير معروف'));
+                resetSaveButton(saveBtn);
+              }
+            })
+            .withFailureHandler(function(error) {
+              alert('❌ خطأ في رفع الصورة: ' + error);
+              resetSaveButton(saveBtn);
+            })
+            .uploadItemImage(base64, currentImageFile.name, currentImageFile.type);
+        };
+        reader.readAsDataURL(currentImageFile);
+      } else {
+        submitItem(formData, saveBtn);
+      }
+    }
+
+    function submitItem(formData, saveBtn) {
+      google.script.run
+        .withSuccessHandler(function(result) {
+          resetSaveButton(saveBtn);
+          if (result && result.success) {
+            alert('✅ ' + result.message);
+            closeForm();
+            loadItemsList();
+          } else {
+            alert('❌ فشل الحفظ: ' + (result?.message || 'خطأ غير معروف'));
+          }
+        })
+        .withFailureHandler(function(error) {
+          resetSaveButton(saveBtn);
+          alert('❌ خطأ في الاتصال: ' + error);
+        })
+        .saveItem(formData);
+    }
+
+    function resetSaveButton(btn) {
+      btn.disabled = false;
+      btn.innerHTML = '💾 حفظ الصنف';
+      isSaving = false;
+    }
+
+    // ========== DELETE ==========
+    function deleteItem(id) {
+      if (!confirm('⚠️ هل أنت متأكد من حذف هذا الصنف؟\nلا يمكن التراجع عن هذه العملية.')) return;
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.success) {
+            alert('✅ ' + result.message);
+            loadItemsList();
+          } else {
+            alert('❌ ' + (result?.message || 'فشل الحذف'));
+          }
+        })
+        .withFailureHandler(function(error) {
+          alert('❌ خطأ في الاتصال: ' + error);
+        })
+        .deleteItem(id);
+    }
+
+    // ========== UTILITIES ==========
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function formatNumber(num) {
+      var value = parseFloat(num || 0);
+      return value.toFixed(2);
+    }
+
+    // ========== GLOBAL FUNCTIONS ==========
+    window.backToDashboard = backToDashboard;
+    window.openNewItemForm = openNewItemForm;
+    window.editItem = editItem;
+    window.deleteItem = deleteItem;
+    window.closeForm = closeForm;
+    window.previewImage = previewImage;
+    window.removeImage = removeImage;
+    window.handleSubmit = handleSubmit;
+    window.loadItemsList = loadItemsList;
+  </script>
+</body>
+</html>
