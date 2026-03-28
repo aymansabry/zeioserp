@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚙️ معالج تهيئة نظام ZEIOS</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      color: #1e293b;
+      padding: 20px;
+    }
+    .wizard-container {
+      max-width: 750px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    .wizard-header {
+      background: linear-gradient(135deg, #1a73e8, #0d47a1);
+      color: white;
+      padding: 25px 30px;
+      text-align: center;
+    }
+    .wizard-header h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .wizard-header p { opacity: 0.9; font-size: 15px; }
+    
+    .step-indicator {
+      display: flex;
+      justify-content: space-between;
+      padding: 20px 30px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      position: relative;
+    }
+    .step-item:not(:last-child):after {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 60%;
+      width: 80%;
+      height: 2px;
+      background: #cbd5e1;
+      z-index: 0;
+    }
+    .step-item.completed:not(:last-child):after { background: #1a73e8; }
+    
+    .step-number {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-bottom: 8px;
+      z-index: 1;
+      transition: all 0.3s;
+    }
+    .step-item.active .step-number {
+      background: #1a73e8;
+      border-color: #1a73e8;
+      color: white;
+      transform: scale(1.1);
+      box-shadow: 0 2px 8px rgba(26,115,232,0.3);
+    }
+    .step-item.completed .step-number {
+      background: #34a853;
+      border-color: #34a853;
+      color: white;
+    }
+    .step-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #64748b;
+    }
+    .step-item.active .step-label { color: #1a73e8; font-weight: 600; }
+    .step-item.completed .step-label { color: #34a853; }
+    
+    .step-content { padding: 30px; min-height: 420px; }
+    .step-pane { display: none; }
+    .step-pane.active { display: block; animation: fadeIn 0.4s; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .form-group { margin-bottom: 20px; }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #334155;
+      font-size: 14px;
+    }
+    .required:after { content: " *"; color: #dc2626; }
+    
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s;
+      background: #f8fafc;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+      background: white;
+    }
+    input[type="date"], input[type="number"] { direction: ltr; text-align: right; }
+    .input-hint { font-size: 12px; color: #64748b; margin-top: 5px; }
+    
+    .row { display: flex; gap: 15px; }
+    .col { flex: 1; }
+    
+    .summary-box {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 1px solid #e2e8f0;
+    }
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px dashed #cbd5e1;
+    }
+    .summary-item:last-child { border-bottom: none; }
+    .summary-label { font-weight: 600; color: #475569; }
+    .summary-value {
+      color: #1a73e8;
+      font-weight: 500;
+      background: #e6f0ff;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+    }
+    
+    .progress-container { margin: 30px 0; }
+    .progress-bar {
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 5px;
+      overflow: hidden;
+      margin: 15px 0;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #1a73e8, #34a853);
+      width: 0%;
+      transition: width 0.3s;
+      border-radius: 5px;
+    }
+    .progress-message {
+      font-size: 14px;
+      color: #334155;
+      text-align: center;
+      margin: 10px 0;
+    }
+    
+    .button-group {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8f0;
+    }
+    button {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary { background: #1a73e8; color: white; }
+    .btn-primary:hover:not(:disabled) {
+      background: #0d62d0;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    }
+    .btn-secondary { background: #e2e8f0; color: #334155; }
+    .btn-secondary:hover:not(:disabled) { background: #cbd5e1; }
+    .btn-success { background: #34a853; color: white; }
+    .btn-success:hover:not(:disabled) {
+      background: #2d8e47;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(52,168,83,0.3);
+    }
+    .btn-close { background: #64748b; color: white; }
+    .btn-close:hover:not(:disabled) { background: #475569; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    
+    .status-message {
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      display: none;
+    }
+    .status-success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      display: block;
+    }
+    .status-error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      display: block;
+    }
+    
+    .temp-password-box {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: center;
+      border: 2px solid #fbbf24;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .temp-password-box:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 15px rgba(251,191,36,0.3);
+    }
+    .temp-password-label { color: #94a3b8; font-size: 14px; margin-bottom: 8px; }
+    .temp-password-value {
+      color: #fbbf24;
+      font-size: 36px;
+      font-weight: bold;
+      font-family: monospace;
+      letter-spacing: 4px;
+      direction: ltr;
+      margin: 10px 0;
+    }
+    .temp-password-note { color: #64748b; font-size: 12px; }
+    
+    .action-buttons { display: flex; gap: 10px; margin-top: 20px; }
+    .action-buttons button { flex: 1; }
+    
+    .footer-note {
+      font-size: 12px;
+      color: #94a3b8;
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .copy-feedback {
+      color: #34a853;
+      font-size: 12px;
+      margin-top: 5px;
+      display: none;
+    }
+    
+    /* ✅ قسم الإعدادات الإضافية */
+    .settings-section {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 1px solid #e2e8f0;
+    }
+    .settings-section h4 {
+      margin-bottom: 15px;
+      color: #1a73e8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .checkbox-group input { width: auto; }
+    .checkbox-group label { margin: 0; font-weight: normal; }
+  </style>
+</head>
+<body>
+  <div class="wizard-container">
+    <div class="wizard-header">
+      <h1><span>⚙️</span><span>معالج تهيئة نظام ZEIOS</span></h1>
+      <p>ثلاث خطوات لتهيئة النظام بالكامل</p>
+    </div>
+    
+    <div class="step-indicator">
+      <div class="step-item active" id="step1-indicator">
+        <div class="step-number">1</div>
+        <div class="step-label">الشركة</div>
+      </div>
+      <div class="step-item" id="step2-indicator">
+        <div class="step-number">2</div>
+        <div class="step-label">السنة المالية</div>
+      </div>
+      <div class="step-item" id="step3-indicator">
+        <div class="step-number">3</div>
+        <div class="step-label">تأكيد</div>
+      </div>
+    </div>
+    
+    <div class="step-content">
+      <!-- Step 1: Company Info -->
+      <div class="step-pane active" id="step1">
+        <h3 style="margin-bottom: 20px;">🏢 معلومات الشركة</h3>
+        
+        <div class="form-group">
+          <label class="required">اسم الشركة</label>
+          <input type="text" id="companyName" placeholder="مثال: شركة ZEIOS للتجارة" value="شركة ZEIOS">
+        </div>
+        
+        <div class="row">
+          <div class="col">
+            <div class="form-group">
+              <label>العنوان</label>
+              <input type="text" id="address" placeholder="الرياض - المملكة العربية السعودية">
+            </div>
+          </div>
+          <div class="col">
+            <div class="form-group">
+              <label>الهاتف</label>
+              <input type="text" id="phone" placeholder="+966 50 123 4567">
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>البريد الإلكتروني</label>
+          <input type="email" id="email" placeholder="info@company.com">
+        </div>
+        
+        <!-- ✅ قسم الإعدادات المالية -->
+        <div class="settings-section">
+          <h4>💰 الإعدادات المالية</h4>
+          
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label>رقم الضريبة</label>
+                <input type="text" id="taxNo" placeholder="123456789">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label>نسبة الضريبة %</label>
+                <input type="number" id="taxPercentage" min="0" max="100" step="0.01" value="15">
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>مصاريف الخدمة %</label>
+            <input type="number" id="serviceChargePercentage" min="0" max="100" step="0.01" value="0" placeholder="0 إذا لم توجد">
+            <div class="input-hint">تُضاف على الفواتير كنسبة من المجموع</div>
+          </div>
+        </div>
+        
+        <!-- ✅ قسم نقطة البيع -->
+        <div class="settings-section">
+          <h4>🛒 نقطة البيع (POS)</h4>
+          
+          <div class="checkbox-group">
+            <input type="checkbox" id="posEnabled" checked>
+            <label for="posEnabled">تفعيل نظام نقطة البيع</label>
+          </div>
+          
+          <div class="form-group">
+            <label>عرض الطابعة الحرارية (mm)</label>
+            <select id="thermalPrinterWidth">
+              <option value="58">58mm (صغيرة)</option>
+              <option value="80" selected>80mm (قياسية)</option>
+            </select>
+            <div class="input-hint">يستخدم في طباعة إيصالات المبيعات</div>
+          </div>
+        </div>
+        
+        <div class="button-group">
+          <div></div>
+          <button class="btn-primary" onclick="nextStep(1)">التالي ←</button>
+        </div>
+      </div>
+      
+      <!-- Step 2: Fiscal Year -->
+      <div class="step-pane" id="step2">
+        <h3 style="margin-bottom: 20px;">📅 السنة المالية</h3>
+        
+        <div class="form-group">
+          <label class="required">رمز السنة</label>
+          <input type="text" id="fiscalYear" placeholder="مثال: 2026" value="2026">
+        </div>
+        
+        <div class="row">
+          <div class="col">
+            <div class="form-group">
+              <label class="required">من</label>
+              <input type="date" id="fiscalFrom">
+            </div>
+          </div>
+          <div class="col">
+            <div class="form-group">
+              <label class="required">إلى</label>
+              <input type="date" id="fiscalTo">
+            </div>
+          </div>
+        </div>
+        
+        <div class="button-group">
+          <button class="btn-secondary" onclick="prevStep(2)">→ السابق</button>
+          <button class="btn-primary" onclick="nextStep(2)">التالي ←</button>
+        </div>
+      </div>
+      
+      <!-- Step 3: Confirmation -->
+      <div class="step-pane" id="step3">
+        <h3 style="margin-bottom: 20px;">✅ تأكيد البيانات</h3>
+        
+        <div class="summary-box">
+          <div class="summary-item">
+            <span class="summary-label">الشركة:</span>
+            <span class="summary-value" id="summaryCompany">-</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">الضريبة:</span>
+            <span class="summary-value" id="summaryTax">-</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">مصاريف الخدمة:</span>
+            <span class="summary-value" id="summaryServiceCharge">-</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">نقطة البيع:</span>
+            <span class="summary-value" id="summaryPOS">-</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">السنة المالية:</span>
+            <span class="summary-value" id="summaryYear">-</span>
+          </div>
+        </div>
+        
+        <div class="progress-container" id="progressContainer" style="display: none;">
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          <div class="progress-message" id="progressMessage">جاري التهيئة...</div>
+        </div>
+        
+        <div class="status-message" id="statusMessage"></div>
+        
+        <div id="resultContainer" style="display: none;">
+          <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; padding: 25px; margin: 20px 0;">
+            <h4 style="text-align: center; color: #166534; margin-bottom: 20px; font-size: 22px;">
+              ✅ تمت تهيئة نظام ZEIOS بنجاح
+            </h4>
+            
+            <div class="temp-password-box" id="tempPasswordBox" onclick="copyTempPassword()">
+              <div class="temp-password-label">🔑 كلمة المرور المؤقتة</div>
+              <div class="temp-password-value" id="tempPasswordDisplay">------</div>
+              <div class="temp-password-note">اضغط لنسخ كلمة المرور</div>
+              <div class="copy-feedback" id="copyFeedback">✅ تم النسخ</div>
+            </div>
+            
+            <div style="background: #f8fafc; border-radius: 8px; padding: 15px; margin: 15px 0;">
+              <p style="margin-bottom: 8px; font-weight: 600; color: #334155;">📋 ملخص التهيئة:</p>
+              <ul style="list-style: none; padding-right: 10px;">
+                <li style="margin-bottom: 5px;">• تم إنشاء جميع الجداول الرئيسية</li>
+                <li style="margin-bottom: 5px;">• تم إنشاء جداول السنة المالية</li>
+                <li style="margin-bottom: 5px;">• تم حفظ الروابط في JSON</li>
+                <li style="margin-bottom: 5px;">• تم إنشاء المجلدات في Drive</li>
+                <li style="margin-bottom: 5px;">• تم تفعيل نقطة البيع (POS)</li>
+              </ul>
+            </div>
+            
+            <div class="action-buttons">
+              <button class="btn-success" onclick="openPasswordForm()">🔐 تغيير كلمة المرور</button>
+              <button class="btn-close" onclick="closeWizard()">✖️ إغلاق</button>
+            </div>
+            <p class="footer-note" style="margin-top: 15px;">يمكنك إغلاق النافذة يدوياً بعد حفظ كلمة المرور</p>
+          </div>
+        </div>
+        
+        <div class="button-group" id="actionButtons">
+          <button class="btn-secondary" onclick="prevStep(3)">→ السابق</button>
+          <button class="btn-success" onclick="initializeSystem()" id="initBtn">⚙️ بدء التهيئة</button>
+        </div>
+        <div class="footer-note">سيتم إنشاء جميع الجداول تلقائياً في Google Drive</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== 📅 INIT DATES ==========
+    (function() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const fiscalFrom = document.getElementById('fiscalFrom');
+      const fiscalTo = document.getElementById('fiscalTo');
+      if (fiscalFrom) fiscalFrom.value = year + '-01-01';
+      if (fiscalTo) fiscalTo.value = year + '-12-31';
+    })();
+
+    // ========== 🧭 NAVIGATION ==========
+    function nextStep(currentStep) {
+      if (!validateStep(currentStep)) return;
+      document.getElementById('step' + currentStep).classList.remove('active');
+      document.getElementById('step' + (currentStep + 1)).classList.add('active');
+      document.getElementById('step' + currentStep + '-indicator').classList.remove('active');
+      document.getElementById('step' + currentStep + '-indicator').classList.add('completed');
+      document.getElementById('step' + (currentStep + 1) + '-indicator').classList.add('active');
+      if (currentStep + 1 === 3) updateSummary();
+    }
+
+    function prevStep(currentStep) {
+      document.getElementById('step' + currentStep).classList.remove('active');
+      document.getElementById('step' + (currentStep - 1)).classList.add('active');
+      document.getElementById('step' + currentStep + '-indicator').classList.remove('active');
+      document.getElementById('step' + (currentStep - 1) + '-indicator').classList.remove('completed');
+      document.getElementById('step' + (currentStep - 1) + '-indicator').classList.add('active');
+    }
+
+    function validateStep(step) {
+      if (step === 1) {
+        const name = document.getElementById('companyName').value.trim();
+        if (!name) { showMessage('الرجاء إدخال اسم الشركة', 'error'); document.getElementById('companyName').focus(); return false; }
+        return true;
+      } else if (step === 2) {
+        const from = document.getElementById('fiscalFrom').value;
+        const to = document.getElementById('fiscalTo').value;
+        const year = document.getElementById('fiscalYear').value.trim();
+        if (!year || !from || !to) { showMessage('الرجاء إدخال جميع بيانات السنة المالية', 'error'); return false; }
+        if (from > to) { showMessage('بداية السنة يجب أن تكون قبل نهايتها', 'error'); return false; }
+        return true;
+      }
+      return true;
+    }
+
+    function showMessage(text, type) {
+      const msgDiv = document.getElementById('statusMessage');
+      msgDiv.className = 'status-message ' + (type === 'error' ? 'status-error' : 'status-success');
+      msgDiv.textContent = text;
+      msgDiv.style.display = 'block';
+      setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+    }
+
+    function updateSummary() {
+      document.getElementById('summaryCompany').textContent = document.getElementById('companyName').value.trim() || '-';
+      document.getElementById('summaryTax').textContent = (document.getElementById('taxPercentage').value || '0') + '%';
+      document.getElementById('summaryServiceCharge').textContent = (document.getElementById('serviceChargePercentage').value || '0') + '%';
+      document.getElementById('summaryPOS').textContent = document.getElementById('posEnabled').checked ? '✅ مفعل' : '❌ معطل';
+      document.getElementById('summaryYear').textContent = document.getElementById('fiscalYear').value.trim() || '-';
+    }
+
+    // ========== 🚀 INITIALIZE SYSTEM ==========
+    function initializeSystem() {
+      const formData = {
+        // بيانات الشركة
+        companyName: document.getElementById('companyName').value.trim(),
+        address: document.getElementById('address').value.trim(),
+        postalAddress: '',  // يمكن إضافته لاحقاً إذا لزم
+        phone: document.getElementById('phone').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        
+        // الإعدادات المالية
+        taxNo: document.getElementById('taxNo').value.trim(),
+        taxPercentage: document.getElementById('taxPercentage').value,
+        serviceChargePercentage: document.getElementById('serviceChargePercentage').value || '0',
+        
+        // نقطة البيع
+        posEnabled: document.getElementById('posEnabled').checked,
+        thermalPrinterWidth: document.getElementById('thermalPrinterWidth').value || '80',
+        
+        // السنة المالية
+        fiscalYear: document.getElementById('fiscalYear').value.trim(),
+        fiscalFrom: document.getElementById('fiscalFrom').value,
+        fiscalTo: document.getElementById('fiscalTo').value
+      };
+
+      document.getElementById('progressContainer').style.display = 'block';
+      document.getElementById('actionButtons').style.display = 'none';
+      document.getElementById('initBtn').disabled = true;
+
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 10;
+        if (progress <= 90) document.getElementById('progressFill').style.width = progress + '%';
+        if (progress === 20) document.getElementById('progressMessage').textContent = '📁 إنشاء المجلدات...';
+        else if (progress === 40) document.getElementById('progressMessage').textContent = '📊 إنشاء الجداول الرئيسية...';
+        else if (progress === 60) document.getElementById('progressMessage').textContent = '📅 إنشاء جداول السنة المالية...';
+        else if (progress === 80) document.getElementById('progressMessage').textContent = '💾 حفظ البيانات في JSON...';
+      }, 600);
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          clearInterval(interval);
+          if (response.success) {
+            document.getElementById('progressFill').style.width = '100%';
+            document.getElementById('progressMessage').textContent = '✅ تم الانتهاء بنجاح';
+            setTimeout(() => {
+              document.getElementById('progressContainer').style.display = 'none';
+              document.getElementById('resultContainer').style.display = 'block';
+              document.getElementById('tempPasswordDisplay').textContent = response.tempPassword;
+            }, 1000);
+          } else {
+            clearInterval(interval);
+            document.getElementById('progressContainer').style.display = 'none';
+            document.getElementById('actionButtons').style.display = 'flex';
+            document.getElementById('initBtn').disabled = false;
+            showMessage('❌ ' + response.message, 'error');
+          }
+        })
+        .withFailureHandler(function(error) {
+          clearInterval(interval);
+          document.getElementById('progressContainer').style.display = 'none';
+          document.getElementById('actionButtons').style.display = 'flex';
+          document.getElementById('initBtn').disabled = false;
+          showMessage('❌ خطأ في الاتصال: ' + error, 'error');
+        })
+        .initializeERP(formData);
+    }
+
+    // ========== 🔐 UTILITIES ==========
+    function copyTempPassword() {
+      const password = document.getElementById('tempPasswordDisplay').textContent;
+      const feedback = document.getElementById('copyFeedback');
+      navigator.clipboard.writeText(password).then(() => {
+        feedback.style.display = 'block';
+        setTimeout(() => { feedback.style.display = 'none'; }, 2000);
+      });
+    }
+    function openPasswordForm() { google.script.run.showPasswordForm(); }
+    function closeWizard() { google.script.host.close(); }
+
+    // ========== 🎬 INIT ==========
+    document.addEventListener('DOMContentLoaded', function() {
+      // Toggle printer width visibility based on POS checkbox
+      document.getElementById('posEnabled').addEventListener('change', function(e) {
+        document.getElementById('thermalPrinterWidth').closest('.form-group').style.opacity = e.target.checked ? '1' : '0.6';
+      });
+    });
+  </script>
+</body>
+</html>
