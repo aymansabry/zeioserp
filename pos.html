@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🛒 نقطة البيع - ZEIOS ERP</title>
+  <style>
+    /* ========== 🎨 التنسيقات الأساسية ========== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      color: #1e293b;
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    /* ========== 📐 تخطيط الصفحة ========== */
+    .pos-container {
+      display: flex;
+      height: 100vh;
+      direction: rtl;
+    }
+    
+    /* قسم المنتجات (يمين) */
+    .products-section {
+      flex: 2;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border-left: 1px solid #e2e8f0;
+    }
+    
+    /* قسم الفاتورة (يسار) */
+    .invoice-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #f8fafc;
+      border-right: 1px solid #e2e8f0;
+      min-width: 400px;
+    }
+    
+    /* ========== 🔍 شريط البحث ========== */
+    .search-bar {
+      padding: 15px;
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .search-bar input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: all 0.3s;
+    }
+    .search-bar input:focus {
+      outline: none;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+    }
+    .search-bar button {
+      padding: 12px 20px;
+      background: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+    .search-bar button:hover { background: #0d62d0; }
+    
+    /* فلاتر التصنيف */
+    .category-filters {
+      padding: 10px 15px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+    }
+    .category-filter {
+      padding: 8px 16px;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 13px;
+      white-space: nowrap;
+      transition: all 0.3s;
+    }
+    .category-filter.active, .category-filter:hover {
+      background: #1a73e8;
+      color: white;
+      border-color: #1a73e8;
+    }
+    
+    /* ========== 📦 شبكة المنتجات ========== */
+    .products-grid {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+      align-content: start;
+    }
+    
+    .product-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .product-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      border-color: #1a73e8;
+    }
+    .product-card.out-of-stock {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .product-image {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #f1f5f9;
+    }
+    .product-name {
+      font-weight: 600;
+      margin: 8px 0 4px;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .product-price {
+      color: #1a73e8;
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .product-stock {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    .product-stock.low { color: #dc2626; }
+    .product-stock.ok { color: #16a34a; }
+    
+    /* الألوان المتاحة */
+    .product-colors {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .color-badge {
+      padding: 3px 8px;
+      background: #e2e8f0;
+      border-radius: 12px;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .color-badge.out {
+      background: #fee2e2;
+      color: #dc2626;
+      text-decoration: line-through;
+    }
+    
+    /* ========== 🧾 قسم الفاتورة ========== */
+    .invoice-header {
+      padding: 15px;
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .cashier-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .cashier-name {
+      font-weight: 600;
+      color: #1a73e8;
+    }
+    .shift-status {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .shift-status.open { background: #d1fae5; color: #065f46; }
+    .shift-status.closed { background: #fee2e2; color: #991b1b; }
+    
+    .invoice-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .invoice-actions button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-close-shift { background: #dc3545; color: white; }
+    .btn-close-shift:hover { background: #bb2d3b; }
+    
+    /* بنود الفاتورة */
+    .invoice-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+    .invoice-item {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      background: #fff;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    .invoice-item-image {
+      width: 50px;
+      height: 50px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: #f1f5f9;
+      margin-left: 10px;
+    }
+    .invoice-item-info { flex: 1; }
+    .invoice-item-name {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    .invoice-item-color {
+      font-size: 12px;
+      color: #64748b;
+    }
+    .invoice-item-price {
+      font-size: 13px;
+      color: #1a73e8;
+      font-weight: 600;
+    }
+    
+    .invoice-item-qty {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin: 0 10px;
+    }
+    .qty-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: #1a73e8;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .qty-btn:hover { background: #0d62d0; }
+    .qty-value {
+      width: 35px;
+      text-align: center;
+      font-weight: 600;
+    }
+    
+    .invoice-item-total {
+      font-weight: 700;
+      color: #1e293b;
+      min-width: 70px;
+      text-align: left;
+    }
+    .remove-item {
+      background: none;
+      border: none;
+      color: #dc3545;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 5px;
+      margin-right: 5px;
+    }
+    .remove-item:hover { color: #bb2d3b; }
+    
+    /* ملخص الفاتورة */
+    .invoice-totals {
+      padding: 15px;
+      background: #fff;
+      border-top: 2px solid #e2e8f0;
+    }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 14px;
+    }
+    .total-row.label { color: #64748b; }
+    .total-row.value { font-weight: 600; }
+    .total-row.service { color: #7c3aed; }
+    .total-row.tax { color: #059669; }
+    .total-row.final {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a73e8;
+      border-top: 2px solid #1a73e8;
+      padding-top: 12px;
+      margin-top: 8px;
+    }
+    
+    /* أزرار الدفع */
+    .payment-buttons {
+      padding: 15px;
+      background: #fff;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      gap: 10px;
+    }
+    .payment-buttons button {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-cancel { background: #e2e8f0; color: #334155; }
+    .btn-cancel:hover { background: #cbd5e1; }
+    .btn-hold { background: #fbbf24; color: #1e293b; }
+    .btn-hold:hover { background: #f59e0b; }
+    .btn-pay { background: #22c55e; color: white; }
+    .btn-pay:hover { background: #16a34a; transform: translateY(-2px); }
+    
+    /* ========== 🧾 مودال الإيصال ========== */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.active { display: flex; }
+    
+    .receipt-modal {
+      background: #fff;
+      width: 320mm; /* 80mm printer */
+      max-width: 95vw;
+      max-height: 90vh;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .receipt-modal.printer-58 { width: 210mm; }
+    
+    .receipt-content {
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.4;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .receipt-header {
+      text-align: center;
+      border-bottom: 2px dashed #000;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+    .receipt-company { font-weight: bold; font-size: 14px; }
+    .receipt-info { font-size: 11px; color: #666; margin: 4px 0; }
+    
+    .receipt-items {
+      border-bottom: 2px dashed #000;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+    .receipt-item {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+    }
+    .receipt-item-name { flex: 1; }
+    .receipt-item-qty { margin: 0 10px; color: #666; }
+    .receipt-item-price { font-weight: bold; }
+    
+    .receipt-totals { text-align: left; }
+    .receipt-total-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 4px 0;
+    }
+    .receipt-total-row.final {
+      font-weight: bold;
+      font-size: 14px;
+      border-top: 2px dashed #000;
+      padding-top: 8px;
+      margin-top: 8px;
+    }
+    
+    .receipt-footer {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 11px;
+      color: #666;
+    }
+    
+    .receipt-actions {
+      padding: 15px;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      gap: 10px;
+    }
+    .receipt-actions button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-print { background: #1a73e8; color: white; }
+    .btn-print:hover { background: #0d62d0; }
+    .btn-close-receipt { background: #64748b; color: white; }
+    
+    /* ========== 🔄 مودال الشيفت ========== */
+    .shift-modal {
+      background: #fff;
+      width: 450px;
+      max-width: 95vw;
+      border-radius: 12px;
+      padding: 25px;
+    }
+    .shift-modal h3 {
+      margin-bottom: 20px;
+      text-align: center;
+      color: #1e293b;
+    }
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .form-group select, .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .form-group select:focus, .form-group input:focus {
+      outline: none;
+      border-color: #1a73e8;
+    }
+    .shift-modal .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: #22c55e;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .shift-modal .btn-primary:hover { background: #16a34a; }
+    
+    /* ========== 📱 تجاوب الموبايل ========== */
+    @media (max-width: 1024px) {
+      .pos-container { flex-direction: column; }
+      .products-section, .invoice-section { flex: none; }
+      .products-section { height: 60%; }
+      .invoice-section { height: 40%; min-width: 100%; }
+      .products-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+    }
+    
+    /* ========== 🖨️ طباعة الإيصال ========== */
+    @media print {
+      body * { visibility: hidden; }
+      .receipt-content, .receipt-content * { visibility: visible; }
+      .receipt-modal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 80mm;
+        margin: 0;
+        padding: 10px;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .receipt-modal.printer-58 { width: 58mm; }
+      .no-print { display: none !important; }
+    }
+    
+    /* ========== 🎨 ألوان الحالة ========== */
+    .status-badge {
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .status-paid { background: #d1fae5; color: #065f46; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+    
+    /* ========== ⏳ مؤشر التحميل ========== */
+    .loading {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.9);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .loading.active { display: flex; }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e2e8f0;
+      border-top-color: #1a73e8;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-weight: 600; color: #64748b; }
+    
+    /* ========== 🔔 التنبيهات ========== */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      background: #1e293b;
+      color: white;
+      border-radius: 8px;
+      font-weight: 500;
+      z-index: 2000;
+      animation: slideUp 0.3s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .toast.success { background: #16a34a; }
+    .toast.error { background: #dc2626; }
+    .toast.warning { background: #f59e0b; color: #1e293b; }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translate(-50%, 20px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+  </style>
+</head>
+<body>
+  <!-- مؤشر التحميل -->
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingText">جاري التحميل...</div>
+  </div>
+  
+  <!-- التنبيهات -->
+  <div id="toast" class="toast" style="display: none;"></div>
+  
+  <div class="pos-container">
+    <!-- ========== 📦 قسم المنتجات ========== -->
+    <div class="products-section">
+      <!-- شريط البحث -->
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="🔍 بحث بالاسم، الكود، أو الباركود..." onkeyup="handleSearchInput(event)">
+        <button onclick="searchProducts()">بحث</button>
+      </div>
+      
+      <!-- فلاتر التصنيف -->
+      <div class="category-filters" id="categoryFilters">
+        <div class="category-filter active" data-category="">الكل</div>
+        <!-- سيتم ملؤها ديناميكياً -->
+      </div>
+      
+      <!-- شبكة المنتجات -->
+      <div class="products-grid" id="productsGrid">
+        <!-- سيتم ملؤها ديناميكياً -->
+        <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #64748b;">
+          🔍 ابحث عن منتج أو اختر تصنيفاً للبدء
+        </div>
+      </div>
+    </div>
+    
+    <!-- ========== 🧾 قسم الفاتورة ========== -->
+    <div class="invoice-section">
+      <!-- رأس الفاتورة -->
+      <div class="invoice-header">
+        <div class="cashier-info">
+          <span>👤 الكاشير: <span class="cashier-name" id="cashierName">غير محدد</span></span>
+          <span class="shift-status" id="shiftStatus">⚪ غير مفعل</span>
+        </div>
+        <div class="invoice-actions">
+          <button class="btn-close-shift" onclick="openCloseShiftModal()">🔒 إغلاق الشيفت</button>
+        </div>
+      </div>
+      
+      <!-- بنود الفاتورة -->
+      <div class="invoice-items" id="invoiceItems">
+        <div style="text-align: center; padding: 40px; color: #64748b;">
+          🛒 الفاتورة فارغة<br>
+          <small>أضف منتجات من القائمة</small>
+        </div>
+      </div>
+      
+      <!-- ملخص الفاتورة -->
+      <div class="invoice-totals">
+        <div class="total-row label">
+          <span>المجموع الجزئي:</span>
+          <span class="value" id="subTotal">0.00</span>
+        </div>
+        <div class="total-row label service">
+          <span>مصاريف الخدمة:</span>
+          <span class="value" id="serviceCharge">0.00</span>
+        </div>
+        <div class="total-row label tax">
+          <span>الضريبة:</span>
+          <span class="value" id="taxAmount">0.00</span>
+        </div>
+        <div class="total-row label">
+          <span>الخصم:</span>
+          <span class="value" id="discount">0.00</span>
+        </div>
+        <div class="total-row final">
+          <span>الإجمالي:</span>
+          <span id="netTotal">0.00</span>
+        </div>
+      </div>
+      
+      <!-- أزرار الدفع -->
+      <div class="payment-buttons">
+        <button class="btn-cancel" onclick="cancelInvoice()">❌ إلغاء</button>
+        <button class="btn-hold" onclick="holdInvoice()">⏸ تعليق</button>
+        <button class="btn-pay" onclick="openPaymentModal()">💳 دفع</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- ========== 🔄 مودال فتح/إغلاق الشيفت ========== -->
+  <div id="shiftModal" class="modal">
+    <div class="shift-modal">
+      <h3 id="shiftModalTitle">🔄 فتح شيفت جديد</h3>
+      
+      <div class="form-group">
+        <label>اسم الكاشير</label>
+        <select id="cashierSelect">
+          <option value="">اختر الكاشير...</option>
+          <!-- سيتم ملؤها ديناميكياً -->
+        </select>
+      </div>
+      
+      <div class="form-group" id="openingBalanceGroup">
+        <label>رصيد الافتتاح</label>
+        <input type="number" id="openingBalance" value="0" step="0.01" min="0">
+      </div>
+      
+      <div class="form-group" id="closingBalanceGroup" style="display: none;">
+        <label>الرصيد الفعلي في الخزينة</label>
+        <input type="number" id="closingBalance" value="0" step="0.01" min="0">
+        <small style="color: #64748b;">المفترض: <span id="expectedBalance">0.00</span></small>
+      </div>
+      
+      <div class="form-group">
+        <label>نسبة مصاريف الخدمة (%)</label>
+        <input type="number" id="serviceChargePercent" value="0" step="0.01" min="0" max="100">
+      </div>
+      
+      <button class="btn-primary" id="shiftActionBtn" onclick="executeShiftAction()">
+        ✅ فتح الشيفت
+      </button>
+      <button class="btn-cancel" style="width:100%;margin-top:10px;padding:12px;" onclick="closeShiftModal()">
+        ✖️ إلغاء
+      </button>
+    </div>
+  </div>
+  
+  <!-- ========== 💳 مودال الدفع ========== -->
+  <div id="paymentModal" class="modal">
+    <div class="shift-modal">
+      <h3>💳 طريقة الدفع</h3>
+      
+      <div class="form-group">
+        <label>نوع الدفع</label>
+        <select id="paymentType">
+          <option value="cash">💵 نقدي</option>
+          <option value="card">💳 بطاقة</option>
+          <option value="credit">📝 آجل</option>
+        </select>
+      </div>
+      
+      <div class="form-group" id="customerGroup" style="display: none;">
+        <label>العميل (للدفع الآجل)</label>
+        <select id="customerSelect">
+          <option value="CASH_CUSTOMER">عميل نقدي</option>
+          <!-- سيتم ملؤها ديناميكياً -->
+        </select>
+      </div>
+      
+      <div class="total-row final" style="margin: 20px 0;">
+        <span>المبلغ المطلوب:</span>
+        <span id="paymentAmount">0.00</span>
+      </div>
+      
+      <button class="btn-primary" onclick="processPayment()">✅ تأكيد الدفع</button>
+      <button class="btn-cancel" style="width:100%;margin-top:10px;padding:12px;" onclick="closePaymentModal()">
+        ✖️ إلغاء
+      </button>
+    </div>
+  </div>
+  
+  <!-- ========== 🧾 مودال الإيصال ========== -->
+  <div id="receiptModal" class="modal">
+    <div class="receipt-modal" id="receiptContainer">
+      <div class="receipt-content" id="receiptContent">
+        <!-- سيتم توليد الإيصال هنا -->
+      </div>
+      <div class="receipt-actions no-print">
+        <button class="btn-print" onclick="printReceipt()">🖨️ طباعة</button>
+        <button class="btn-close-receipt" onclick="closeReceiptModal()">✖️ إغلاق</button>
+        <button class="btn-close-receipt" onclick="newInvoice()">🛒 فاتورة جديدة</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- ========== 📜 كود الجافاسكربت ========== -->
+  <script>
+    // ========== 📦 المتغيرات العامة ==========
+    var currentShift = null;
+    var currentCashier = null;
+    var invoiceItems = [];
+    var posSettings = {};
+    var warehouseId = null; // يمكن تحديده من الإعدادات
+    
+    // ========== 🎬 عند تحميل الصفحة ==========
+    document.addEventListener('DOMContentLoaded', function() {
+      initPOS();
+    });
+    
+    // ========== ⚙️ تهيئة النظام ==========
+    function initPOS() {
+      showLoading('جاري تهيئة النظام...');
+      
+      // تحميل الإعدادات أولاً
+      google.script.run
+        .withSuccessHandler(function(settings) {
+          posSettings = settings;
+          document.getElementById('serviceChargePercent').value = settings.service_charge_percentage || 0;
+          
+          // التحقق من تفعيل POS
+          if (!settings.pos_enabled) {
+            hideLoading();
+            showToast('❌ نظام نقطة البيع غير مفعل', 'error');
+            return;
+          }
+          
+          // تحميل الكاشير
+          loadCashiers();
+          
+          // التحقق من شيفت مفتوح
+          checkOpenShift();
+          
+        })
+        .withFailureHandler(function(error) {
+          hideLoading();
+          showToast('❌ خطأ في تحميل الإعدادات: ' + error, 'error');
+        })
+        .getPOSSettings();
+    }
+    
+    // ========== 👥 تحميل الكاشير ==========
+    function loadCashiers() {
+      google.script.run
+        .withSuccessHandler(function(cashiers) {
+          var select = document.getElementById('cashierSelect');
+          select.innerHTML = '<option value="">اختر الكاشير...</option>';
+          
+          cashiers.forEach(function(c) {
+            var opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.cashier_name;
+            opt.dataset.accountId = c.account_id;
+            opt.dataset.safeId = c.default_safe_id;
+            select.appendChild(opt);
+          });
+          
+          hideLoading();
+          
+          // إذا لم يكن هناك شيفت مفتوح، اعرض مودال الفتح
+          if (!currentShift) {
+            openCloseShiftModal();
+          }
+        })
+        .withFailureHandler(function(error) {
+          hideLoading();
+          showToast('❌ خطأ في تحميل الكاشير: ' + error, 'error');
+        })
+        .getCashiersForPOS();
+    }
+    
+    // ========== 🔄 التحقق من شيفت مفتوح ==========
+    function checkOpenShift() {
+      if (!currentCashier) return;
+      
+      google.script.run
+        .withSuccessHandler(function(shift) {
+          if (shift) {
+            currentShift = shift;
+            updateShiftUI(true);
+            loadProducts();
+          }
+        })
+        .getOpenShiftForCashier(currentCashier.id);
+    }
+    
+    // ========== 🔄 فتح/إغلاق مودال الشيفت ==========
+    function openCloseShiftModal() {
+      var modal = document.getElementById('shiftModal');
+      var title = document.getElementById('shiftModalTitle');
+      var actionBtn = document.getElementById('shiftActionBtn');
+      var openingGroup = document.getElementById('openingBalanceGroup');
+      var closingGroup = document.getElementById('closingBalanceGroup');
+      
+      if (!currentShift) {
+        // فتح شيفت جديد
+        title.textContent = '🔄 فتح شيفت جديد';
+        actionBtn.textContent = '✅ فتح الشيفت';
+        actionBtn.onclick = openShift;
+        openingGroup.style.display = 'block';
+        closingGroup.style.display = 'none';
+        document.getElementById('openingBalance').value = '0';
+      } else {
+        // إغلاق الشيفت الحالي
+        title.textContent = '🔒 إغلاق الشيفت';
+        actionBtn.textContent = '✅ تأكيد الإغلاق';
+        actionBtn.onclick = closeShift;
+        openingGroup.style.display = 'none';
+        closingGroup.style.display = 'block';
+        
+        // حساب الرصيد المتوقع
+        var expected = (currentShift.opening_balance || 0) + 
+                      (currentShift.cash_sales || 0) + 
+                      (currentShift.credit_sales || 0);
+        document.getElementById('expectedBalance').textContent = expected.toFixed(2);
+        document.getElementById('closingBalance').value = expected.toFixed(2);
+      }
+      
+      modal.classList.add('active');
+    }
+    
+    function closeShiftModal() {
+      document.getElementById('shiftModal').classList.remove('active');
+    }
+    
+    // ========== 🔄 فتح شيفت جديد ==========
+    function openShift() {
+      var cashierId = document.getElementById('cashierSelect').value;
+      var cashierName = document.getElementById('cashierSelect').options[document.getElementById('cashierSelect').selectedIndex].text;
+      var openingBalance = parseFloat(document.getElementById('openingBalance').value) || 0;
+      
+      if (!cashierId) {
+        showToast('⚠️ يرجى اختيار الكاشير', 'warning');
+        return;
+      }
+      
+      showLoading('جاري فتح الشيفت...');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          hideLoading();
+          if (result.success) {
+            currentShift = result.data;
+            currentCashier = { id: cashierId, name: cashierName };
+            updateShiftUI(true);
+            closeShiftModal();
+            loadProducts();
+            showToast('✅ تم فتح الشيفت بنجاح', 'success');
+          } else {
+            showToast(result.message, 'error');
+          }
+        })
+        .withFailureHandler(function(error) {
+          hideLoading();
+          showToast('❌ خطأ: ' + error, 'error');
+        })
+        .openPOSShift(cashierId, cashierName, openingBalance);
+    }
+    
+    // ========== 🔒 إغلاق الشيفت ==========
+    function closeShift() {
+      var closingBalance = parseFloat(document.getElementById('closingBalance').value) || 0;
+      var serviceChargePercent = parseFloat(document.getElementById('serviceChargePercent').value) || 0;
+      
+      showLoading('جاري إغلاق الشيفت...');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          hideLoading();
+          if (result.success) {
+            showToast('✅ ' + result.message, 'success');
+            
+            // عرض ملخص الإغلاق
+            var summary = '📊 ملخص الشيفت:\n' +
+                         '• مبيعات نقدي: ' + result.data.cash_sales.toFixed(2) + '\n' +
+                         '• مبيعات آجل: ' + result.data.credit_sales.toFixed(2) + '\n' +
+                         '• مصاريف خدمة: ' + result.data.service_charges.toFixed(2) + '\n' +
+                         '• رقم الفاتورة: ' + result.data.invoice_no;
+            
+            if (confirm(summary + '\n\nهل تريد طباعة فاتورة التجميع؟')) {
+              // يمكن إضافة كود الطباعة هنا
+            }
+            
+            // إعادة التهيئة
+            currentShift = null;
+            currentCashier = null;
+            invoiceItems = [];
+            renderInvoice();
+            updateShiftUI(false);
+            closeShiftModal();
+            
+            // عرض مودال الفتح للشيفت التالي
+            setTimeout(function() { openCloseShiftModal(); }, 500);
+            
+          } else {
+            showToast(result.message, 'error');
+          }
+        })
+        .withFailureHandler(function(error) {
+          hideLoading();
+          showToast('❌ خطأ: ' + error, 'error');
+        })
+        .closePOSShift(currentShift.id, closingBalance, serviceChargePercent);
+    }
+    
+    // ========== 🎨 تحديث واجهة الشيفت ==========
+    function updateShiftUI(isOpen) {
+      var statusEl = document.getElementById('shiftStatus');
+      var cashierEl = document.getElementById('cashierName');
+      
+      if (isOpen && currentCashier) {
+        statusEl.textContent = '🟢 مفتوح';
+        statusEl.className = 'shift-status open';
+        cashierEl.textContent = currentCashier.name;
+      } else {
+        statusEl.textContent = '⚪ غير مفعل';
+        statusEl.className = 'shift-status closed';
+        cashierEl.textContent = 'غير محدد';
+      }
+    }
+    
+    // ========== 📦 تحميل المنتجات ==========
+    function loadProducts(categoryId) {
+      if (!currentShift) {
+        showToast('⚠️ يرجى فتح شيفت أولاً', 'warning');
+        return;
+      }
+      
+      showLoading('جاري تحميل المنتجات...');
+      
+      google.script.run
+        .withSuccessHandler(function(items) {
+          hideLoading();
+          renderProducts(items, categoryId);
+        })
+        .withFailureHandler(function(error) {
+          hideLoading();
+          showToast('❌ خطأ في تحميل المنتجات: ' + error, 'error');
+        })
+        .getPOSItems(warehouseId);
+    }
+    
+    // ========== 🔍 بحث المنتجات ==========
+    function handleSearchInput(e) {
+      if (e.key === 'Enter') {
+        searchProducts();
+      }
+    }
+    
+    function searchProducts() {
+      var searchTerm = document.getElementById('searchInput').value.trim();
+      var activeCategory = document.querySelector('.category-filter.active');
+      var categoryId = activeCategory ? activeCategory.dataset.category : '';
+      
+      if (!searchTerm && !categoryId) {
+        loadProducts();
+        return;
+      }
+      
+      showLoading('جاري البحث...');
+      
+      google.script.run
+        .withSuccessHandler(function(items) {
+          hideLoading();
+          renderProducts(items, categoryId);
+        })
+        .withFailureHandler(function(error) {
+          hideLoading();
+          showToast('❌ خطأ في البحث: ' + error, 'error');
+        })
+        .searchPOSItems(searchTerm, warehouseId, categoryId);
+    }
+    
+    // ========== 🎨 عرض المنتجات ==========
+    function renderProducts(items, activeCategoryId) {
+      var grid = document.getElementById('productsGrid');
+      
+      if (items.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#64748b;">لا توجد منتجات</div>';
+        return;
+      }
+      
+      grid.innerHTML = '';
+      
+      items.forEach(function(item) {
+        var hasStock = item.colors && item.colors.some(function(c) { return c.stock > 0; });
+        var card = document.createElement('div');
+        card.className = 'product-card' + (!hasStock ? ' out-of-stock' : '');
+        card.onclick = function() { if (hasStock) addToInvoice(item); };
+        
+        // بناء عرض الألوان
+        var colorsHTML = '';
+        if (item.colors && item.colors.length > 0) {
+          colorsHTML = '<div class="product-colors">';
+          item.colors.forEach(function(c) {
+            colorsHTML += '<span class="color-badge' + (c.stock <= 0 ? ' out' : '') + '">' +
+                         c.color_name + ' (' + c.stock + ')' +
+                         '</span>';
+          });
+          colorsHTML += '</div>';
+        }
+        
+        card.innerHTML = `
+          <img src="${item.item_image_url || 'https://via.placeholder.com/150?text=No+Image'}" 
+               class="product-image" 
+               onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
+          <div class="product-name">${item.item_name}</div>
+          <div class="product-price">${(item.sale_price || 0).toFixed(2)}</div>
+          <div class="product-stock ${hasStock ? 'ok' : 'low'}">
+            ${hasStock ? 'متوفر' : 'غير متوفر'}
+          </div>
+          ${colorsHTML}
+        `;
+        
+        grid.appendChild(card);
+      });
+    }
+    
+    // ========== 🛒 إضافة منتج للفاتورة ==========
+    function addToInvoice(item) {
+      // إذا كان هناك ألوان، اختر الأول المتوفر
+      var color = item.colors && item.colors.find(function(c) { return c.stock > 0; });
+      
+      var existingIndex = invoiceItems.findIndex(function(i) {
+        return i.item_id === item.id && i.color_id === (color ? color.id : '');
+      });
+      
+      if (existingIndex >= 0) {
+        invoiceItems[existingIndex].qty++;
+        invoiceItems[existingIndex].total = invoiceItems[existingIndex].qty * invoiceItems[existingIndex].price;
+      } else {
+        invoiceItems.push({
+          item_id: item.id,
+          item_name: item.item_name,
+          item_image: item.item_image_url,
+          color_id: color ? color.id : '',
+          color_name: color ? color.name : '',
+          qty: 1,
+          price: item.sale_price || 0,
+          total: item.sale_price || 0
+        });
+      }
+      
+      renderInvoice();
+      showToast('✅ تمت الإضافة', 'success');
+    }
+    
+    // ========== 🧾 عرض الفاتورة ==========
+    function renderInvoice() {
+      var container = document.getElementById('invoiceItems');
+      
+      if (invoiceItems.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:#64748b;">🛒 الفاتورة فارغة</div>';
+        calculateTotals();
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      invoiceItems.forEach(function(item, index) {
+        var div = document.createElement('div');
+        div.className = 'invoice-item';
+        div.innerHTML = `
+          <img src="${item.item_image || 'https://via.placeholder.com/50'}" 
+               class="invoice-item-image"
+               onerror="this.src='https://via.placeholder.com/50'">
+          <div class="invoice-item-info">
+            <div class="invoice-item-name">${item.item_name}</div>
+            ${item.color_name ? '<div class="invoice-item-color">' + item.color_name + '</div>' : ''}
+            <div class="invoice-item-price">${item.price.toFixed(2)}</div>
+          </div>
+          <div class="invoice-item-qty">
+            <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
+            <span class="qty-value">${item.qty}</span>
+            <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
+          </div>
+          <div class="invoice-item-total">${item.total.toFixed(2)}</div>
+          <button class="remove-item" onclick="removeItem(${index})">×</button>
+        `;
+        container.appendChild(div);
+      });
+      
+      calculateTotals();
+    }
+    
+    // ========== 📊 تحديث الكمية ==========
+    function updateQty(index, change) {
+      invoiceItems[index].qty += change;
+      if (invoiceItems[index].qty <= 0) {
+        invoiceItems.splice(index, 1);
+      } else {
+        invoiceItems[index].total = invoiceItems[index].qty * invoiceItems[index].price;
+      }
+      renderInvoice();
+    }
+    
+    // ========== 🗑️ حذف بند ==========
+    function removeItem(index) {
+      if (confirm('هل تريد حذف هذا البند؟')) {
+        invoiceItems.splice(index, 1);
+        renderInvoice();
+      }
+    }
+    
+    // ========== 💰 حساب الإجماليات ==========
+    function calculateTotals() {
+      var subTotal = invoiceItems.reduce(function(sum, item) { return sum + item.total; }, 0);
+      var serviceChargePct = parseFloat(posSettings.service_charge_percentage) || 0;
+      var serviceCharge = subTotal * (serviceChargePct / 100);
+      var taxPct = 15; // يمكن جلبها من الإعدادات
+      var taxAmount = (subTotal + serviceCharge) * (taxPct / 100);
+      var discount = 0; // يمكن إضافته لاحقاً
+      var netTotal = subTotal + serviceCharge + taxAmount - discount;
+      
+      document.getElementById('subTotal').textContent = subTotal.toFixed(2);
+      document.getElementById('serviceCharge').textContent = serviceCharge.toFixed(2);
+      document.getElementById('taxAmount').textContent = taxAmount.toFixed(2);
+      document.getElementById('discount').textContent = discount.toFixed(2);
+      document.getElementById('netTotal').textContent = netTotal.toFixed(2);
+      
+      return { subTotal, serviceCharge, taxAmount, discount, netTotal };
+    }
+    
+    // ========== 💳 فتح مودال الدفع ==========
+    function openPaymentModal() {
+      if (invoiceItems.length === 0) {
+        showToast('⚠️ الفاتورة فارغة', 'warning');
+        return;
+      }
+      
+      var totals = calculateTotals();
+      document.getElementById('paymentAmount').textContent = totals.netTotal.toFixed(2);
+      
+      // إظهار/إخفاء حقل العميل حسب نوع الدفع
+      document.getElementById('paymentType').onchange = function() {
+        document.getElementById('customerGroup').style.display = 
+          this.value === 'credit' ? 'block' : 'none';
+      };
+      
+      document.getElementById('paymentModal').classList.add('active');
+    }
+    
+    function closePaymentModal() {
+      document.getElementById('paymentModal').classList.remove('active');
+    }
+    
+    // ========== ✅ معالجة الدفع ==========
+    function processPayment() {
+      var paymentType = document.getElementById('paymentType').value;
+      var customerId = paymentType === 'credit' ? 
+        document.getElementById('customerSelect').value : 'CASH_CUSTOMER';
+      
+      var totals = calculateTotals();
+      
+      var formData = {
+        invoice_date: new Date().toISOString().split('T')[0],
+        cashier_id: currentCashier.id,
+        cashier_name: currentCashier.name,
+        customer_id: customerId,
+        warehouse_id: warehouseId,
+        lines: invoiceItems,
+        sub_total: totals.subTotal,
+        tax_amount: totals.taxAmount,
+        service_charge: totals.serviceCharge,
+        discount: totals.discount,
+        net_total: totals.netTotal,
+        payment_type: paymentType
+      };
+      
+      showLoading('جاري حفظ الفاتورة...');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          hideLoading();
+          if (result.success) {
+            showToast('✅ تم الحفظ بنجاح', 'success');
+            closePaymentModal();
+            showReceipt(result.receipt);
+            invoiceItems = [];
+            renderInvoice();
+          } else {
+            showToast(result.message, 'error');
+          }
+        })
+        .withFailureHandler(function(error) {
+          hideLoading();
+          showToast('❌ خطأ: ' + error, 'error');
+        })
+        .savePOSSale(formData, currentShift.id);
+    }
+    
+    // ========== 🧾 عرض الإيصال ==========
+    function showReceipt(receipt) {
+      var container = document.getElementById('receiptContainer');
+      var content = document.getElementById('receiptContent');
+      
+      // ضبط عرض الطابعة
+      if (posSettings.thermal_printer_width === '58') {
+        container.classList.add('printer-58');
+      } else {
+        container.classList.remove('printer-58');
+      }
+      
+      // توليد محتوى الإيصال
+      var itemsHTML = '';
+      (receipt.items || []).forEach(function(item) {
+        itemsHTML += `
+          <div class="receipt-item">
+            <span class="receipt-item-name">${item.item_name}${item.color_name ? ' (' + item.color_name + ')' : ''}</span>
+            <span class="receipt-item-qty">×${item.qty}</span>
+            <span class="receipt-item-price">${(item.price * item.qty).toFixed(2)}</span>
+          </div>
+        `;
+      });
+      
+      content.innerHTML = `
+        <div class="receipt-header">
+          <div class="receipt-company">${receipt.company_name || 'ZEIOS ERP'}</div>
+          <div class="receipt-info">${receipt.company_address || ''}</div>
+          <div class="receipt-info">📞 ${receipt.company_phone || ''}</div>
+          <div class="receipt-info">فاتورة رقم: ${receipt.invoice_no}</div>
+          <div class="receipt-info">📅 ${receipt.date}</div>
+          <div class="receipt-info">👤 ${receipt.cashier}</div>
+        </div>
+        
+        <div class="receipt-items">
+          ${itemsHTML}
+        </div>
+        
+        <div class="receipt-totals">
+          <div class="receipt-total-row">
+            <span>المجموع:</span>
+            <span>${(receipt.sub_total || 0).toFixed(2)}</span>
+          </div>
+          <div class="receipt-total-row">
+            <span>الخدمة:</span>
+            <span>${(receipt.service_charge || 0).toFixed(2)}</span>
+          </div>
+          <div class="receipt-total-row">
+            <span>الضريبة:</span>
+            <span>${(receipt.tax || 0).toFixed(2)}</span>
+          </div>
+          <div class="receipt-total-row final">
+            <span>الإجمالي:</span>
+            <span>${(receipt.net_total || 0).toFixed(2)}</span>
+          </div>
+          <div class="receipt-total-row">
+            <span>طريقة الدفع:</span>
+            <span>${receipt.payment_type === 'cash' ? 'نقدي' : receipt.payment_type === 'card' ? 'بطاقة' : 'آجل'}</span>
+          </div>
+        </div>
+        
+        <div class="receipt-footer">
+          <p>شكراً لزيارتكم!</p>
+          <p>zeioszeios0@gmail.com | 00201205951462</p>
+        </div>
+      `;
+      
+      document.getElementById('receiptModal').classList.add('active');
+    }
+    
+    function closeReceiptModal() {
+      document.getElementById('receiptModal').classList.remove('active');
+    }
+    
+    // ========== 🖨️ طباعة الإيصال ==========
+    function printReceipt() {
+      window.print();
+    }
+    
+    // ========== 🛒 فاتورة جديدة ==========
+    function newInvoice() {
+      invoiceItems = [];
+      renderInvoice();
+      closeReceiptModal();
+      showToast('🛒 فاتورة جديدة جاهزة', 'success');
+    }
+    
+    // ========== ❌ إلغاء الفاتورة ==========
+    function cancelInvoice() {
+      if (invoiceItems.length === 0) return;
+      if (confirm('هل تريد إلغاء الفاتورة الحالية؟')) {
+        invoiceItems = [];
+        renderInvoice();
+        showToast('✅ تم إلغاء الفاتورة', 'success');
+      }
+    }
+    
+    // ========== ⏸ تعليق الفاتورة ==========
+    function holdInvoice() {
+      showToast('⏸ ميزة التعليق قيد التطوير', 'warning');
+      // يمكن تطويرها لاحقاً لحفظ الفاتورة مؤقتاً
+    }
+    
+    // ========== 🎨 فلاتر التصنيف ==========
+    function setupCategoryFilters() {
+      // يمكن جلب التصنيفات من النظام
+      var categories = [
+        { id: '', name: 'الكل' },
+        { id: 'CAT-001', name: 'ملابس' },
+        { id: 'CAT-002', name: 'إكسسوارات' },
+        { id: 'CAT-003', name: 'أحذية' }
+      ];
+      
+      var container = document.getElementById('categoryFilters');
+      container.innerHTML = '';
+      
+      categories.forEach(function(cat) {
+        var btn = document.createElement('div');
+        btn.className = 'category-filter' + (cat.id === '' ? ' active' : '');
+        btn.dataset.category = cat.id;
+        btn.textContent = cat.name;
+        btn.onclick = function() {
+          document.querySelectorAll('.category-filter').forEach(function(b) { b.classList.remove('active'); });
+          this.classList.add('active');
+          loadProducts(cat.id);
+        };
+        container.appendChild(btn);
+      });
+    }
+    
+    // ========== 🔔 عرض التنبيهات ==========
+    function showToast(message, type) {
+      var toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast ' + (type || '');
+      toast.style.display = 'block';
+      
+      setTimeout(function() {
+        toast.style.display = 'none';
+      }, 3000);
+    }
+    
+    // ========== ⏳ مؤشر التحميل ==========
+    function showLoading(text) {
+      document.getElementById('loadingText').textContent = text || 'جاري التحميل...';
+      document.getElementById('loading').classList.add('active');
+    }
+    
+    function hideLoading() {
+      document.getElementById('loading').classList.remove('active');
+    }
+  </script>
+</body>
+</html>
