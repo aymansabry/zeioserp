@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📦 حركة المخزون - ZEIOS ERP</title>
+  <style>
+    :root {
+      --bg: #f8f9fa; --card: #fff; --text: #202124; --text2: #5f6368;
+      --border: #dadce0; --accent: #1a73e8; --shadow: 0 1px 3px rgba(0,0,0,0.1);
+      --success: #2e7d32; --danger: #c62828; --black: #202124;
+      --info: #1a73e8; --warning: #fbbc04;
+    }
+    .dark-mode {
+      --bg: #121212; --card: #1e1e1e; --text: #e8eaed; --text2: #9aa0a6;
+      --border: #3c4043; --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --black: #e8eaed;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Google Sans', 'Segoe UI', 'Tajawal', Arial, sans-serif;
+      background: var(--bg); color: var(--text); padding: 16px; direction: rtl;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    
+    /* ========== Header Styles ========== */
+    .main-header {
+      background: linear-gradient(135deg, var(--accent), #0d47a1);
+      color: white; padding: 20px 24px; border-radius: 12px;
+      margin-bottom: 20px; box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+    }
+    .header-top {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px; padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    .company-info h1 {
+      font-size: 22px; font-weight: 600; display: flex; align-items: center; gap: 10px;
+    }
+    .company-info p { font-size: 14px; opacity: 0.9; margin-top: 4px; }
+    .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .fiscal-badge {
+      background: rgba(255,255,255,0.2); padding: 6px 14px;
+      border-radius: 20px; font-size: 13px; font-weight: 500;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .fiscal-badge.inactive { background: rgba(255,152,0,0.3); }
+    .fiscal-badge.warning { background: rgba(234,67,53,0.3); }
+    
+    /* ========== Buttons ========== */
+    button {
+      padding: 10px 18px; border: none; border-radius: 6px;
+      background: var(--card); color: var(--text); cursor: pointer;
+      font-size: 14px; font-weight: 500; transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+    }
+    button:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: #0d5bb8; }
+    .btn-dashboard { background: var(--success); color: white; }
+    .btn-dashboard:hover { background: #2d8e49; }
+    .btn-print { background: var(--warning); color: #202124; }
+    .btn-print:hover { background: #e6a700; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { background: rgba(26,115,232,0.1); }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    
+    /* زر التعديل */
+    .btn-edit-entry {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .btn-edit-entry:hover {
+      background: #0d5bb8;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    /* ========== Cards ========== */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; box-shadow: var(--shadow);
+      overflow: hidden; margin-bottom: 20px;
+    }
+    .card-header {
+      padding: 16px 20px; font-weight: 600; font-size: 16px;
+      border-bottom: 1px solid var(--border); background: var(--bg);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .card-body { padding: 20px; }
+    
+    /* مستويات العرض */
+    .level-selector {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: rgba(26, 115, 232, 0.05);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .level-badge {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .level-badge.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    .level-badge:hover:not(.active) {
+      background: rgba(26, 115, 232, 0.1);
+    }
+    .level-badge.level-1 { border-right: 4px solid #f59e0b; }
+    .level-badge.level-2 { border-right: 4px solid #10b981; }
+    .level-badge.level-3 { border-right: 4px solid #6366f1; }
+    
+    .filters {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px; margin-bottom: 16px;
+    }
+    .form-group { margin-bottom: 0; }
+    label {
+      display: block; margin-bottom: 6px; font-weight: 500;
+      font-size: 13px; color: var(--text2);
+    }
+    input, select {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 6px; background: var(--card); color: var(--text);
+      font-family: inherit; font-size: 14px;
+    }
+    input:focus, select:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+    }
+    
+    /* ========== Report Banner ========== */
+    .report-banner {
+      padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;
+      font-size: 14px; display: flex; align-items: center; gap: 10px;
+    }
+    .report-banner.info {
+      background: rgba(26, 115, 232, 0.1); border-right: 4px solid var(--accent); color: var(--black);
+    }
+    .report-banner.warning {
+      background: rgba(255, 152, 0, 0.1); border-right: 4px solid var(--warning); color: var(--black);
+    }
+    
+    /* ========== Table Styles ========== */
+    .table-container { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; min-width: 1300px; font-size: 14px; }
+    th {
+      background: var(--bg); text-align: right; padding: 14px 16px;
+      font-weight: 600; border-bottom: 2px solid var(--border); color: var(--black);
+      position: sticky; top: 0; z-index: 1;
+    }
+    td {
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      color: var(--text2); vertical-align: middle;
+    }
+    tr:hover { background: rgba(26, 115, 232, 0.04); }
+    tr:last-child td { border-bottom: none; }
+    
+    .text-left { text-align: left !important; }
+    .text-right { text-align: right !important; }
+    .text-center { text-align: center !important; }
+    
+    .qty-in { color: var(--success); font-weight: 500; }
+    .qty-out { color: var(--danger); font-weight: 500; }
+    .balance-col { font-weight: 600; color: var(--black); }
+    
+    .ref-badge {
+      display: inline-block; padding: 4px 10px;
+      background: rgba(26, 115, 232, 0.1); color: var(--accent);
+      border-radius: 4px; font-size: 12px; font-weight: 500;
+    }
+    .ref-id {
+      font-family: monospace; font-size: 12px; color: var(--text2);
+      background: var(--bg); padding: 2px 6px; border-radius: 3px;
+    }
+    .cost-price { font-family: monospace; font-weight: 500; }
+    
+    /* ========== Inventory List ========== */
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+    .inventory-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      border-right: 4px solid var(--accent);
+    }
+    .inventory-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-color: var(--accent);
+    }
+    .inventory-card.selected {
+      background: rgba(26, 115, 232, 0.05);
+      border: 2px solid var(--accent);
+    }
+    .inventory-card .item-code {
+      font-size: 12px;
+      color: var(--text2);
+      margin-bottom: 4px;
+    }
+    .inventory-card .item-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .inventory-card .item-color {
+      font-size: 13px;
+      color: var(--accent);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .inventory-card .item-balance {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--success);
+      text-align: left;
+    }
+    .inventory-card .item-unit {
+      font-size: 12px;
+      color: var(--text2);
+    }
+    
+    /* ========== Summary Section ========== */
+    .summary {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px; margin-top: 20px; padding: 16px;
+      background: rgba(26, 115, 232, 0.05); border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .summary-item {
+      text-align: center; padding: 14px 12px; background: white;
+      border-radius: 8px; border: 1px solid var(--border);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .summary-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
+    .summary-value { font-size: 18px; font-weight: bold; color: var(--black); font-family: monospace; }
+    .summary-value.positive { color: var(--success); }
+    .summary-value.negative { color: var(--danger); }
+    .summary-value.balance { color: var(--accent); }
+    
+    /* ========== Loading & Empty States ========== */
+    .loading { text-align: center; padding: 50px 20px; color: var(--text2); }
+    .spinner {
+      border: 3px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; width: 36px; height: 36px;
+      animation: spin 1s linear infinite; margin: 0 auto 16px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text2); }
+    .empty-state-icon { font-size: 56px; margin-bottom: 12px; opacity: 0.4; }
+    .empty-state-title { font-size: 16px; font-weight: 500; margin: 8px 0; color: var(--black); }
+    .empty-state-desc { font-size: 13px; }
+    
+    /* ========== Toast ========== */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--black); color: white; padding: 12px 24px;
+      border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      font-size: 14px; z-index: 1000; transition: transform 0.3s ease;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--danger); }
+    .toast.warning { background: var(--warning); color: #202124; }
+    
+    /* ========== Breadcrumb ========== */
+    .breadcrumb {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 16px;
+      background: var(--bg);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+    .breadcrumb-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--text2);
+      font-size: 13px;
+    }
+    .breadcrumb-item.active {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .breadcrumb-separator {
+      color: var(--text2);
+      font-size: 12px;
+    }
+    .breadcrumb-close {
+      color: var(--danger);
+      cursor: pointer;
+      margin-right: auto;
+      font-size: 12px;
+      text-decoration: underline;
+    }
+    
+    @media print {
+      .no-print { display: none !important; }
+      .btn-edit-entry { display: none !important; }
+      body { background: white; padding: 0; }
+      .card { box-shadow: none; border: none; }
+      .table-container { overflow: visible; }
+      table { min-width: auto; }
+      th { position: static; }
+    }
+    @media (max-width: 768px) {
+      .header-top { flex-direction: column; align-items: flex-start; }
+      .header-actions { width: 100%; justify-content: flex-start; }
+      .filters { grid-template-columns: 1fr; }
+      .summary { grid-template-columns: repeat(2, 1fr); }
+      .inventory-grid { grid-template-columns: 1fr; }
+      .level-selector { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <!-- ========== Main Header ========== -->
+    <div class="main-header no-print">
+      <div class="header-top">
+        <div class="company-info">
+          <h1>📦 حركة المخزون <span id="companyName">ZEIOS ERP</span></h1>
+          <p id="companyDetails">جاري تحميل بيانات الشركة...</p>
+        </div>
+        <div class="header-actions">
+          <span id="fiscalBadge" class="fiscal-badge" style="display:none;">
+            📅 <span id="fiscalYearText"></span>
+          </span>
+          <button class="btn-outline btn-sm" onclick="toggleDarkMode()">🌓 الوضع</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+        <button class="btn-dashboard" onclick="backToDashboard()">🏠 لوحة التحكم</button>
+        <button class="btn-print" onclick="printReport()">🖨️ طباعة / تصدير</button>
+        <button class="btn-outline" onclick="exportToCSV()">📥 تصدير CSV</button>
+      </div>
+    </div>
+
+    <!-- ========== Breadcrumb Navigation ========== -->
+    <div id="breadcrumb" class="breadcrumb no-print" style="display: none;">
+      <span class="breadcrumb-item" id="breadcrumbLevel1" onclick="resetToLevel1()">📦 المستودعات</span>
+      <span class="breadcrumb-separator" id="separator1" style="display: none;">›</span>
+      <span class="breadcrumb-item" id="breadcrumbLevel2" onclick="resetToLevel2()"></span>
+      <span class="breadcrumb-separator" id="separator2" style="display: none;">›</span>
+      <span class="breadcrumb-item active" id="breadcrumbLevel3"></span>
+      <span class="breadcrumb-close" id="breadcrumbClose" onclick="resetToLevel1()">✕ إغلاق</span>
+    </div>
+
+    <!-- ========== Level Selector ========== -->
+    <div class="card no-print">
+      <div class="card-header"><span>🔍 تصفح المخزون</span></div>
+      <div class="card-body">
+        <div class="level-selector">
+          <span class="level-badge level-1" id="level1Btn" onclick="selectLevel(1)">المستوى 1: اختيار المستودع</span>
+          <span class="level-badge level-2" id="level2Btn" onclick="selectLevel(2)">المستوى 2: اختيار الصنف</span>
+          <span class="level-badge level-3" id="level3Btn" onclick="selectLevel(3)">المستوى 3: اختيار اللون</span>
+        </div>
+
+        <!-- Level 1: Warehouse Selection -->
+        <div id="level1Content" style="display: block;">
+          <div class="filters">
+            <div class="form-group">
+              <label>اختر المستودع</label>
+              <select id="warehouseLevel1" onchange="onWarehouseLevel1Change()">
+                <option value="">-- اختر المستودع --</option>
+              </select>
+            </div>
+          </div>
+          <div id="level1Inventory" class="inventory-grid"></div>
+        </div>
+
+        <!-- Level 2: Item Selection -->
+        <div id="level2Content" style="display: none;">
+          <div class="filters">
+            <div class="form-group">
+              <label>اختر الصنف</label>
+              <select id="itemLevel2" onchange="onItemLevel2Change()">
+                <option value="">-- اختر الصنف --</option>
+              </select>
+            </div>
+          </div>
+          <div id="level2Inventory" class="inventory-grid"></div>
+        </div>
+
+        <!-- Level 3: Color/Variant Selection -->
+        <div id="level3Content" style="display: none;">
+          <div class="filters">
+            <div class="form-group">
+              <label>اختر اللون</label>
+              <select id="colorLevel3" onchange="onColorLevel3Change()">
+                <option value="">-- اختر اللون --</option>
+              </select>
+            </div>
+          </div>
+          <div id="level3Inventory" class="inventory-grid"></div>
+        </div>
+
+        <div class="action-bar" style="margin-top: 16px;">
+          <button class="btn-primary" onclick="loadMovementsForSelected()">🔍 عرض حركات الصنف</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== Report Banner ========== -->
+    <div id="reportBanner" class="report-banner info" style="display:none;"></div>
+
+    <!-- ========== Stock Movements Card ========== -->
+    <div class="card">
+      <div class="card-header">
+        <span id="reportTitle">تفاصيل حركة المخزون</span>
+        <span id="recordCount" style="font-size:13px;color:var(--text2);"></span>
+      </div>
+      <div class="card-body">
+        <div class="table-container">
+          <div id="tableContainer">
+            <div class="empty-state">
+              <div class="empty-state-icon">📋</div>
+              <div class="empty-state-title">لا توجد بيانات معروضة</div>
+              <div class="empty-state-desc">اختر المستودع والصنف واللون، ثم اضغط على "عرض حركات الصنف"</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Summary Section -->
+        <div id="summarySection" class="summary" style="display:none;">
+          <div class="summary-item"><div class="summary-label">إجمالي الوارد</div><div class="summary-value positive" id="totalQtyIn">0.00</div></div>
+          <div class="summary-item"><div class="summary-label">إجمالي الصادر</div><div class="summary-value negative" id="totalQtyOut">0.00</div></div>
+          <div class="summary-item"><div class="summary-label">الرصيد النهائي</div><div class="summary-value balance" id="finalBalance">0.00</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"><span id="toastIcon">✅</span><span id="toastMessage"></span></div>
+
+  <script>
+    // ========== المتغيرات العامة ==========
+    let currentReportData = null;
+    let currentFiscalYear = null;
+    let isFiscalYearActive = false;
+    let companyInfo = null;
+    
+    // متغيرات المستويات
+    let currentLevel = 1;
+    let selectedWarehouse = null;
+    let selectedItem = null;
+    let selectedColor = null;
+    let selectedItemName = "";
+    let selectedColorName = "";
+    
+    // بيانات
+    let warehousesList = [];
+    let itemsList = [];
+    let colorsList = [];
+    let warehouseBalances = [];
+    let itemBalances = [];
+    let colorBalances = [];
+
+    // ========== التهيئة ==========
+    window.onload = function() {
+      loadCompanyInfo();
+      loadFiscalYearForReports();
+      loadWarehouses();
+    };
+
+    // ========== معلومات الشركة ==========
+    function loadCompanyInfo() {
+      google.script.run
+        .withSuccessHandler(function(info) {
+          companyInfo = info;
+          document.getElementById('companyName').textContent = info.name || 'ZEIOS ERP';
+          let details = [];
+          if (info.address) details.push(info.address);
+          if (info.phone) details.push('📞 ' + info.phone);
+          if (info.tax_no) details.push('🧾 ض.ق: ' + info.tax_no);
+          document.getElementById('companyDetails').textContent = 
+            details.length > 0 ? details.join(' | ') : 'نظام ZEIOS ERP للمحاسبة';
+        })
+        .withFailureHandler(function(err) {
+          console.warn('Failed to load company info:', err);
+          document.getElementById('companyName').textContent = 'ZEIOS ERP';
+          document.getElementById('companyDetails').textContent = 'نظام إدارة المخزون';
+        })
+        .getCompanySettings();
+    }
+
+    // ========== السنة المالية ==========
+    function loadFiscalYearForReports() {
+      google.script.run
+        .withSuccessHandler(function(fiscalYearData) {
+          if (fiscalYearData.error) {
+            setDefaultDates();
+            updateFiscalBadge('غير محدد', false, true);
+            return;
+          }
+          currentFiscalYear = fiscalYearData;
+          isFiscalYearActive = fiscalYearData.is_active === true;
+          updateFiscalBadge(fiscalYearData.year_code || 'غير محدد', isFiscalYearActive, false);
+          if (!isFiscalYearActive) {
+            showBanner(`⚠️ تعمل على سنة مالية غير نشطة: ${fiscalYearData.year_code || ""}`, 'warning');
+          }
+        })
+        .withFailureHandler(function(error) {
+          console.warn('Fiscal year load failed:', error);
+          updateFiscalBadge('خطأ', false, true);
+        })
+        .getActiveFiscalYearForReports();
+    }
+
+    function updateFiscalBadge(text, isActive, isWarning) {
+      const badge = document.getElementById('fiscalBadge');
+      const textEl = document.getElementById('fiscalYearText');
+      textEl.textContent = text;
+      badge.className = 'fiscal-badge' + (isWarning ? ' warning' : (!isActive ? ' inactive' : ''));
+      badge.style.display = 'inline-flex';
+    }
+
+    // ========== تحميل المستودعات ==========
+    function loadWarehouses() {
+      google.script.run
+        .withSuccessHandler(function(warehouses) {
+          warehousesList = warehouses || [];
+          populateWarehouseDropdowns();
+        })
+        .withFailureHandler(function(error) {
+          console.error('Failed to load warehouses:', error);
+          showToast('فشل تحميل المستودعات', 'error');
+        })
+        .getWarehousesForReports();
+    }
+
+    function populateWarehouseDropdowns() {
+      const select1 = document.getElementById('warehouseLevel1');
+      if (!select1) return;
+      
+      select1.innerHTML = '<option value="">-- اختر المستودع --</option>';
+      warehousesList.forEach(wh => {
+        const opt = document.createElement('option');
+        opt.value = wh.id;
+        opt.textContent = `${wh.warehouse_code} - ${wh.warehouse_name}`;
+        select1.appendChild(opt);
+      });
+    }
+
+    // ========== دوال المستويات ==========
+    function selectLevel(level) {
+      currentLevel = level;
+      
+      // تحديث الأزرار
+      document.getElementById('level1Btn').classList.remove('active');
+      document.getElementById('level2Btn').classList.remove('active');
+      document.getElementById('level3Btn').classList.remove('active');
+      document.getElementById(`level${level}Btn`).classList.add('active');
+      
+      // إخفاء جميع المحتويات
+      document.getElementById('level1Content').style.display = 'none';
+      document.getElementById('level2Content').style.display = 'none';
+      document.getElementById('level3Content').style.display = 'none';
+      
+      // إظهار المحتوى المناسب
+      document.getElementById(`level${level}Content`).style.display = 'block';
+      
+      // تحديث البيانات حسب المستوى
+      if (level === 1 && selectedWarehouse) {
+        loadWarehouseBalances(selectedWarehouse);
+      } else if (level === 2 && selectedItem) {
+        loadItemBalances(selectedWarehouse, selectedItem);
+      } else if (level === 3 && selectedColor) {
+        loadColorBalances(selectedWarehouse, selectedItem, selectedColor);
+      }
+    }
+
+    function onWarehouseLevel1Change() {
+      const warehouseId = document.getElementById('warehouseLevel1').value;
+      if (!warehouseId) {
+        selectedWarehouse = null;
+        document.getElementById('level1Inventory').innerHTML = '';
+        return;
+      }
+      selectedWarehouse = warehouseId;
+      loadWarehouseBalances(warehouseId);
+    }
+
+    function loadWarehouseBalances(warehouseId) {
+      showLoadingInventory('level1Inventory');
+      google.script.run
+        .withSuccessHandler(function(balances) {
+          warehouseBalances = balances || [];
+          renderWarehouseBalances(balances);
+          
+          // تفعيل المستوى 2
+          document.getElementById('level2Btn').style.pointerEvents = 'auto';
+          document.getElementById('level2Btn').style.opacity = '1';
+        })
+        .withFailureHandler(function(error) {
+          console.error('Failed to load warehouse balances:', error);
+          document.getElementById('level1Inventory').innerHTML = '<div class="empty-state">فشل تحميل البيانات</div>';
+        })
+        .getWarehouseBalances(warehouseId, currentFiscalYear?.year_code);
+    }
+
+    function renderWarehouseBalances(balances) {
+      if (!balances || balances.length === 0) {
+        document.getElementById('level1Inventory').innerHTML = '<div class="empty-state">لا توجد أصناف في هذا المستودع</div>';
+        return;
+      }
+      
+      let html = '';
+      balances.forEach(item => {
+        html += `
+          <div class="inventory-card" onclick="selectWarehouseItem('${item.item_id}', '${item.item_name}', '${item.item_code}')">
+            <div class="item-code">${item.item_code || ''}</div>
+            <div class="item-name">${item.item_name || ''}</div>
+            <div class="item-balance">${formatQty(item.balance)} <span class="item-unit">وحدة</span></div>
+          </div>
+        `;
+      });
+      document.getElementById('level1Inventory').innerHTML = html;
+      
+      // ملء دروب داون المستوى 2
+      const select2 = document.getElementById('itemLevel2');
+      select2.innerHTML = '<option value="">-- اختر الصنف --</option>';
+      balances.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.item_id;
+        opt.textContent = `${item.item_code} - ${item.item_name}`;
+        select2.appendChild(opt);
+      });
+    }
+
+    function selectWarehouseItem(itemId, itemName, itemCode) {
+      selectedItem = itemId;
+      selectedItemName = itemName;
+      
+      // تحديث الدروب داون
+      document.getElementById('itemLevel2').value = itemId;
+      
+      // الانتقال إلى المستوى 2
+      selectLevel(2);
+      loadItemBalances(selectedWarehouse, itemId);
+    }
+
+    function onItemLevel2Change() {
+      const itemId = document.getElementById('itemLevel2').value;
+      if (!itemId) {
+        selectedItem = null;
+        document.getElementById('level2Inventory').innerHTML = '';
+        return;
+      }
+      selectedItem = itemId;
+      loadItemBalances(selectedWarehouse, itemId);
+    }
+
+    function loadItemBalances(warehouseId, itemId) {
+      showLoadingInventory('level2Inventory');
+      google.script.run
+        .withSuccessHandler(function(balances) {
+          itemBalances = balances || [];
+          renderItemBalances(balances);
+          
+          // تفعيل المستوى 3
+          document.getElementById('level3Btn').style.pointerEvents = 'auto';
+          document.getElementById('level3Btn').style.opacity = '1';
+        })
+        .withFailureHandler(function(error) {
+          console.error('Failed to load item balances:', error);
+          document.getElementById('level2Inventory').innerHTML = '<div class="empty-state">فشل تحميل البيانات</div>';
+        })
+        .getItemBalances(warehouseId, itemId, currentFiscalYear?.year_code);
+    }
+
+    function renderItemBalances(balances) {
+      if (!balances || balances.length === 0) {
+        document.getElementById('level2Inventory').innerHTML = '<div class="empty-state">لا توجد ألوان لهذا الصنف</div>';
+        return;
+      }
+      
+      let html = '';
+      balances.forEach(variant => {
+        html += `
+          <div class="inventory-card" onclick="selectItemVariant('${variant.color_id}', '${variant.color_name}')">
+            <div class="item-color">🎨 ${variant.color_name || 'بدون لون'}</div>
+            <div class="item-balance">${formatQty(variant.balance)} <span class="item-unit">وحدة</span></div>
+          </div>
+        `;
+      });
+      document.getElementById('level2Inventory').innerHTML = html;
+      
+      // ملء دروب داون المستوى 3
+      const select3 = document.getElementById('colorLevel3');
+      select3.innerHTML = '<option value="">-- اختر اللون --</option>';
+      balances.forEach(variant => {
+        const opt = document.createElement('option');
+        opt.value = variant.color_id || '';
+        opt.textContent = variant.color_name || 'بدون لون';
+        select3.appendChild(opt);
+      });
+    }
+
+    function selectItemVariant(colorId, colorName) {
+      selectedColor = colorId;
+      selectedColorName = colorName;
+      
+      // تحديث الدروب داون
+      document.getElementById('colorLevel3').value = colorId || '';
+      
+      // الانتقال إلى المستوى 3
+      selectLevel(3);
+      loadColorBalances(selectedWarehouse, selectedItem, colorId);
+    }
+
+    function onColorLevel3Change() {
+      const colorId = document.getElementById('colorLevel3').value;
+      selectedColor = colorId;
+      loadColorBalances(selectedWarehouse, selectedItem, colorId);
+    }
+
+    function loadColorBalances(warehouseId, itemId, colorId) {
+      showLoadingInventory('level3Inventory');
+      google.script.run
+        .withSuccessHandler(function(balances) {
+          colorBalances = balances || [];
+          renderColorBalances(balances);
+          
+          // تحديث الـ Breadcrumb
+          updateBreadcrumb();
+        })
+        .withFailureHandler(function(error) {
+          console.error('Failed to load color balances:', error);
+          document.getElementById('level3Inventory').innerHTML = '<div class="empty-state">فشل تحميل البيانات</div>';
+        })
+        .getColorBalances(warehouseId, itemId, colorId, currentFiscalYear?.year_code);
+    }
+
+    function renderColorBalances(balances) {
+      if (!balances || balances.length === 0) {
+        document.getElementById('level3Inventory').innerHTML = '<div class="empty-state">لا توجد بيانات لهذا اللون</div>';
+        return;
+      }
+      
+      // نفترض أنه يعيد تفاصيل الحركة أو ملخص واحد
+      if (balances.length === 1) {
+        const balance = balances[0];
+        document.getElementById('level3Inventory').innerHTML = `
+          <div class="inventory-card selected">
+            <div class="item-color">🎨 ${balance.color_name || 'بدون لون'}</div>
+            <div class="item-balance">${formatQty(balance.balance)} <span class="item-unit">وحدة</span></div>
+            <div style="margin-top: 12px; color: var(--text2);">متوسط التكلفة: ${formatCurrency(balance.avg_cost)}</div>
+            <div style="margin-top: 4px; color: var(--text2);">آخر تحديث: ${balance.last_update || '-'}</div>
+          </div>
+        `;
+      } else {
+        let html = '';
+        balances.forEach(b => {
+          html += `
+            <div class="inventory-card">
+              <div class="item-color">🎨 ${b.color_name || 'بدون لون'}</div>
+              <div class="item-balance">${formatQty(b.balance)} <span class="item-unit">وحدة</span></div>
+            </div>
+          `;
+        });
+        document.getElementById('level3Inventory').innerHTML = html;
+      }
+    }
+
+    function updateBreadcrumb() {
+      const warehouse = warehousesList.find(w => w.id === selectedWarehouse);
+      const warehouseName = warehouse ? warehouse.warehouse_name : '';
+      
+      document.getElementById('breadcrumb').style.display = 'flex';
+      document.getElementById('breadcrumbLevel1').textContent = `📦 ${warehouseName}`;
+      
+      if (selectedItem) {
+        document.getElementById('breadcrumbLevel2').style.display = 'inline';
+        document.getElementById('separator1').style.display = 'inline';
+        document.getElementById('breadcrumbLevel2').textContent = `📋 ${selectedItemName}`;
+      } else {
+        document.getElementById('breadcrumbLevel2').style.display = 'none';
+        document.getElementById('separator1').style.display = 'none';
+      }
+      
+      if (selectedColor && selectedColor !== '') {
+        document.getElementById('breadcrumbLevel3').style.display = 'inline';
+        document.getElementById('separator2').style.display = 'inline';
+        document.getElementById('breadcrumbLevel3').textContent = `🎨 ${selectedColorName}`;
+      } else {
+        document.getElementById('breadcrumbLevel3').style.display = 'none';
+        document.getElementById('separator2').style.display = 'none';
+      }
+    }
+
+    function resetToLevel1() {
+      selectedWarehouse = null;
+      selectedItem = null;
+      selectedColor = null;
+      selectedItemName = "";
+      selectedColorName = "";
+      
+      document.getElementById('warehouseLevel1').value = '';
+      document.getElementById('itemLevel2').innerHTML = '<option value="">-- اختر الصنف --</option>';
+      document.getElementById('colorLevel3').innerHTML = '<option value="">-- اختر اللون --</option>';
+      document.getElementById('level1Inventory').innerHTML = '';
+      document.getElementById('level2Inventory').innerHTML = '';
+      document.getElementById('level3Inventory').innerHTML = '';
+      document.getElementById('breadcrumb').style.display = 'none';
+      
+      selectLevel(1);
+    }
+
+    function resetToLevel2() {
+      if (!selectedItem) return;
+      selectLevel(2);
+    }
+
+    function showLoadingInventory(elementId) {
+      document.getElementById(elementId).innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    }
+
+    // ========== ✅ عرض حركات الصنف المحدد مع أزرار تعديل ==========
+    function loadMovementsForSelected() {
+      if (!selectedWarehouse || !selectedItem) {
+        showToast('⚠️ اختر المستودع والصنف أولاً', 'warning');
+        return;
+      }
+      
+      const warehouseId = selectedWarehouse;
+      const itemId = selectedItem;
+      const colorId = selectedColor || '';
+      
+      showLoading();
+      document.getElementById('summarySection').style.display = 'none';
+      hideBanner();
+
+      google.script.run
+        .withSuccessHandler(renderMovements)
+        .withFailureHandler(showError)
+        .getItemStockMovements(warehouseId, itemId, colorId, currentFiscalYear?.year_code);
+    }
+
+    function renderMovements(data) {
+      if (data.error) { showError(data.error); return; }
+      currentReportData = data;
+      
+      if (!isFiscalYearActive && currentFiscalYear) {
+        showBanner(`⚠️ سنة مالية غير نشطة: ${currentFiscalYear.year_code}`, 'warning');
+      }
+      
+      if (!data.movements || data.movements.length === 0) {
+        showEmptyState('لا توجد حركات مخزون لهذا الصنف');
+        document.getElementById('summarySection').style.display = 'none';
+        return;
+      }
+
+      // بناء الجدول مع أزرار التعديل
+      let html = `<table><thead><tr>
+        <th style="width:90px">التاريخ</th>
+        <th style="width:100px">النوع</th>
+        <th style="width:90px">الإجراءات</th>
+        <th class="text-left" style="width:70px">وارد</th>
+        <th class="text-left" style="width:70px">صادر</th>
+        <th class="text-left" style="width:80px">الرصيد</th>
+        <th class="text-left" style="width:90px">التكلفة</th>
+        <th style="width:120px">المرجع</th>
+      </tr></thead><tbody>`;
+
+      data.movements.forEach(mov => {
+        const refType = getRefTypeLabel(mov.ref_type);
+        const costPrice = mov.cost_price || 0;
+        
+        html += `<tr>
+          <td>${formatDateDisplay(mov.date)}</td>
+          <td><span class="ref-badge">${refType}</span></td>
+          <td class="text-center">`;
+        
+        // إضافة زر التعديل إذا كانت الحركة قابلة للتعديل
+        if (mov.ref_id && mov.ref_id !== '-' && mov.ref_id !== 'null' && mov.ref_id !== 'undefined' && mov.ref_type !== 'OPENING_BALANCE') {
+          const pageName = getPageNameFromRefType(mov.ref_type);
+          if (pageName) {
+            html += `<button class="btn-edit-entry" onclick='openEditEntry("${mov.ref_type}", "${mov.ref_id}")' title="تعديل الحركة">
+              <span>✏️</span> تعديل
+            </button>`;
+          } else {
+            html += `<span style="color:var(--text2); font-size:11px;">-</span>`;
+          }
+        } else {
+          html += `<span style="color:var(--text2); font-size:11px;">-</span>`;
+        }
+        
+        html += `</td>
+          <td class="text-left qty-in">${mov.qty_in ? formatQty(mov.qty_in) : '-'}</td>
+          <td class="text-left qty-out">${mov.qty_out ? formatQty(mov.qty_out) : '-'}</td>
+          <td class="text-left balance-col">${formatQty(mov.balance_after)}</td>
+          <td class="text-left cost-price">${costPrice ? formatCurrency(costPrice) : '-'}</td>
+          <td><span class="ref-id">${formatRefId(mov.ref_id)}</span></td>
+        </tr>`;
+      });
+
+      html += '</tbody></table>';
+      document.getElementById('tableContainer').innerHTML = html;
+      document.getElementById('recordCount').textContent = `(${data.movements.length} حركة)`;
+
+      // تحديث الملخص
+      document.getElementById('totalQtyIn').textContent = formatQty(data.total_qty_in);
+      document.getElementById('totalQtyOut').textContent = formatQty(data.total_qty_out);
+      document.getElementById('finalBalance').textContent = formatQty(data.final_balance);
+      document.getElementById('summarySection').style.display = 'grid';
+      
+      showToast(`تم عرض ${data.movements.length} حركة بنجاح`, 'success');
+    }
+
+    // ✅ دالة لفتح نموذج التعديل
+    function openEditEntry(refType, refId) {
+      if (!refId || refId === '-' || refId === 'null' || refId === 'undefined') {
+        showToast('⚠️ لا يوجد معرف للحركة', 'warning');
+        return;
+      }
+      
+      console.log('🎯 فتح تعديل:', refType, refId);
+      showToast(`جاري فتح الحركة...`, 'info');
+      
+      // خريطة ربط أنواع المراجع بأسماء الملفات
+      let pageName = getPageNameFromRefType(refType);
+      
+      if (!pageName) {
+        showToast('❌ نوع الحركة غير مدعوم: ' + refType, 'error');
+        return;
+      }
+      
+      // تخزين معرف الحركة في localStorage قبل فتح الصفحة
+      try {
+        localStorage.setItem('pendingEditRecord', JSON.stringify({
+          id: refId,
+          page: pageName,
+          fiscalYear: currentFiscalYear?.year_code,
+          timestamp: Date.now()
+        }));
+        console.log('✅ تم تخزين في localStorage:', {id: refId, page: pageName});
+      } catch (e) {
+        console.warn('❌ فشل التخزين في localStorage:', e);
+      }
+      
+      // فتح الصفحة
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.success === false) {
+            showToast('❌ ' + (result.message || 'فشل فتح الحركة'), 'error');
+          } else {
+            // إغلاق نافذة حركة المخزون بعد فتح نموذج التعديل
+            google.script.host.close();
+          }
+        })
+        .withFailureHandler(function(error) {
+          showToast('❌ فشل فتح الحركة: ' + error, 'error');
+        })
+        .openFormWithId(pageName, refId, currentFiscalYear?.year_code, '✏️ تعديل');
+    }
+
+    function getPageNameFromRefType(refType) {
+      const map = {
+        'PURCHASE': 'purchases',
+        'PURCHASE_INVENTORY': 'purchases',
+        'PURCHASE_TAX': 'purchases',
+        'PURCHASE_DISCOUNT': 'purchases',
+        'SHIPPING_EXPENSE_PURCHASE': 'purchases',
+        'SALE': 'sales',
+        'SALE_INVENTORY': 'sales',
+        'SALE_TAX': 'sales',
+        'SALE_DISCOUNT': 'sales',
+        'SHIPPING_EXPENSE_SALE': 'sales',
+        'PURCHASE_RETURN': 'purchases_return',
+        'PURCHASE_RETURN_INVENTORY': 'purchases_return',
+        'PURCHASE_RETURN_TAX': 'purchases_return',
+        'PURCHASE_RETURN_DISCOUNT': 'purchases_return',
+        'PURCHASE_RETURN_EXPENSE': 'purchases_return',
+        'PURCHASE_RETURN_RECEIPT': 'purchases_return',
+        'SALES_RETURN': 'sales_return',
+        'SALES_RETURN_INVENTORY': 'sales_return',
+        'SALES_RETURN_TAX': 'sales_return',
+        'SALES_RETURN_DISCOUNT': 'sales_return',
+        'SHIPPING_EXPENSE_SALES_RETURN': 'sales_return',
+        'RETURN_PAYMENT': 'sales_return',
+        'SALES_RETURN_COGS': 'sales_return',
+        'PAYMENT': 'payments',
+        'RECEIPT': 'receipts',
+        'STOCK_ADJUSTMENT': 'item_transfer',
+        'STOCK_TRANSFER': 'item_transfer',
+        'ORDER': 'customer_orders',
+        'ORDER_PAYMENT': 'customer_orders'
+      };
+      return map[refType] || null;
+    }
+
+    function getRefTypeLabel(refType) {
+      if (!refType) return '-';
+      const labels = {
+        'PURCHASE': '📥 شراء',
+        'PURCHASE_INVENTORY': '📦 مخزون شراء',
+        'PURCHASE_TAX': '🧾 ضريبة شراء',
+        'PURCHASE_DISCOUNT': '💸 خصم شراء',
+        'SHIPPING_EXPENSE_PURCHASE': '🚚 شحن شراء',
+        'SALE': '📤 مبيعات',
+        'SALE_INVENTORY': '📦 مخزون مبيعات',
+        'SALE_TAX': '🧾 ضريبة مبيعات',
+        'SALE_DISCOUNT': '💸 خصم مبيعات',
+        'SHIPPING_EXPENSE_SALE': '🚚 شحن مبيعات',
+        'PURCHASE_RETURN': '↩️ مرتجع شراء',
+        'PURCHASE_RETURN_INVENTORY': '📦 مخزون مرتجع شراء',
+        'PURCHASE_RETURN_TAX': '🧾 ضريبة مرتجع شراء',
+        'PURCHASE_RETURN_DISCOUNT': '💸 خصم مرتجع شراء',
+        'PURCHASE_RETURN_EXPENSE': '🚚 مصروفات مرتجع شراء',
+        'PURCHASE_RETURN_RECEIPT': '💰 قبض مرتجع شراء',
+        'SALES_RETURN': '↩️ مرتجع مبيعات',
+        'SALES_RETURN_INVENTORY': '📦 مخزون مرتجع مبيعات',
+        'SALES_RETURN_TAX': '🧾 ضريبة مرتجع مبيعات',
+        'SALES_RETURN_DISCOUNT': '💸 خصم مرتجع مبيعات',
+        'SHIPPING_EXPENSE_SALES_RETURN': '🚚 شحن مرتجع مبيعات',
+        'RETURN_PAYMENT': '💰 دفعة مرتجع',
+        'SALES_RETURN_COGS': '📊 تكلفة مرتجع',
+        'PAYMENT': '💰 دفعة',
+        'RECEIPT': '🧾 قبض',
+        'OPENING_BALANCE': '📊 رصيد افتتاحي',
+        'STOCK_ADJUSTMENT': '⚙️ تسوية مخزون',
+        'STOCK_TRANSFER': '🔄 تحويل مخزون',
+        'ORDER': '📋 طلبية عميل',
+        'ORDER_PAYMENT': '💰 دفعة طلبية'
+      };
+      return labels[refType] || refType;
+    }
+
+    // ========== واجهة المستخدم ==========
+    function showLoading() {
+      document.getElementById('tableContainer').innerHTML = `
+        <div class="loading"><div class="spinner"></div><div>جاري تحميل حركات المخزون...</div></div>`;
+    }
+
+    function showEmptyState(message) {
+      document.getElementById('tableContainer').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">📭</div>
+          <div class="empty-state-title">لا توجد حركات</div>
+          <div class="empty-state-desc">${message || 'حاول اختيار صنف آخر'}</div>
+        </div>`;
+    }
+
+    function showError(error) {
+      console.error('Report error:', error);
+      const msg = typeof error === 'object' ? error.message || JSON.stringify(error) : error;
+      document.getElementById('tableContainer').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">❌</div>
+          <div class="empty-state-title">خطأ في التحميل</div>
+          <div class="empty-state-desc">${msg}</div>
+          <button class="btn-primary" style="margin-top:20px;width:auto;" onclick="loadMovementsForSelected()">🔄 إعادة المحاولة</button>
+        </div>`;
+      document.getElementById('summarySection').style.display = 'none';
+      showToast('❌ ' + msg, 'error');
+    }
+
+    function showBanner(message, type = 'info') {
+      const banner = document.getElementById('reportBanner');
+      banner.textContent = message;
+      banner.className = `report-banner ${type}`;
+      banner.style.display = 'flex';
+    }
+
+    function hideBanner() { document.getElementById('reportBanner').style.display = 'none'; }
+
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toastIcon');
+      const msg = document.getElementById('toastMessage');
+      toast.className = `toast ${type}`;
+      icon.textContent = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+      msg.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 4000);
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      localStorage.setItem('zeios_dark_mode', isDark);
+    }
+
+    // ========== طباعة وتصدير ==========
+    function printReport() {
+      if (!currentReportData?.movements?.length) { showToast('⚠️ لا توجد بيانات للطباعة', 'warning'); return; }
+      window.print();
+    }
+
+    function exportToCSV() {
+      if (!currentReportData?.movements?.length) { showToast('⚠️ لا توجد بيانات للتصدير', 'warning'); return; }
+      let csv = 'التاريخ,النوع,وارد,صادر,الرصيد,التكلفة,المرجع\n';
+      currentReportData.movements.forEach(mov => {
+        csv += `"${formatDateCSV(mov.date)}","${getRefTypeLabel(mov.ref_type)}",${mov.qty_in || 0},${mov.qty_out || 0},${mov.balance_after || 0},`;
+        csv += `${mov.cost_price || 0},"${mov.ref_id || ''}"\n`;
+      });
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `حركة_مخزون_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('✅ تم تصدير الملف بنجاح', 'success');
+    }
+
+    function backToDashboard() {
+      try { if (typeof google !== 'undefined' && google.script?.host) { google.script.host.close(); } } catch (e) {}
+      google.script.run.reopenDashboard();
+    }
+
+    // ========== تنسيقات ==========
+    function formatDateDisplay(dateStr) {
+      if (!dateStr) return '-';
+      try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        return d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' });
+      } catch (e) { return dateStr; }
+    }
+
+    function formatDateCSV(dateStr) {
+      if (!dateStr) return '';
+      try {
+        const d = new Date(dateStr);
+        return isNaN(d.getTime()) ? dateStr : d.toISOString().split('T')[0];
+      } catch (e) { return dateStr; }
+    }
+
+    function formatRefId(refId) {
+      if (!refId || refId === 'null' || refId === 'undefined') return '-';
+      return refId.length > 12 ? refId.substring(0, 10) + '...' : refId;
+    }
+
+    function formatQty(qty) {
+      const n = parseFloat(qty || 0);
+      return n.toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function formatCurrency(amount) {
+      const n = parseFloat(amount || 0);
+      return n.toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // تحميل الوضع الليلي إذا كان مفعلاً
+    if (localStorage.getItem('zeios_dark_mode') === 'true') {
+      document.body.classList.add('dark-mode');
+    }
+  </script>
+</body>
+</html>
