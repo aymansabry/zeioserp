@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔄 نقل المخزون - ZEIOS ERP</title>
+  <style>
+    :root {
+      --bg: #f8f9fa; --card: #fff; --text: #202124; --text-light: #5f6368;
+      --border: #dadce0; --accent: #1e3a5f; --success: #059669;
+      --danger: #dc2626; --warning: #d97706; --shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    [data-theme="dark"] {
+      --bg: #121212; --card: #1e1e1e; --text: #e8eaed; --text-light: #9aa0a6;
+      --border: #3c4043; --shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 20px; direction: rtl; }
+    .container { max-width: 1400px; margin: 0 auto; }
+    
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+    h1 { font-size: 24px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+    .btn-group { display: flex; gap: 10px; }
+    
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; background: white; box-shadow: var(--shadow); transition: all 0.2s; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-success { background: var(--success); color: white; }
+    .btn-warning { background: var(--warning); color: white; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    
+    /* أنماط السنة المالية */
+    .fiscal-year-display {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .fiscal-year-badge {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      padding: 6px 14px;
+      background: #e8f4fd;
+      border-radius: 6px;
+    }
+    .fiscal-year-label {
+      font-size: 13px;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+    
+    .card { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 25px; border: 1px solid var(--border); overflow: hidden; }
+    .card-header { padding: 16px 20px; background: #f8fafd; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--accent); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .card-body { padding: 20px; }
+    
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text); font-size: 13px; }
+    input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; transition: all 0.2s; background: white; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(30,58,95,0.1); }
+    
+    /* أنماط البحث المتقدم للأصناف */
+    .search-select-wrapper { position: relative; }
+    .search-input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+    .options-container { max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: white; display: none; position: absolute; width: 100%; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    .options-container.show { display: block; }
+    .option-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0; transition: all 0.2s; }
+    .option-item:hover { background: #eef2f6; }
+    .option-item small { display: block; color: var(--text-light); font-size: 11px; margin-top: 4px; }
+    
+    .selected-value { padding: 12px; background: #f8fafd; border-radius: 8px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
+    .selected-value .change-link { color: var(--accent); cursor: pointer; font-size: 12px; text-decoration: underline; }
+    
+    /* بنود النقل - سطر واحد */
+    .line-item { background: #f9fafc; border-radius: 10px; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border); display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr 40px; gap: 10px; align-items: center; }
+    .line-item.error { border: 2px solid var(--danger); background: #fef2f2; }
+    
+    .item-select-mini-wrapper, .color-select-mini-wrapper { position: relative; width: 100%; }
+    .item-search-input, .color-search-input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: white; }
+    .item-options-container, .color-options-container { position: absolute; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; background: white; border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; display: none; }
+    .item-options-container.show, .color-options-container.show { display: block; }
+    .item-option, .color-option { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    .item-option:hover, .color-option:hover { background: #eef2f6; }
+    
+    .selected-item-display, .selected-color-display { padding: 8px 12px; background: #eef2f6; border-radius: 6px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; border: 1px solid var(--border); }
+    .selected-item-display .change-link, .selected-color-display .change-link { color: var(--accent); cursor: pointer; font-size: 11px; text-decoration: underline; }
+    
+    .line-input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: white; }
+    .line-input:focus { border-color: var(--accent); outline: none; }
+    .line-total { background: #eef2f6; font-weight: 600; color: var(--accent); text-align: left; }
+    .remove-line { background: var(--danger); color: white; width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+    .remove-line:hover { background: #b91c1c; }
+    
+    /* الجدول */
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #f8fafd; padding: 14px 16px; text-align: right; font-weight: 600; color: var(--text); border-bottom: 2px solid var(--border); }
+    td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    tr:hover { background: #f8fafd; }
+    .actions { display: flex; gap: 8px; }
+    .btn-sm { padding: 6px 12px; border-radius: 6px; font-size: 12px; border: none; cursor: pointer; }
+    .btn-sm-edit { background: var(--accent); color: white; }
+    .btn-sm-delete { background: var(--danger); color: white; }
+    
+    /* التحميل */
+    .loading { text-align: center; padding: 40px; color: var(--text-light); }
+    .spinner { width: 40px; height: 40px; border: 3px solid #f0f0f0; border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+    .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+    .search-box input { flex: 1; }
+    
+    .stock-badge { display: inline-block; padding: 2px 8px; background: #d1fae5; color: #065f46; border-radius: 12px; font-size: 11px; font-weight: 500; }
+    .stock-warning { color: var(--danger); font-size: 11px; margin-top: 4px; }
+    
+    /* تحسينات عرض تفاصيل الصنف */
+    .selected-item-content {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+    .selected-item-image {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+    }
+    .selected-item-details {
+      display: flex;
+      flex-direction: column;
+    }
+    .selected-item-name {
+      font-weight: 600;
+      color: var(--text);
+    }
+    .selected-item-meta {
+      font-size: 11px;
+      color: var(--text-light);
+    }
+    .selected-item-price {
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 12px;
+    }
+    
+    @media (max-width: 900px) {
+      .line-item { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- رأس الصفحة -->
+    <div class="header">
+      <h1><span>🔄</span> نقل المخزون</h1>
+      <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+        <div class="fiscal-year-display">
+          <span class="fiscal-year-label">📅 السنة المالية:</span>
+          <span class="fiscal-year-badge" id="fiscalYearBadge">جاري التحميل...</span>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="backToDashboard()"><span>🏠</span> لوحة التحكم</button>
+          <button class="btn btn-primary" onclick="openNewTransfer()"><span>➕</span> نقل جديد</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- نموذج النقل -->
+    <div id="formPanel" class="card" style="display: none;">
+      <div class="card-header">
+        <span>📋 بيانات نقل المخزون</span>
+      </div>
+      <div class="card-body">
+        <form id="transferForm">
+          <input type="hidden" id="transferId">
+          
+          <!-- رقم النقل + التاريخ -->
+          <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="form-group">
+              <label>رقم النقل</label>
+              <input type="text" id="transferNo" readonly placeholder="يولد تلقائياً">
+            </div>
+            <div class="form-group">
+              <label>التاريخ *</label>
+              <input type="date" id="transferDate" required>
+            </div>
+          </div>
+          
+          <!-- المستودع المصدر + الهدف -->
+          <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="form-group">
+              <label>المستودع المصدر *</label>
+              <div class="search-select-wrapper">
+                <input type="text" class="search-input" id="fromWarehouseSearch" placeholder="ابحث باسم المستودع..." oninput="filterFromWarehouses()" onfocus="showFromWarehouseOptions()">
+                <div class="options-container" id="fromWarehouseOptions"></div>
+                <div class="selected-value" id="selectedFromWarehouse" style="display: none;">
+                  <span class="value-text" id="selectedFromWarehouseText"></span>
+                  <span class="change-link" onclick="changeFromWarehouse()">تغيير</span>
+                </div>
+              </div>
+              <input type="hidden" id="fromWarehouseId">
+            </div>
+            <div class="form-group">
+              <label>المستودع الهدف *</label>
+              <div class="search-select-wrapper">
+                <input type="text" class="search-input" id="toWarehouseSearch" placeholder="ابحث باسم المستودع..." oninput="filterToWarehouses()" onfocus="showToWarehouseOptions()">
+                <div class="options-container" id="toWarehouseOptions"></div>
+                <div class="selected-value" id="selectedToWarehouse" style="display: none;">
+                  <span class="value-text" id="selectedToWarehouseText"></span>
+                  <span class="change-link" onclick="changeToWarehouse()">تغيير</span>
+                </div>
+              </div>
+              <input type="hidden" id="toWarehouseId">
+            </div>
+          </div>
+          
+          <!-- ملاحظات -->
+          <div class="form-group">
+            <label>ملاحظات</label>
+            <textarea id="notes" rows="2" placeholder="ملاحظات إضافية..."></textarea>
+          </div>
+          
+          <!-- بنود النقل -->
+          <h3 style="margin: 20px 0 15px; color: var(--accent);">📦 بنود النقل</h3>
+          <div id="lineItems"></div>
+          <div style="margin: 15px 0;">
+            <button type="button" class="btn" style="border: 1px solid var(--accent); color: var(--accent);" onclick="addLineItem()" id="addLineBtn" disabled>
+              <span>➕</span> إضافة بند
+            </button>
+            <button type="button" class="btn" style="border: 1px solid var(--accent); color: var(--accent); margin-right: 10px;" onclick="openAddItemForm()">📦 صنف جديد</button>
+            <button type="button" class="btn" style="border: 1px solid var(--accent); color: var(--accent); margin-right: 10px;" onclick="openAddColorForm()">🎨 لون جديد</button>
+          </div>
+          
+          <!-- أزرار الحفظ -->
+          <div style="display: flex; gap: 15px; margin-top: 25px; padding-top: 20px; border-top: 2px solid var(--border);">
+            <button type="button" class="btn" onclick="closeForm()" style="border: 1px solid var(--border); flex: 0 0 150px;">إلغاء</button>
+            <button type="submit" class="btn btn-primary" id="saveButton" style="flex: 1;">💾 حفظ النقل</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- قائمة عمليات النقل -->
+    <div class="card" id="listCard">
+      <div class="card-header">
+        <span>📋 قائمة عمليات النقل - <span id="fiscalYearTitle"></span></span>
+        <span id="transfersCount" style="color: var(--text-light);">(0)</span>
+      </div>
+      <div class="card-body">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="🔍 بحث في عمليات النقل..." oninput="filterTransfers()">
+          <button class="btn btn-primary" onclick="filterTransfers()">بحث</button>
+        </div>
+        <div id="tableContainer" class="table-responsive">
+          <div class="loading"><div class="spinner"></div> جاري التحميل...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== المتغيرات العامة ==========
+    var lineItemCount = 0, isSaving = false, dataLoaded = false;
+    var warehousesList = [], colorsList = [], currentItemsList = [];
+    var isEditingMode = false, isDirectEditMode = false, isPostSaveMode = false;
+    var companyName = "", companyPhone = "", companyAddress = "";
+    var selectedFiscalYear = null;
+
+    // ========== التهيئة ==========
+    window.onload = function() {
+      console.log('🔄 بدء تهيئة صفحة نقل المخزون...');
+      document.getElementById('transferDate').value = new Date().toISOString().split('T')[0];
+      
+      // التحقق من localStorage أولاً
+      checkLocalStorageForEdit();
+      
+      loadCompanySettings();
+      loadFiscalYearFromSession();
+      loadLightweightData();
+      
+      // التحقق من طلب التعديل المباشر
+      setTimeout(checkDirectEditRequest, 500);
+    };
+
+    // ========== التحقق من localStorage ==========
+    function checkLocalStorageForEdit() {
+      try {
+        var pendingEdit = localStorage.getItem('pendingEditRecord');
+        if (pendingEdit) {
+          var editData = JSON.parse(pendingEdit);
+          console.log('📝 تم العثور على طلب تعديل في localStorage:', editData);
+          
+          if (editData.page === 'stock_transfer') {
+            if (Date.now() - editData.timestamp < 60000) {
+              console.log('✅ سيتم تطبيق التعديل من localStorage');
+              
+              var listCard = document.getElementById('listCard');
+              if (listCard) listCard.style.display = 'none';
+              
+              var formPanel = document.getElementById('formPanel');
+              if (formPanel) {
+                formPanel.style.display = 'block';
+                document.getElementById('saveButton').textContent = '💾 تحديث النقل';
+              }
+              
+              isDirectEditMode = true;
+              
+              loadTransferForDirectEdit(editData.id, editData.fiscalYear);
+              
+              localStorage.removeItem('pendingEditRecord');
+            } else {
+              console.log('⚠️ انتهت صلاحية طلب التعديل');
+              localStorage.removeItem('pendingEditRecord');
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('❌ خطأ في قراءة localStorage:', e);
+        localStorage.removeItem('pendingEditRecord');
+      }
+    }
+
+    // ========== دوال السنة المالية ==========
+    function loadFiscalYearFromSession() {
+      google.script.run
+        .withSuccessHandler(function(year) {
+          console.log('✅ السنة المالية من الجلسة:', year);
+          if (year && String(year).trim() !== '') {
+            selectedFiscalYear = String(year).trim();
+            var badge = document.getElementById('fiscalYearBadge');
+            var title = document.getElementById('fiscalYearTitle');
+            if (badge) badge.textContent = 'سنة ' + selectedFiscalYear;
+            if (title) title.textContent = 'سنة ' + selectedFiscalYear;
+            
+            if (!isDirectEditMode) {
+              loadTransfersList(selectedFiscalYear);
+            }
+          } else {
+            var badge = document.getElementById('fiscalYearBadge');
+            if (badge) badge.textContent = 'غير محددة';
+            document.getElementById('tableContainer').innerHTML =
+              '<div class="loading" style="color:var(--warning)">⚠️ لم يتم تحديد سنة مالية. يرجى اختيار السنة من لوحة التحكم أولاً.</div>';
+          }
+        })
+        .withFailureHandler(function(error) {
+          console.error('❌ خطأ في تحميل السنة المالية:', error);
+          var badge = document.getElementById('fiscalYearBadge');
+          if (badge) badge.textContent = 'خطأ';
+          document.getElementById('tableContainer').innerHTML =
+            '<div class="loading" style="color:var(--danger)">❌ فشل تحميل السنة المالية: ' + error + '</div>';
+        })
+        .getCurrentUserFiscalYear();
+    }
+
+    // ========== دوال التعديل المباشر ==========
+    function checkDirectEditRequest() {
+      console.log('🔍 التحقق من طلب التعديل المباشر...');
+      
+      google.script.run
+        .withSuccessHandler(function(params) {
+          console.log('📦 استجابة getEditRequest:', params);
+          
+          if (params && params.editMode && params.recordId) {
+            console.log('🎯 وضع التعديل المباشر:', params);
+            
+            if (params.pageName !== 'stock_transfer') {
+              console.log('⚠️ طلب تعديل لصفحة أخرى:', params.pageName);
+              return;
+            }
+            
+            var listCard = document.getElementById('listCard');
+            if (listCard) {
+              console.log('🔄 إخفاء قائمة عمليات النقل');
+              listCard.style.display = 'none';
+            }
+            
+            var formPanel = document.getElementById('formPanel');
+            if (formPanel) {
+              console.log('🔄 إظهار نموذج النقل');
+              formPanel.style.display = 'block';
+              document.getElementById('saveButton').textContent = '💾 تحديث النقل';
+            }
+            
+            isDirectEditMode = true;
+            
+            loadTransferForDirectEdit(params.recordId, params.fiscalYear);
+          } else {
+            console.log('ℹ️ لا يوجد طلب تعديل مباشر');
+          }
+        })
+        .withFailureHandler(function(error) {
+          console.log('❌ خطأ في checkDirectEditRequest:', error);
+        })
+        .getEditRequest('stock_transfer');
+    }
+
+    function loadTransferForDirectEdit(transferId, fiscalYear) {
+      console.log('📥 تحميل النقل للتعديل المباشر:', transferId, fiscalYear);
+      
+      showTableLoading(true);
+      
+      google.script.run
+        .withSuccessHandler(function(tr) {
+          showTableLoading(false);
+          
+          console.log('✅ بيانات النقل المستلمة:', tr);
+          
+          if (!tr || !tr.success) {
+            alert('❌ لم يتم العثور على عملية النقل');
+            closeForm();
+            return;
+          }
+          
+          var data = tr.data;
+          
+          var formPanel = document.getElementById('formPanel');
+          if (formPanel) formPanel.style.display = 'block';
+          
+          document.getElementById('transferId').value = data.id || '';
+          document.getElementById('transferNo').value = data.transfer_no || '';
+          document.getElementById('transferDate').value = data.date || '';
+          document.getElementById('notes').value = data.notes || '';
+          
+          if (data.from_warehouse_id) {
+            var fromWarehouse = warehousesList.find(function(w) { return String(w.id) === String(data.from_warehouse_id); });
+            if (fromWarehouse) {
+              selectWarehouse('from', fromWarehouse.id, fromWarehouse.warehouse_name);
+            } else if (data.from_warehouse_name) {
+              selectWarehouse('from', data.from_warehouse_id, data.from_warehouse_name);
+            }
+          }
+          
+          if (data.to_warehouse_id) {
+            var toWarehouse = warehousesList.find(function(w) { return String(w.id) === String(data.to_warehouse_id); });
+            if (toWarehouse) {
+              selectWarehouse('to', toWarehouse.id, toWarehouse.warehouse_name);
+            } else if (data.to_warehouse_name) {
+              selectWarehouse('to', data.to_warehouse_id, data.to_warehouse_name);
+            }
+          }
+          
+          document.getElementById('lineItems').innerHTML = '';
+          lineItemCount = 0;
+          
+          if (data.lines && data.lines.length > 0) {
+            data.lines.forEach(function(line) {
+              addLineItem();
+              var lastLine = document.querySelectorAll('.line-item')[document.querySelectorAll('.line-item').length - 1];
+              
+              var foundItem = currentItemsList.find(function(i) {
+                return String(i.id) === String(line.item_id) &&
+                       String(i.color_id || '') === String(line.color_id || '');
+              });
+              
+              var itemWrapper = lastLine.querySelector('.item-select-mini-wrapper');
+              var itemHidden = itemWrapper.querySelector('.item-select-mini');
+              var itemDisplay = itemWrapper.querySelector('.selected-item-display');
+              var itemSearch = itemWrapper.querySelector('.item-search-input');
+              
+              var displayName = foundItem ? foundItem.item_name : (line.item_name || 'صنف غير معروف');
+              var displayColor = foundItem ? foundItem.color_name : (line.color_name || '-');
+              var displayBalance = foundItem ? foundItem.balance : 0;
+              
+              if (itemDisplay) {
+                var displayHtml = 
+                  '<div class="selected-item-content">' +
+                    '<div class="selected-item-details">' +
+                      '<span class="selected-item-name">' + displayName + '</span>' +
+                      '<span class="selected-item-meta">' + (foundItem ? foundItem.item_code : '') + (displayColor && displayColor !== '-' ? ' | ' + displayColor : '') + '</span>' +
+                    '</div>' +
+                  '</div>' +
+                  '<span class="change-link" onclick="changeItem(this)">تغيير</span>';
+                  
+                itemDisplay.querySelector('.value-text').innerHTML = displayHtml;
+                itemDisplay.style.display = 'flex';
+                itemDisplay.style.justifyContent = 'space-between';
+                itemDisplay.style.alignItems = 'center';
+                itemSearch.style.display = 'none';
+                if (foundItem) {
+                  itemHidden.value = String(foundItem.id);
+                } else {
+                  itemHidden.value = String(line.item_id);
+                }
+              }
+              
+              if (line.color_id) {
+                var colorWrapper = lastLine.querySelector('.color-select-mini-wrapper');
+                var colorHidden = colorWrapper.querySelector('.color-select-mini');
+                var colorDisplay = colorWrapper.querySelector('.selected-color-display');
+                var colorSearch = colorWrapper.querySelector('.color-search-input');
+                
+                if (colorDisplay) {
+                  colorDisplay.querySelector('.value-text').textContent = displayColor;
+                  colorDisplay.style.display = 'flex';
+                  colorSearch.style.display = 'none';
+                  colorHidden.value = String(line.color_id);
+                }
+              }
+              
+              var qtyInput = lastLine.querySelector('.line-qty');
+              if (qtyInput) {
+                qtyInput.max = displayBalance;
+                qtyInput.value = line.qty || 1;
+                qtyInput.title = 'الحد الأقصى: ' + displayBalance;
+              }
+              
+              var costInput = lastLine.querySelector('.line-cost');
+              if (costInput) {
+                costInput.value = line.cost_price || 0;
+              }
+            });
+          } else {
+            addLineItem();
+          }
+          
+          console.log('✅ تم تحميل النقل للتعديل:', transferId);
+        })
+        .withFailureHandler(function(error) {
+          showTableLoading(false);
+          console.error('❌ فشل تحميل النقل:', error);
+          alert('❌ فشل تحميل النقل: ' + error);
+          closeForm();
+        })
+        .getTransferForDirectEdit(transferId, fiscalYear);
+    }
+
+    function showTableLoading(show) {
+      var container = document.getElementById('tableContainer');
+      if (show) {
+        container.innerHTML = '<div class="loading"><div class="spinner"></div> جاري تحميل عملية النقل...</div>';
+      }
+    }
+
+    // ========== تحميل البيانات الأساسية ==========
+    function loadCompanySettings() {
+      google.script.run.withSuccessHandler(function(data) {
+        companyName = data?.name || "ZEIOS ERP";
+        companyPhone = data?.phone || "";
+        companyAddress = data?.address || "";
+        console.log('✅ إعدادات الشركة:', companyName);
+      }).withFailureHandler(function(error) {
+        console.error('❌ خطأ في تحميل إعدادات الشركة:', error);
+        companyName = "ZEIOS ERP";
+      }).getCompanySettings();
+    }
+
+    function loadLightweightData() {
+      google.script.run.withSuccessHandler(function(w) { 
+        warehousesList = w || []; 
+        renderWarehouseOptions(); 
+        dataLoaded = true; 
+        console.log('✅ تم تحميل المستودعات:', warehousesList.length);
+      }).getWarehousesForTransfers();
+      
+      google.script.run.withSuccessHandler(function(c) { 
+        colorsList = c || []; 
+        console.log('✅ تم تحميل الألوان:', colorsList.length);
+      }).getColorsForTransfers();
+    }
+
+    function backToDashboard() {
+      try { google.script.host.close(); } catch(e) {}
+      google.script.run.showDashboard?.();
+    }
+
+    function openNewTransfer() {
+      if (!selectedFiscalYear) {
+        alert('⚠️ لم يتم تحديد سنة مالية. يرجى اختيار السنة من لوحة التحكم أولاً.');
+        return;
+      }
+      
+      isEditingMode = false;
+      isDirectEditMode = false;
+      document.getElementById('formPanel').style.display = 'block';
+      document.getElementById('transferForm').reset();
+      document.getElementById('transferId').value = '';
+      document.getElementById('transferNo').value = '';
+      document.getElementById('lineItems').innerHTML = '';
+      changeFromWarehouse(); 
+      changeToWarehouse();
+      lineItemCount = 0; 
+      currentItemsList = [];
+      document.getElementById('transferDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('addLineBtn').disabled = true;
+      setTimeout(function() { document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth' }); }, 100);
+    }
+
+    function closeForm() {
+      document.getElementById('formPanel').style.display = 'none';
+      isEditingMode = false; 
+      isDirectEditMode = false;
+      currentItemsList = [];
+      
+      var listCard = document.getElementById('listCard');
+      if (listCard) listCard.style.display = 'block';
+      
+      loadTransfersList(selectedFiscalYear);
+    }
+
+    // ========== دوال المستودعات (البحث المتقدم) ==========
+    function renderWarehouseOptions() {
+      renderWarehouseOptionsFor('from');
+      renderWarehouseOptionsFor('to');
+    }
+    
+    function renderWarehouseOptionsFor(type) {
+      var container = document.getElementById(type + 'WarehouseOptions');
+      if (!container) return;
+      var html = '';
+      for (var i = 0; i < warehousesList.length; i++) {
+        var w = warehousesList[i];
+        var name = (w.warehouse_name || '').replace(/'/g, "\\'");
+        var code = w.warehouse_code || '';
+        html += '<div class="option-item" onclick="selectWarehouse(\''+type+'\',\''+w.id+'\',\''+name+'\')"><strong>'+(code)+' - '+name+'</strong></div>';
+      }
+      container.innerHTML = html;
+    }
+    
+    function showFromWarehouseOptions() { var c = document.getElementById('fromWarehouseOptions'); if (c) { c.classList.add('show'); filterFromWarehouses(); } }
+    function showToWarehouseOptions() { var c = document.getElementById('toWarehouseOptions'); if (c) { c.classList.add('show'); filterToWarehouses(); } }
+    
+    function filterFromWarehouses() { var t = (document.getElementById('fromWarehouseSearch')?.value || '').toLowerCase(); document.querySelectorAll('#fromWarehouseOptions .option-item').forEach(function(o) { o.style.display = o.textContent.toLowerCase().indexOf(t) > -1 ? 'block' : 'none'; }); }
+    function filterToWarehouses() { var t = (document.getElementById('toWarehouseSearch')?.value || '').toLowerCase(); document.querySelectorAll('#toWarehouseOptions .option-item').forEach(function(o) { o.style.display = o.textContent.toLowerCase().indexOf(t) > -1 ? 'block' : 'none'; }); }
+    
+    function selectWarehouse(type, id, name) {
+      if (type === 'from') {
+        document.getElementById('fromWarehouseId').value = String(id||'').trim();
+        document.getElementById('fromWarehouseSearch').value = name;
+        document.getElementById('fromWarehouseSearch').style.display = 'none';
+        document.getElementById('selectedFromWarehouseText').textContent = name;
+        document.getElementById('selectedFromWarehouse').style.display = 'flex';
+        document.getElementById('fromWarehouseOptions').classList.remove('show');
+        onFromWarehouseChange();
+      } else {
+        document.getElementById('toWarehouseId').value = String(id||'').trim();
+        document.getElementById('toWarehouseSearch').value = name;
+        document.getElementById('toWarehouseSearch').style.display = 'none';
+        document.getElementById('selectedToWarehouseText').textContent = name;
+        document.getElementById('selectedToWarehouse').style.display = 'flex';
+        document.getElementById('toWarehouseOptions').classList.remove('show');
+        onToWarehouseChange();
+      }
+    }
+    
+    function changeFromWarehouse() {
+      document.getElementById('fromWarehouseId').value = '';
+      document.getElementById('fromWarehouseSearch').value = '';
+      document.getElementById('fromWarehouseSearch').style.display = 'block';
+      document.getElementById('fromWarehouseSearch').focus();
+      document.getElementById('selectedFromWarehouse').style.display = 'none';
+      currentItemsList = [];
+      document.getElementById('addLineBtn').disabled = true;
+      validateWarehouses();
+    }
+    
+    function changeToWarehouse() {
+      document.getElementById('toWarehouseId').value = '';
+      document.getElementById('toWarehouseSearch').value = '';
+      document.getElementById('toWarehouseSearch').style.display = 'block';
+      document.getElementById('toWarehouseSearch').focus();
+      document.getElementById('selectedToWarehouse').style.display = 'none';
+      validateWarehouses();
+    }
+    
+    function validateWarehouses() {
+      var from = document.getElementById('fromWarehouseId')?.value;
+      var to = document.getElementById('toWarehouseId')?.value;
+      var btn = document.getElementById('addLineBtn');
+      if (from && to && from !== to) {
+        btn.disabled = false;
+      } else {
+        btn.disabled = true;
+      }
+    }
+    
+    function onFromWarehouseChange() { validateWarehouses(); loadItemsForWarehouse(); }
+    function onToWarehouseChange() { validateWarehouses(); }
+
+    // ========== تحميل الأصناف للمستودع المصدر ==========
+    function loadItemsForWarehouse() {
+      var wid = document.getElementById('fromWarehouseId')?.value;
+      if (!wid) return;
+      google.script.run
+        .withSuccessHandler(function(items) {
+          console.log('✅ تم جلب', items?.length || 0, 'صنف/لون');
+          currentItemsList = items || [];
+          refreshAllItemsOptions();
+          if (isEditingMode) updateLinesWithStockData();
+        })
+        .withFailureHandler(function(err) { console.error('❌ فشل تحميل الأصناف:', err); currentItemsList = []; })
+        .getItemsWithStockBalance(wid, selectedFiscalYear);
+    }
+
+    function refreshAllItemsOptions() {
+      document.querySelectorAll('.line-item').forEach(function(line) {
+        var w = line.querySelector('.item-select-mini-wrapper');
+        if (w) {
+          var s = w.querySelector('.item-search-input'), c = w.querySelector('.item-options-container');
+          if (s && c) buildItemOptions(c, s);
+        }
+      });
+    }
+    
+    function refreshAllColorsOptions() {
+      document.querySelectorAll('.line-item').forEach(function(line) {
+        var w = line.querySelector('.color-select-mini-wrapper');
+        if (w) {
+          var s = w.querySelector('.color-search-input'), c = w.querySelector('.color-options-container');
+          if (s && c) buildColorOptions(c, s);
+        }
+      });
+    }
+
+    function buildItemOptions(container, searchInput) {
+      if (!container) return;
+      var term = searchInput ? searchInput.value.toLowerCase() : '';
+      var html = '';
+      if (!currentItemsList || currentItemsList.length === 0) {
+        html = '<div class="item-option" style="color:#999;">⚠️ لا توجد أصناف متاحة في هذا المستودع</div>';
+      } else {
+        for (var i = 0; i < currentItemsList.length; i++) {
+          var item = currentItemsList[i];
+          var txt = (item.item_code||'') + ' - ' + (item.item_name||'');
+          if (item.color_name && item.color_name !== 'بدون لون') txt += ' (' + item.color_name + ')';
+          var cost = parseFloat(item.cost_price||0).toFixed(2), balance = parseFloat(item.balance||0).toFixed(0);
+          if (term === '' || txt.toLowerCase().indexOf(term) > -1) {
+            html += '<div class="item-option" data-id="'+item.id+'" data-color-id="'+(item.color_id||'')+'" data-cost="'+cost+'" data-balance="'+balance+'" onclick="selectItemOption(this)">'+
+              '<div class="selected-item-content">' +
+                '<div class="selected-item-details">' +
+                  '<span class="selected-item-name">' + txt + '</span>' +
+                '</div>' +
+              '</div>' +
+              ' <span class="stock-badge">الرصيد: '+balance+'</span></div>';
+          }
+        }
+      }
+      container.innerHTML = html;
+    }
+
+    function buildColorOptions(container, searchInput) {
+      if (!container) return;
+      var term = searchInput ? searchInput.value.toLowerCase() : '';
+      var html = '<div class="color-option" data-id="" onclick="selectColorOption(this)">-- بدون لون --</div>';
+      for (var i = 0; i < colorsList.length; i++) {
+        var c = colorsList[i], txt = c.color_name || '', val = c.id || '';
+        if (term === '' || txt.toLowerCase().indexOf(term) > -1) html += '<div class="color-option" data-id="'+val+'" onclick="selectColorOption(this)">'+txt+'</div>';
+      }
+      container.innerHTML = html;
+    }
+
+    function showItemOptions(input) { var w = input.closest('.item-select-mini-wrapper'); if (w) { var c = w.querySelector('.item-options-container'); if (c) { buildItemOptions(c, input); c.classList.add('show'); } } }
+    function filterItemOptions(input) { var w = input.closest('.item-select-mini-wrapper'); if (w) { var c = w.querySelector('.item-options-container'); if (c) buildItemOptions(c, input); } }
+    
+    function selectItemOption(option) {
+      var w = option.closest('.item-select-mini-wrapper'); if (!w) return;
+      var s = w.querySelector('.item-search-input'), d = w.querySelector('.selected-item-display'), h = w.querySelector('.item-select-mini'), line = w.closest('.line-item');
+      var id = option.getAttribute('data-id'), 
+          cid = option.getAttribute('data-color-id')||'',
+          cost = option.getAttribute('data-cost')||'0', 
+          balance = option.getAttribute('data-balance')||'0', 
+          txt = option.textContent.trim().replace(/<span[^>]*>.*<\/span>/,'').trim();
+      if (!id) return;
+      if (h) h.value = id;
+      if (d) { 
+        var displayHtml = 
+          '<div class="selected-item-content">' +
+            '<div class="selected-item-details">' +
+              '<span class="selected-item-name">' + txt + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<span class="change-link" onclick="changeItem(this)">تغيير</span>';
+        d.querySelector('.value-text').innerHTML = displayHtml;
+        d.style.display = 'flex';
+        d.style.justifyContent = 'space-between';
+        d.style.alignItems = 'center';
+      }
+      if (s) { s.style.display = 'none'; s.value = ''; }
+      if (cid) {
+        var cw = line.querySelector('.color-select-mini-wrapper');
+        if (cw) {
+          var ch = cw.querySelector('.color-select-mini'), cd = cw.querySelector('.selected-color-display'), cs = cw.querySelector('.color-search-input');
+          var fc = colorsList.find(function(c) { return String(c.id) === String(cid); });
+          if (fc) { 
+            if (cd) { 
+              cd.style.display = 'flex'; 
+              cd.querySelector('.value-text').textContent = fc.color_name||''; 
+            } 
+            if (cs) cs.style.display = 'none'; 
+            if (ch) ch.value = cid; 
+          }
+        }
+      }
+      if (line) { 
+        var c = line.querySelector('.line-cost'); if (c) c.value = cost; 
+        var q = line.querySelector('.line-qty'); 
+        if (q) { 
+          q.max = balance; 
+          q.value = Math.min(1, parseInt(balance)||1); 
+          q.title = 'الحد الأقصى: ' + balance;
+        } 
+        line.classList.remove('error'); 
+      }
+      var c = w.querySelector('.item-options-container'); if (c) c.classList.remove('show');
+    }
+    
+    function changeItem(link) {
+      var w = link.closest('.item-select-mini-wrapper'); if (!w) return;
+      var s = w.querySelector('.item-search-input'), d = w.querySelector('.selected-item-display'), h = w.querySelector('.item-select-mini');
+      if (d) d.style.display = 'none';
+      if (s) { s.style.display = 'block'; s.value = ''; s.focus(); }
+      if (h) h.value = '';
+      var c = w.querySelector('.item-options-container'); if (c) buildItemOptions(c, s);
+    }
+
+    function showColorOptions(input) { var w = input.closest('.color-select-mini-wrapper'); if (w) { var c = w.querySelector('.color-options-container'); if (c) { buildColorOptions(c, input); c.classList.add('show'); } } }
+    function filterColorOptions(input) { var w = input.closest('.color-select-mini-wrapper'); if (w) { var c = w.querySelector('.color-options-container'); if (c) buildColorOptions(c, input); } }
+    
+    function selectColorOption(option) {
+      var w = option.closest('.color-select-mini-wrapper'); if (!w) return;
+      var s = w.querySelector('.color-search-input'), d = w.querySelector('.selected-color-display'), h = w.querySelector('.color-select-mini');
+      var id = option.getAttribute('data-id')||'', txt = option.textContent.trim();
+      if (d) { d.style.display = 'flex'; d.querySelector('.value-text').textContent = txt; }
+      if (s) { s.style.display = 'none'; s.value = ''; }
+      if (h) h.value = id;
+      var c = w.querySelector('.color-options-container'); if (c) c.classList.remove('show');
+    }
+    
+    function changeColor(link) {
+      var w = link.closest('.color-select-mini-wrapper'); if (!w) return;
+      var s = w.querySelector('.color-search-input'), d = w.querySelector('.selected-color-display'), h = w.querySelector('.color-select-mini');
+      if (d) d.style.display = 'none';
+      if (s) { s.style.display = 'block'; s.value = ''; s.focus(); }
+      if (h) h.value = '';
+      var c = w.querySelector('.color-options-container'); if (c) buildColorOptions(c, s);
+    }
+
+    function openAddItemForm() {
+      google.script.run.withSuccessHandler(function() {
+        setTimeout(refreshItemsList, 1000);
+      }).openItemForm();
+    }
+
+    function openAddColorForm() {
+      google.script.run.withSuccessHandler(function() {
+        setTimeout(refreshColorsList, 1000);
+      }).openColorForm();
+    }
+
+    function refreshItemsList() {
+      var wid = document.getElementById('fromWarehouseId')?.value;
+      if (wid) {
+        google.script.run.withSuccessHandler(function(i) {
+          currentItemsList = i || [];
+          refreshAllItemsOptions();
+        }).getItemsWithStockBalance(wid, selectedFiscalYear);
+      }
+    }
+
+    function refreshColorsList() {
+      google.script.run.withSuccessHandler(function(c) {
+        colorsList = c || [];
+        refreshAllColorsOptions();
+      }).getColorsForTransfers();
+    }
+
+    // ========== بنود النقل ==========
+    function addLineItem() {
+      lineItemCount++;
+      var div = document.createElement('div');
+      div.className = 'line-item'; div.id = 'line-item-'+lineItemCount;
+      div.innerHTML = 
+        '<div class="item-select-mini-wrapper">' +
+          '<input type="text" class="item-search-input" placeholder="ابحث عن صنف..." onfocus="showItemOptions(this)" oninput="filterItemOptions(this)">' +
+          '<div class="selected-item-display" style="display:none;"><span class="value-text"></span></div>' +
+          '<div class="item-options-container"></div>' +
+          '<input type="hidden" class="item-select-mini" value="">' +
+        '</div>' +
+        '<div class="color-select-mini-wrapper">' +
+          '<input type="text" class="color-search-input" placeholder="ابحث عن لون..." onfocus="showColorOptions(this)" oninput="filterColorOptions(this)">' +
+          '<div class="selected-color-display" style="display:none;"><span class="value-text"></span><span class="change-link" onclick="changeColor(this)">تغيير</span></div>' +
+          '<div class="color-options-container"></div>' +
+          '<input type="hidden" class="color-select-mini" value="">' +
+        '</div>' +
+        '<div><input type="number" class="line-input line-qty" value="1" min="1" step="1" oninput="validateQuantity(this)"></div>' +
+        '<div><input type="number" class="line-input line-cost" value="0" min="0" step="0.01" readonly></div>' +
+        '<div><button type="button" class="remove-line" onclick="removeLineItem(this)">−</button></div>';
+      document.getElementById('lineItems').appendChild(div);
+      
+      var w = div.querySelector('.item-select-mini-wrapper'), oc = w.querySelector('.item-options-container'), si = w.querySelector('.item-search-input');
+      if (currentItemsList && currentItemsList.length > 0) buildItemOptions(oc, si); else oc.innerHTML = '<div class="item-option" style="color:#999;">⚠️ لا توجد أصناف متاحة</div>';
+      
+      var cw = div.querySelector('.color-select-mini-wrapper'), coc = cw.querySelector('.color-options-container'), csi = cw.querySelector('.color-search-input');
+      buildColorOptions(coc, csi);
+    }
+    
+    function removeLineItem(btn) { 
+      if (document.querySelectorAll('.line-item').length > 1) { 
+        btn.closest('.line-item').remove(); 
+      } else alert('⚠️ يجب وجود بند واحد على الأقل'); 
+    }
+    
+    function validateQuantity(input) {
+      if (!input) return;
+      var line = input.closest('.line-item');
+      if (!line) return;
+      var max = parseInt(input.max) || 0;
+      var qty = parseInt(input.value) || 0;
+      if (qty > max && max > 0) {
+        input.classList.add('input-error');
+        var warning = line.querySelector('.stock-warning');
+        if (!warning) { 
+          warning = document.createElement('div'); 
+          warning.className = 'stock-warning'; 
+          line.appendChild(warning); 
+        }
+        warning.textContent = '⚠️ الكمية المطلوبة ('+qty+') > المتاح ('+max+')';
+      } else {
+        input.classList.remove('input-error');
+        var warning = line.querySelector('.stock-warning');
+        if (warning) warning.remove();
+      }
+    }
+
+    // ========== قائمة عمليات النقل ==========
+    function loadTransfersList(fiscalYear) {
+      var year = fiscalYear || selectedFiscalYear;
+      var c = document.getElementById('tableContainer');
+      
+      if (!year) {
+        c.innerHTML = '<div class="loading">⚠️ يرجى اختيار سنة مالية من لوحة التحكم أولاً</div>';
+        return;
+      }
+      
+      if (isDirectEditMode) {
+        console.log('📝 في وضع التعديل المباشر - لا يتم عرض قائمة عمليات النقل');
+        return;
+      }
+      
+      c.innerHTML = '<div class="loading"><div class="spinner"></div> جاري التحميل...</div>';
+      
+      google.script.run
+        .withSuccessHandler(function(transfers) {
+          if (!transfers || transfers.length === 0) { 
+            c.innerHTML = '<div class="loading">📭 لا توجد عمليات نقل لسنة ' + year + '</div>'; 
+            document.getElementById('transfersCount').textContent = '(0)'; 
+            return; 
+          }
+          document.getElementById('transfersCount').textContent = '('+transfers.length+')';
+          var h = '<table><thead><tr><th>رقم النقل</th><th>التاريخ</th><th>من</th><th>إلى</th><th>الإجراءات</th></tr></thead><tbody>';
+          for (var i = 0; i < transfers.length; i++) {
+            var t = transfers[i];
+            h += '<tr><td><strong>'+(t.transfer_no||'')+'</strong></td><td>'+(t.date||'')+'</td><td>'+(t.from_warehouse||'')+'</td><td>'+(t.to_warehouse||'')+'</td><td class="actions">' +
+                 '<button class="btn-sm btn-sm-edit" onclick="editTransfer(\''+(t.id||'')+'\')">✏️</button>' +
+                 '<button class="btn-sm btn-sm-delete" onclick="deleteTransfer(\''+(t.id||'')+'\')">🗑️</button>' +
+                 '</td></tr>';
+          }
+          h += '</tbody></table>'; 
+          c.innerHTML = h;
+        })
+        .withFailureHandler(function(error) { 
+          c.innerHTML = '<div class="loading" style="color:var(--danger)">❌ فشل التحميل: ' + (error.message || 'خطأ غير معروف') + '</div>'; 
+        })
+        .getTransfersList(year);
+    }
+    
+    function filterTransfers() {
+      var t = (document.getElementById('searchInput')?.value||'').toLowerCase(), 
+          rows = document.querySelectorAll('#tableContainer table tbody tr'), 
+          vis = 0;
+      for (var i = 0; i < rows.length; i++) { 
+        var m = false; 
+        rows[i].querySelectorAll('td').forEach(function(c) { 
+          if (c.textContent.toLowerCase().indexOf(t) > -1) m = true; 
+        }); 
+        rows[i].style.display = m ? '' : 'none'; 
+        if (m) vis++; 
+      }
+      document.getElementById('transfersCount').textContent = '('+vis+'/'+rows.length+')';
+    }
+
+    // ========== حفظ النقل ==========
+    document.getElementById('transferForm')?.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      if (isSaving) { alert('⏳ جاري الحفظ...'); return; }
+      if (!selectedFiscalYear) { 
+        alert('⚠️ لم يتم تحديد سنة مالية. يرجى اختيار السنة من لوحة التحكم أولاً.'); 
+        return; 
+      }
+      if (!document.getElementById('transferDate').value) { alert('⚠️ التاريخ مطلوب'); return; }
+      if (!document.getElementById('fromWarehouseId').value) { alert('⚠️ المستودع المصدر مطلوب'); return; }
+      if (!document.getElementById('toWarehouseId').value) { alert('⚠️ المستودع الهدف مطلوب'); return; }
+      if (document.getElementById('fromWarehouseId').value === document.getElementById('toWarehouseId').value) { alert('⚠️ لا يمكن النقل من وإلى نفس المستودع'); return; }
+      
+      var lines = [], hasErr = false;
+      document.querySelectorAll('.line-item').forEach(function(l) { l.classList.remove('error'); });
+      document.querySelectorAll('.line-item').forEach(function(line) {
+        var w = line.querySelector('.item-select-mini-wrapper'); if (!w) return;
+        var h = w.querySelector('.item-select-mini'), d = w.querySelector('.selected-item-display');
+        var hasItem = (h && h.value) || (d && d.style.display !== 'none');
+        if (!hasItem) { line.classList.add('error'); hasErr = true; return; }
+        var q = parseInt(line.querySelector('.line-qty')?.value)||0, c = parseFloat(line.querySelector('.line-cost')?.value)||0;
+        var max = parseInt(line.querySelector('.line-qty')?.max)||0;
+        if (q > max && max > 0) { hasErr = true; line.classList.add('error'); alert('⚠️ الكمية المطلوبة تتجاوز الرصيد المتاح'); return; }
+        if (q > 0 && c >= 0) {
+          lines.push({ 
+            item_id: String(h?.value||'').trim(), 
+            color_id: line.querySelector('.color-select-mini')?.value||'',
+            qty: q, 
+            cost_price: c 
+          });
+        } else { line.classList.add('error'); hasErr = true; }
+      });
+      if (lines.length === 0 || hasErr) { alert('⚠️ أضف بنداً صحيحاً'); return; }
+      
+      var formData = {
+        id: document.getElementById('transferId')?.value||null, 
+        transfer_no: document.getElementById('transferNo')?.value||null,
+        date: document.getElementById('transferDate').value, 
+        from_warehouse_id: document.getElementById('fromWarehouseId').value,
+        to_warehouse_id: document.getElementById('toWarehouseId').value,
+        notes: document.getElementById('notes')?.value.trim()||'',
+        lines: lines
+      };
+      
+      isSaving = true; 
+      var btn = document.getElementById('saveButton'), orig = btn.textContent;
+      btn.textContent = '⏳ جاري الحفظ...'; 
+      btn.disabled = true;
+      
+      google.script.run
+        .withSuccessHandler(function(r) {
+          isSaving = false; 
+          btn.textContent = orig; 
+          btn.disabled = false;
+          if (r?.success) { 
+            alert('✅ '+(r.message||'تم الحفظ')); 
+            closeForm(); 
+          } else alert('❌ '+(r?.message||'فشل الحفظ'));
+        })
+        .withFailureHandler(function(err) { 
+          isSaving = false; 
+          btn.textContent = orig; 
+          btn.disabled = false; 
+          alert('❌ خطأ: '+err); 
+        })
+        .saveTransfer(formData, selectedFiscalYear);
+    });
+
+    // ========== حذف نقل ==========
+    function deleteTransfer(id) {
+      if (!confirm('⚠️ تأكيد حذف عملية النقل؟')) return;
+      
+      if (!selectedFiscalYear) {
+        alert('⚠️ لم يتم تحديد سنة مالية');
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(r) {
+          if (r?.success) { 
+            alert('✅ '+r.message); 
+            loadTransfersList(selectedFiscalYear); 
+          } else alert('❌ '+(r?.message||'فشل الحذف'));
+        })
+        .deleteTransfer(id, selectedFiscalYear);
+    }
+
+    // ========== تعديل نقل (من القائمة) ==========
+    function editTransfer(id) {
+      if (!dataLoaded) { 
+        alert('⏳ جاري تحميل البيانات...'); 
+        return; 
+      }
+      if (!selectedFiscalYear) {
+        alert('⚠️ لم يتم تحديد سنة مالية');
+        return;
+      }
+      
+      isEditingMode = true;
+      isDirectEditMode = true;
+      
+      google.script.run
+        .withSuccessHandler(function(tr) {
+          if (!tr) { 
+            alert('❌ لم يتم العثور على عملية النقل'); 
+            isEditingMode = false; 
+            isDirectEditMode = false;
+            return; 
+          }
+          
+          document.getElementById('formPanel').style.display = 'block';
+          document.getElementById('transferId').value = tr.id||'';
+          document.getElementById('transferNo').value = tr.transfer_no||'';
+          document.getElementById('transferDate').value = tr.date||'';
+          document.getElementById('notes').value = tr.notes||'';
+          
+          if (tr.from_warehouse_id) {
+            var fromWarehouse = warehousesList.find(function(w) { return String(w.id) === String(tr.from_warehouse_id); });
+            if (fromWarehouse) {
+              selectWarehouse('from', fromWarehouse.id, fromWarehouse.warehouse_name);
+            } else if (tr.from_warehouse_name) {
+              selectWarehouse('from', tr.from_warehouse_id, tr.from_warehouse_name);
+            }
+          }
+          
+          if (tr.to_warehouse_id) {
+            var toWarehouse = warehousesList.find(function(w) { return String(w.id) === String(tr.to_warehouse_id); });
+            if (toWarehouse) {
+              selectWarehouse('to', toWarehouse.id, toWarehouse.warehouse_name);
+            } else if (tr.to_warehouse_name) {
+              selectWarehouse('to', tr.to_warehouse_id, tr.to_warehouse_name);
+            }
+          }
+          
+          document.getElementById('lineItems').innerHTML = '';
+          lineItemCount = 0;
+          
+          if (tr.lines && tr.lines.length) {
+            tr.lines.forEach(function(l) {
+              addLineItem();
+              var ln = document.querySelectorAll('.line-item')[document.querySelectorAll('.line-item').length-1];
+              var iw = ln.querySelector('.item-select-mini-wrapper'), 
+                  ih = iw.querySelector('.item-select-mini'), 
+                  idv = iw.querySelector('.selected-item-display'), 
+                  isi = iw.querySelector('.item-search-input');
+              
+              var fi = currentItemsList.find(function(i) { 
+                return String(i.id) === String(l.item_id) && String(i.color_id||'') === String(l.color_id||''); 
+              });
+              
+              if (fi) {
+                var txt = (fi.item_code||'')+' - '+(fi.item_name||'')+(fi.color_name&&fi.color_name!=='بدون لون'?' ('+fi.color_name+')':'');
+                if (idv) { 
+                  var displayHtml = 
+                    '<div class="selected-item-content">' +
+                      '<div class="selected-item-details">' +
+                        '<span class="selected-item-name">' + fi.item_name + '</span>' +
+                        '<span class="selected-item-meta">' + fi.item_code + (fi.color_name && fi.color_name !== 'بدون لون' ? ' | ' + fi.color_name : '') + '</span>' +
+                      '</div>' +
+                    '</div>' +
+                    '<span class="change-link" onclick="changeItem(this)">تغيير</span>';
+                  idv.querySelector('.value-text').innerHTML = displayHtml;
+                  idv.style.display = 'flex';
+                  idv.style.justifyContent = 'space-between';
+                  idv.style.alignItems = 'center';
+                }
+                if (isi) isi.style.display = 'none';
+                if (ih) ih.value = String(l.item_id);
+                var q = ln.querySelector('.line-qty'); 
+                if (q) { 
+                  q.max = fi.balance||0; 
+                  q.value = l.qty || 1;
+                  q.title = 'الحد الأقصى: '+(fi.balance||0);
+                }
+                var c = ln.querySelector('.line-cost'); 
+                if (c) c.value = l.cost_price || fi.cost_price || 0;
+              } else {
+                if (idv) { 
+                  idv.style.display = 'flex'; 
+                  idv.querySelector('.value-text').innerHTML = '<span>صنف: '+l.item_id+'</span><span class="change-link" onclick="changeItem(this)">تغيير</span>'; 
+                }
+                if (isi) isi.style.display = 'none';
+                if (ih) ih.value = String(l.item_id);
+              }
+              
+              if (l.color_id) {
+                var cw = ln.querySelector('.color-select-mini-wrapper'), 
+                    ch = cw.querySelector('.color-select-mini'), 
+                    cd = cw.querySelector('.selected-color-display'), 
+                    cs = cw.querySelector('.color-search-input');
+                var fc = colorsList.find(function(c) { return String(c.id) === String(l.color_id); });
+                if (cd) { 
+                  cd.style.display = 'flex'; 
+                  cd.querySelector('.value-text').textContent = fc?.color_name || l.color_name || l.color_id; 
+                }
+                if (cs) cs.style.display = 'none';
+                if (ch) ch.value = String(l.color_id);
+              }
+            });
+          } else {
+            addLineItem();
+          }
+          
+          setTimeout(function() { 
+            document.getElementById('formPanel').scrollIntoView({ behavior: 'smooth' }); 
+          }, 100);
+        })
+        .withFailureHandler(function(err) { 
+          alert('❌ فشل التحميل: '+err); 
+          isEditingMode = false; 
+          isDirectEditMode = false;
+        })
+        .getTransferById(id, selectedFiscalYear);
+    }
+
+    function updateLinesWithStockData() {
+      document.querySelectorAll('.line-item').forEach(function(line) {
+        var h = line.querySelector('.item-select-mini'), id = h?.value;
+        if (!id) return;
+        var ch = line.querySelector('.color-select-mini'), cid = ch?.value||'';
+        var fi = currentItemsList.find(function(i) { 
+          return String(i.id) === String(id) && String(i.color_id||'') === String(cid||''); 
+        });
+        var dv = line.querySelector('.selected-item-display');
+        if (fi) {
+          if (dv) {
+            var displayHtml = 
+              '<div class="selected-item-content">' +
+                '<div class="selected-item-details">' +
+                  '<span class="selected-item-name">' + fi.item_name + '</span>' +
+                  '<span class="selected-item-meta">' + fi.item_code + (fi.color_name && fi.color_name !== 'بدون لون' ? ' | ' + fi.color_name : '') + '</span>' +
+                '</div>' +
+              '</div>' +
+              '<span class="change-link" onclick="changeItem(this)">تغيير</span>';
+            dv.querySelector('.value-text').innerHTML = displayHtml;
+          }
+          var q = line.querySelector('.line-qty'); 
+          if (q) { 
+            q.max = fi.balance||0; 
+            q.title = 'الحد الأقصى: '+(fi.balance||0); 
+          }
+          var c = line.querySelector('.line-cost'); 
+          if (c && (!c.value||c.value==='0')) c.value = fi.cost_price||0;
+        } else if (dv) {
+          dv.querySelector('.value-text').innerHTML = '<span>⚠️ صنف غير متوفر (ID: '+id+')</span><span class="change-link" onclick="changeItem(this)">تغيير</span>';
+        }
+      });
+    }
+
+    // ========== أحداث إضافية ==========
+    document.addEventListener('mousedown', function(e) { 
+      if (e.target.classList.contains('item-option')||e.target.classList.contains('color-option')) e.preventDefault(); 
+    });
+    
+    document.addEventListener('click', function(e) {
+      if (!e.target.classList.contains('item-search-input')) 
+        document.querySelectorAll('.item-options-container').forEach(function(c) { c.classList.remove('show'); });
+      if (!e.target.classList.contains('color-search-input')) 
+        document.querySelectorAll('.color-options-container').forEach(function(c) { c.classList.remove('show'); });
+    });
+  </script>
+</body>
+</html>
